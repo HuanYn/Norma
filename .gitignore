@@ -1,0 +1,29 @@
+# Frontend
+node_modules/
+dist/
+
+# Rust
+target/
+src-tauri/target/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Norma runtime data
+.norma/
+
+# Local configuration
+.env
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local product brief used to drive Codex sessions
+Norma 项目 Codex 总提示词.md

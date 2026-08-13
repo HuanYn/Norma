@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Norma",
+  "version": "0.1.0",
+  "identifier": "ai.norma.desktop",
+  "build": {
+    "beforeDevCommand": "pnpm dev:ui",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "pnpm build:ui",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Norma",
+        "width": 1320,
+        "height": 860,
+        "minWidth": 960,
+        "minHeight": 700
+      }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": { "active": false }
+}
+

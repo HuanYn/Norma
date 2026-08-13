@@ -1,0 +1,2 @@
+"""Norma local AI worker."""
+

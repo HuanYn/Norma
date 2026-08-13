@@ -1,0 +1,27 @@
+{
+  "name": "norma-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "tauri dev",
+    "dev:ui": "vite --host 127.0.0.1 --port 1420",
+    "build": "tauri build",
+    "build:ui": "vue-tsc --noEmit && vite build",
+    "test:ui": "vue-tsc --noEmit",
+    "worker": "python -m uvicorn ai.app:app --host 127.0.0.1 --port 8765",
+    "test:ai": "python -m pytest ai/tests -q"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.2",
+    "vue-tsc": "^3.0.5"
+  }
+}
