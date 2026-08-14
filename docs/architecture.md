@@ -73,6 +73,21 @@ reference-photo queries, and an optional candidate subset. This boundary lets a
 future CLIP/SigLIP provider replace descriptor generation without changing the
 desktop transport or result schema.
 
+## People provider boundary
+
+`ai/people/` separates detection/description from persistence and clustering.
+The default `opencv-haar-dct-v1` CPU fallback detects frontal faces and stores a
+79-dimensional DCT/color descriptor. Exact cosine clustering uses a conservative
+`0.985` threshold; single-face clusters remain visible rather than being forced
+into a larger identity group. This is pipeline scaffolding, not biometric
+identification. A future face-embedding provider can replace it behind the same
+interface and SQLite `faces` / `person_clusters` tables.
+
+Face descriptors and crops are provider-scoped under `.norma/data/faces/`.
+Re-indexing an album invalidates both semantic embeddings and people records;
+generated cache files are disposable, while the database never continues to
+reference stale analysis.
+
 ## Reuse decision
 
 The vendored `crates/pianke-core` retains its MIT notice and supplies tested

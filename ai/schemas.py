@@ -83,3 +83,25 @@ class AlbumSearchResponse(BaseModel):
     mode: str
     provider: str
     matches: list[SearchMatch]
+
+
+class FaceSummary(BaseModel):
+    face_id: str
+    photo_id: str
+    box: list[int]
+    thumbnail_url: str
+
+
+class PersonClusterSummary(BaseModel):
+    cluster_id: str
+    label: str
+    faces: list[FaceSummary]
+
+
+class PeopleIndexResponse(BaseModel):
+    album_id: str
+    total_faces: int
+    cluster_count: int
+    provider: str
+    duration_ms: int
+    clusters: list[PersonClusterSummary]

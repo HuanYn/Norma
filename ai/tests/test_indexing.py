@@ -51,6 +51,7 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
     assert {path: path.stat().st_mtime_ns for path in before} == before
 
     with Database(data_dir / "norma.db").connect() as connection:
+        assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
         assert connection.execute("SELECT COUNT(*) FROM photos").fetchone()[0] == 4
         assert connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0] == 2
 
@@ -71,4 +72,3 @@ def test_rejects_folder_without_jpegs(tmp_path: Path, monkeypatch) -> None:
 
     assert response.status_code == 400
     assert "JPG/JPEG" in response.json()["detail"]
-

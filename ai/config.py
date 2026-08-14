@@ -12,6 +12,7 @@ class Settings:
     data_dir: Path
     log_level: str
     embedding_provider: str = "lightweight"
+    face_provider: str = "opencv-haar"
 
     @property
     def database_path(self) -> Path:
@@ -25,4 +26,5 @@ def load_settings() -> Settings:
         data_dir=Path(os.getenv("NORMA_DATA_DIR", ".norma/data")).resolve(),
         log_level=os.getenv("NORMA_LOG_LEVEL", "INFO").upper(),
         embedding_provider=os.getenv("NORMA_EMBEDDING_PROVIDER", "lightweight"),
+        face_provider=os.getenv("NORMA_FACE_PROVIDER", "opencv-haar"),
     )

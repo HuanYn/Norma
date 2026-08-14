@@ -160,6 +160,12 @@ class AlbumIndexer:
                 (album_id, name, str(folder)),
             )
             current_ids = {photo.id for photo in photos}
+            connection.execute(
+                "DELETE FROM faces WHERE photo_id IN "
+                "(SELECT id FROM photos WHERE album_id = ?)",
+                (album_id,),
+            )
+            connection.execute("DELETE FROM person_clusters WHERE album_id = ?", (album_id,))
             existing = connection.execute(
                 "SELECT id FROM photos WHERE album_id = ?", (album_id,)
             ).fetchall()

@@ -13,7 +13,7 @@ from typing import Any
 
 API_URL = "https://commons.wikimedia.org/w/api.php"
 USER_AGENT = "NormaPortfolioDemo/0.1 (https://github.com/HuanYn/Norma)"
-SEARCHES = (
+DEFAULT_SEARCHES = (
     "travel architecture",
     "city night photography",
     "mountain travel landscape",
@@ -42,10 +42,10 @@ def api(params: dict[str, str]) -> dict[str, Any]:
         return json.load(response)
 
 
-def discover(count: int) -> list[dict[str, Any]]:
+def discover(count: int, searches: tuple[str, ...] = DEFAULT_SEARCHES) -> list[dict[str, Any]]:
     candidates: dict[str, dict[str, Any]] = {}
-    per_query = max(12, (count // len(SEARCHES)) * 3)
-    for term in SEARCHES:
+    per_query = max(12, (count // len(searches)) * 3)
+    for term in searches:
         payload = api(
             {
                 "action": "query",
@@ -136,11 +136,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Download a licensed Wikimedia Commons demo album")
     parser.add_argument("--count", type=int, default=72)
     parser.add_argument("--output", type=Path, default=Path(".norma/demo-album"))
+    parser.add_argument(
+        "--search",
+        action="append",
+        dest="searches",
+        help="Wikimedia Commons search term; repeat for multiple terms",
+    )
     args = parser.parse_args()
     if not 1 <= args.count <= 200:
         parser.error("--count must be between 1 and 200")
 
-    items = discover(args.count)
+    searches = tuple(args.searches) if args.searches else DEFAULT_SEARCHES
+    if not all(term.strip() for term in searches):
+        parser.error("--search terms cannot be empty")
+
+    items = discover(args.count, searches)
     add_license_metadata(items)
     manifest = download(items, args.output)
     manifest_path = args.output / "ATTRIBUTION.json"

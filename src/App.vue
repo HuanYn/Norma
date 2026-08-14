@@ -59,6 +59,28 @@ interface AlbumSearchResponse {
   matches: SearchMatch[];
 }
 
+interface FaceSummary {
+  face_id: string;
+  photo_id: string;
+  box: number[];
+  thumbnail_url: string;
+}
+
+interface PersonClusterSummary {
+  cluster_id: string;
+  label: string;
+  faces: FaceSummary[];
+}
+
+interface PeopleIndexResponse {
+  album_id: string;
+  total_faces: number;
+  cluster_count: number;
+  provider: string;
+  duration_ms: number;
+  clusters: PersonClusterSummary[];
+}
+
 const workspaces: Workspace[] = ["Library", "AI Selection", "Create"];
 const activeWorkspace = ref<Workspace>("Library");
 const developerMode = ref(false);
@@ -72,6 +94,7 @@ const worker = ref<WorkerStatus>({
 const command = ref("");
 const album = ref<AlbumIndexResponse | null>(null);
 const embedding = ref<AlbumEmbeddingResponse | null>(null);
+const people = ref<PeopleIndexResponse | null>(null);
 const searchResult = ref<AlbumSearchResponse | null>(null);
 const indexing = ref(false);
 const searching = ref(false);
@@ -100,12 +123,16 @@ async function chooseFolder() {
   indexing.value = true;
   indexingError.value = null;
   embedding.value = null;
+  people.value = null;
   searchResult.value = null;
   try {
     album.value = await invoke<AlbumIndexResponse>("index_album", {
       folder: selectedFolder.value,
     });
     embedding.value = await invoke<AlbumEmbeddingResponse>("embed_album", {
+      albumId: album.value.album_id,
+    });
+    people.value = await invoke<PeopleIndexResponse>("index_people", {
       albumId: album.value.album_id,
     });
   } catch (error) {
@@ -206,6 +233,7 @@ onMounted(refreshWorker);
             <span>{{ album.similar_groups }} similar groups</span>
             <span>{{ album.duration_ms }} ms</span>
             <span v-if="embedding">semantic index {{ embedding.duration_ms }} ms</span>
+            <span v-if="people">{{ people.total_faces }} faces · {{ people.cluster_count }} people groups</span>
           </div>
         </div>
 
@@ -277,6 +305,22 @@ onMounted(refreshWorker);
           <p>{{ embedding ? "Ready for a grounded search" : "No semantic index yet" }}</p>
           <small>{{ embedding ? "Search uses only the current local album." : "Import an album, then ask Norma to find photos." }}</small>
         </div>
+        <section v-if="people?.clusters.length" class="people-surface" aria-label="People groups">
+          <div class="search-summary">
+            <p>People in this album</p>
+            <small>{{ people.provider }} · {{ people.total_faces }} faces</small>
+          </div>
+          <div class="people-grid">
+            <article v-for="cluster in people.clusters" :key="cluster.cluster_id" class="person-card">
+              <img
+                :src="`${worker.url}${cluster.faces[0].thumbnail_url}`"
+                :alt="cluster.label"
+              />
+              <span>{{ cluster.label }}</span>
+              <small>{{ cluster.faces.length }} photo{{ cluster.faces.length === 1 ? "" : "s" }}</small>
+            </article>
+          </div>
+        </section>
       </section>
 
       <section v-else class="workspace create">
@@ -293,7 +337,7 @@ onMounted(refreshWorker);
 
       <aside v-if="developerMode" class="developer-panel">
         <span>DEV</span>
-        <code>{{ JSON.stringify({ worker, album, embedding, searchResult }, null, 2) }}</code>
+        <code>{{ JSON.stringify({ worker, album, embedding, people, searchResult }, null, 2) }}</code>
       </aside>
     </main>
   </div>

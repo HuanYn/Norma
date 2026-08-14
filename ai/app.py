@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from ai.config import load_settings
 from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
+from ai.people import PeopleIndexer, create_face_provider
 from ai.retrieval import RetrievalService
 from ai.schemas import (
     AlbumEmbeddingResponse,
@@ -20,6 +21,7 @@ from ai.schemas import (
     AlbumSearchResponse,
     CapabilitiesResponse,
     HealthResponse,
+    PeopleIndexResponse,
 )
 from ai.storage import Database
 
@@ -61,6 +63,7 @@ def capabilities() -> CapabilitiesResponse:
         milestones={
             "library": "cpu-fallback-indexer",
             "multimodal_index": "lightweight-semantic-v1",
+            "people": "opencv-haar-dct-v1",
             "selection": "planned",
             "preference": "planned",
             "video": "deferred",
@@ -91,6 +94,14 @@ def retrieval_service() -> RetrievalService:
     )
 
 
+def people_indexer() -> PeopleIndexer:
+    return PeopleIndexer(
+        database,
+        settings.data_dir,
+        create_face_provider(settings.face_provider),
+    )
+
+
 @app.post("/albums/{album_id}/embed", response_model=AlbumEmbeddingResponse)
 def embed_album(album_id: str) -> AlbumEmbeddingResponse:
     try:
@@ -110,6 +121,16 @@ def search_album(request: AlbumSearchRequest) -> AlbumSearchResponse:
         )
     try:
         return retrieval_service().search(request)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/albums/{album_id}/people/index", response_model=PeopleIndexResponse)
+def index_people(album_id: str) -> PeopleIndexResponse:
+    try:
+        return people_indexer().index(album_id)
     except KeyError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:

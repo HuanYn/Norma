@@ -107,6 +107,16 @@ async fn embed_album(album_id: String) -> Result<serde_json::Value, String> {
 }
 
 #[tauri::command]
+async fn index_people(album_id: String) -> Result<serde_json::Value, String> {
+    post_worker_json(
+        format!("{WORKER_URL}/albums/{album_id}/people/index"),
+        None::<&serde_json::Value>,
+        "People indexing failed",
+    )
+    .await
+}
+
+#[tauri::command]
 async fn search_album(
     album_id: String,
     query: String,
@@ -206,6 +216,7 @@ fn main() {
             pick_photo_folder,
             index_album,
             embed_album,
+            index_people,
             search_album
         ])
         .on_window_event(|window, event| {
