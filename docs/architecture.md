@@ -39,6 +39,7 @@ development server and proxies API/media routes to `python -m ai serve`.
 5. **M4:** grounded reasons, locked replacement, pairwise preference learning.
 6. **M5:** persistent album catalog, selection history, and queued preparation jobs.
 7. **M6:** optional multilingual OpenCLIP, batch inference, and strict provider-scoped caches.
+8. **M7:** incremental indexing, source-fingerprinted vectors, chunk recovery, and job progress.
 
 ## Library lifecycle
 
@@ -48,9 +49,11 @@ SQLite instead of relying on one indexing response remaining in memory.
 
 `ai/jobs.py` orchestrates index, embedding, and optional people stages through a
 single-worker executor. Job state and compact intermediate results are persisted
-in SQLite schema v3. Duplicate active folders are rejected atomically. Running
+in SQLite. Duplicate active folders are rejected atomically. Running
 work is marked interrupted after an unclean restart, queued work is scheduled
-again, and cancellation is honored between read-safe stages.
+again, and cancellation is honored between read-safe stages and embedding
+chunks. Embedding progress advances from 55% to 80% using persisted completed
+and total photo counts.
 
 Video and world generation remain deferred until the personalized selection
 loop has stronger model providers and product evidence.
@@ -61,6 +64,7 @@ loop has stronger model providers and product evidence.
 
 - recursively discovers JPG/JPEG files without a hard album-size limit;
 - verifies source size and modification time before and after reads;
+- reuses stored analysis and thumbnails when both source values are unchanged;
 - writes thumbnails only under the Norma data directory;
 - computes conservative quality suggestions and never deletes a source;
 - assigns similarity groups from perceptual hashes.
@@ -83,7 +87,9 @@ they enter the cache. Model import or load failures remain explicit and map to
 HTTP 503 at the API boundary.
 
 `ai/retrieval/` owns provider-scoped cache generation and cosine search. SQLite
-schema v4 stores the versioned provider identity alongside every photo vector.
+schema v5 stores the versioned provider identity and source size/mtime used for
+every photo vector. Stale photos are embedded in provider-sized chunks, each
+committed independently so a retry continues after the last completed chunk.
 Text, reference-photo, selection, and replacement paths reject incomplete,
 stale, or mixed-provider albums instead of comparing incompatible vector
 spaces.
@@ -96,7 +102,8 @@ and uses a conservative `0.985` similarity threshold. Single-face clusters stay
 visible instead of being forced into an identity group. This is pipeline
 scaffolding, not biometric identification.
 
-Re-indexing invalidates stale semantic and people records. Generated files are
+Re-indexing preserves semantic and people records for unchanged photos and
+invalidates them when a source changes or disappears. Generated files are
 disposable and SQLite never intentionally retains references to invalid caches.
 
 ## Structured selection

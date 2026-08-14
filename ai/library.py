@@ -136,10 +136,14 @@ SELECT a.id, a.name, a.source_path, a.created_at, a.indexed_at,
        (SELECT COUNT(*) FROM photos p WHERE p.album_id = a.id AND p.auto_reject = 1)
            AS rejected_count,
        (SELECT COUNT(*) FROM photos p
-        WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL) AS embedded_count,
+        WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL
+          AND p.embedding_source_size = p.file_size
+          AND p.embedding_source_mtime_ns = p.source_mtime_ns) AS embedded_count,
        (SELECT CASE WHEN COUNT(DISTINCT p.embedding_provider) = 1
                     THEN MAX(p.embedding_provider) ELSE NULL END
-        FROM photos p WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL)
+        FROM photos p WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL
+          AND p.embedding_source_size = p.file_size
+          AND p.embedding_source_mtime_ns = p.source_mtime_ns)
            AS embedding_provider,
        (SELECT COUNT(*) FROM faces f JOIN photos p ON p.id = f.photo_id
         WHERE p.album_id = a.id) AS face_count,

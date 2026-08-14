@@ -10,7 +10,7 @@ from pathlib import Path
 from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
 from ai.people import PeopleIndexer, create_face_provider
-from ai.retrieval import RetrievalService
+from ai.retrieval import EmbeddingCancelledError, RetrievalService
 from ai.schemas import JobListResponse, JobResponse, PrepareJobRequest
 from ai.storage import Database
 
@@ -151,6 +151,8 @@ class PrepareJobManager:
                     "name": indexed.name,
                     "source_path": indexed.source_path,
                     "total": indexed.total,
+                    "computed_count": indexed.computed_count,
+                    "reused_count": indexed.reused_count,
                     "rejected": indexed.rejected,
                     "similar_groups": indexed.similar_groups,
                     "duration_ms": indexed.duration_ms,
@@ -161,16 +163,27 @@ class PrepareJobManager:
             self._set_stage(job_id, stage="embedding", progress=0.55, result=result)
             if self._cancel_if_requested(job_id):
                 return
-            embedded = RetrievalService(
-                self.database,
-                self.data_dir,
-                create_embedding_provider(
-                    self.embedding_provider,
-                    cache_dir=self.model_cache_dir,
-                    device=self.embedding_device,
-                    batch_size=self.embedding_batch_size,
-                ),
-            ).embed_album(indexed.album_id)
+            try:
+                embedded = RetrievalService(
+                    self.database,
+                    self.data_dir,
+                    create_embedding_provider(
+                        self.embedding_provider,
+                        cache_dir=self.model_cache_dir,
+                        device=self.embedding_device,
+                        batch_size=self.embedding_batch_size,
+                    ),
+                ).embed_album(
+                    indexed.album_id,
+                    on_progress=lambda completed, total: self._embedding_progress(
+                        job_id, result, completed, total
+                    ),
+                    should_cancel=lambda: self.get(job_id).cancel_requested,
+                )
+            except EmbeddingCancelledError:
+                self._mark_cancelled(job_id)
+                return
+            result.pop("embedding_progress", None)
             result["embedding"] = embedded.model_dump()
             self._set_stage(job_id, stage="people", progress=0.82, result=result)
             if self._cancel_if_requested(job_id):
@@ -238,6 +251,22 @@ class PrepareJobManager:
             self._mark_cancelled(job_id)
             return True
         return False
+
+    def _embedding_progress(
+        self,
+        job_id: str,
+        result: dict[str, object],
+        completed: int,
+        total: int,
+    ) -> None:
+        result["embedding_progress"] = {"completed": completed, "total": total}
+        fraction = completed / max(total, 1)
+        self._set_stage(
+            job_id,
+            stage="embedding",
+            progress=0.55 + 0.25 * fraction,
+            result=result,
+        )
 
     def _mark_cancelled(self, job_id: str) -> None:
         with self.database.connect() as connection:

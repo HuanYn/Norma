@@ -1,5 +1,5 @@
 """Grounded album retrieval."""
 
-from ai.retrieval.search import RetrievalService
+from ai.retrieval.search import EmbeddingCancelledError, RetrievalService
 
-__all__ = ["RetrievalService"]
+__all__ = ["EmbeddingCancelledError", "RetrievalService"]

@@ -7,7 +7,11 @@ import uuid
 
 import numpy as np
 
-from ai.index.embedding import EmbeddingProvider, normalize_embedding
+from ai.index.embedding import (
+    EmbeddingProvider,
+    embedding_cache_is_current,
+    normalize_embedding,
+)
 from ai.preferences.model import (
     FEATURE_NAMES,
     load_preference_model,
@@ -34,8 +38,10 @@ class PreferenceService:
         with self.database.connect() as connection:
             rows = connection.execute(
                 """
-                SELECT id, width, height, quality_score, blur_score,
-                       embedding_path, embedding_provider, metadata_json
+                SELECT id, absolute_path, width, height, quality_score, blur_score,
+                       file_size, source_mtime_ns, embedding_path,
+                       embedding_provider, embedding_source_size,
+                       embedding_source_mtime_ns, metadata_json
                 FROM photos
                 WHERE album_id = ? AND id IN (?, ?)
                 """,
@@ -73,8 +79,7 @@ class PreferenceService:
                 label="provider text embedding",
             )
             if any(
-                not row["embedding_path"]
-                or row["embedding_provider"] != self.provider.name
+                not embedding_cache_is_current(row, self.provider.name)
                 for row in by_id.values()
             ):
                 raise KeyError(

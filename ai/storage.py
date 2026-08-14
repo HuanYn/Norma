@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -36,8 +36,11 @@ CREATE TABLE IF NOT EXISTS photos (
     quality_score REAL,
     blur_score REAL,
     similarity_group TEXT,
+    source_mtime_ns INTEGER,
     embedding_path TEXT,
     embedding_provider TEXT,
+    embedding_source_size INTEGER,
+    embedding_source_mtime_ns INTEGER,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -119,6 +122,12 @@ PHOTO_COLUMNS_V4: dict[str, str] = {
     "embedding_provider": "TEXT",
 }
 
+PHOTO_COLUMNS_V5: dict[str, str] = {
+    "source_mtime_ns": "INTEGER",
+    "embedding_source_size": "INTEGER",
+    "embedding_source_mtime_ns": "INTEGER",
+}
+
 
 class Database:
     def __init__(self, path: Path) -> None:
@@ -188,6 +197,25 @@ class Database:
                 """
                 CREATE INDEX IF NOT EXISTS idx_photos_embedding_provider
                     ON photos(album_id, embedding_provider)
+                """
+            )
+            return
+        if version == 5:
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            for name, declaration in PHOTO_COLUMNS_V5.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
+                    )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_photos_embedding_freshness
+                    ON photos(
+                        album_id, embedding_provider,
+                        embedding_source_size, embedding_source_mtime_ns
+                    )
                 """
             )
             return

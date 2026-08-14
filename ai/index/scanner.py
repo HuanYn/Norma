@@ -30,6 +30,7 @@ class ScannedPhoto:
     width: int
     height: int
     file_size: int
+    source_mtime_ns: int
     capture_time: str | None
     quality_score: float
     blur_score: float
@@ -40,6 +41,7 @@ class ScannedPhoto:
     quality_flags: list[str]
     metadata: dict[str, object]
     similarity_group: str | None = None
+    reused: bool = False
 
 
 class AlbumIndexer:
@@ -67,12 +69,21 @@ class AlbumIndexer:
         name = (album_name or folder.name).strip() or "Untitled Album"
         thumbnail_dir = self.data_dir / "thumbnails" / album_id
         thumbnail_dir.mkdir(parents=True, exist_ok=True)
+        existing = self._existing_photos(album_id)
 
         photos: list[ScannedPhoto] = []
         errors: list[str] = []
         for path in paths:
             try:
-                photos.append(self._scan_photo(path, album_id, thumbnail_dir))
+                resolved = path.resolve()
+                cached = existing.get(str(resolved).casefold())
+                if cached is not None and _cached_source_matches(cached, resolved):
+                    try:
+                        photos.append(self._cached_photo(cached))
+                        continue
+                    except (TypeError, ValueError, json.JSONDecodeError):
+                        pass
+                photos.append(self._scan_photo(resolved, album_id, thumbnail_dir))
             except Exception as error:  # surfaced in the API; never silently swallowed
                 errors.append(f"{path.name}: {error}")
 
@@ -89,12 +100,53 @@ class AlbumIndexer:
             name=name,
             source_path=str(folder),
             total=len(summaries),
+            computed_count=sum(not photo.reused for photo in photos),
+            reused_count=sum(photo.reused for photo in photos),
             rejected=sum(photo.auto_reject for photo in summaries),
             similar_groups=len(set(groups.values())),
             duration_ms=round((time.perf_counter() - started) * 1000),
             provider=PROVIDER_NAME,
             photos=summaries,
             errors=errors,
+        )
+
+    def _existing_photos(self, album_id: str) -> dict[str, object]:
+        self.database.initialize()
+        with self.database.connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT id, absolute_path, thumbnail_path, width, height,
+                       file_size, source_mtime_ns, capture_time, quality_score,
+                       blur_score, phash, dhash, auto_reject, reject_reason,
+                       metadata_json, similarity_group
+                FROM photos WHERE album_id = ?
+                """,
+                (album_id,),
+            ).fetchall()
+        return {str(row["absolute_path"]).casefold(): row for row in rows}
+
+    @staticmethod
+    def _cached_photo(row: object) -> ScannedPhoto:
+        metadata = json.loads(row["metadata_json"] or "{}")
+        return ScannedPhoto(
+            id=row["id"],
+            path=Path(row["absolute_path"]),
+            thumbnail_path=Path(row["thumbnail_path"]),
+            width=int(row["width"]),
+            height=int(row["height"]),
+            file_size=int(row["file_size"]),
+            source_mtime_ns=int(row["source_mtime_ns"]),
+            capture_time=row["capture_time"],
+            quality_score=float(row["quality_score"]),
+            blur_score=float(row["blur_score"]),
+            phash=row["phash"],
+            dhash=row["dhash"],
+            auto_reject=bool(row["auto_reject"]),
+            reject_reason=row["reject_reason"],
+            quality_flags=list(metadata.get("quality_flags", [])),
+            metadata=metadata,
+            similarity_group=row["similarity_group"],
+            reused=True,
         )
 
     def _scan_photo(
@@ -138,6 +190,7 @@ class AlbumIndexer:
             width=width,
             height=height,
             file_size=before.st_size,
+            source_mtime_ns=before.st_mtime_ns,
             capture_time=capture_time,
             quality_score=quality.quality_score,
             blur_score=quality.blur_score,
@@ -170,18 +223,19 @@ class AlbumIndexer:
                 (album_id, name, str(folder)),
             )
             current_ids = {photo.id for photo in photos}
-            connection.execute(
-                "DELETE FROM faces WHERE photo_id IN "
-                "(SELECT id FROM photos WHERE album_id = ?)",
-                (album_id,),
-            )
-            connection.execute(
-                "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
-            )
             existing = connection.execute(
                 "SELECT id FROM photos WHERE album_id = ?", (album_id,)
             ).fetchall()
             stale = [row["id"] for row in existing if row["id"] not in current_ids]
+            if stale or any(not photo.reused for photo in photos):
+                connection.execute(
+                    "DELETE FROM faces WHERE photo_id IN "
+                    "(SELECT id FROM photos WHERE album_id = ?)",
+                    (album_id,),
+                )
+                connection.execute(
+                    "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
+                )
             if stale:
                 connection.executemany(
                     "DELETE FROM photos WHERE id = ?", [(id_,) for id_ in stale]
@@ -191,9 +245,11 @@ class AlbumIndexer:
                 INSERT INTO photos(
                     id, album_id, absolute_path, thumbnail_path, width, height,
                     capture_time, quality_score, blur_score, similarity_group,
-                    file_size, phash, dhash, auto_reject, reject_reason, metadata_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    file_size, source_mtime_ns, phash, dhash, auto_reject,
+                    reject_reason, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
+                    absolute_path=excluded.absolute_path,
                     thumbnail_path=excluded.thumbnail_path,
                     width=excluded.width,
                     height=excluded.height,
@@ -202,13 +258,28 @@ class AlbumIndexer:
                     blur_score=excluded.blur_score,
                     similarity_group=excluded.similarity_group,
                     file_size=excluded.file_size,
+                    source_mtime_ns=excluded.source_mtime_ns,
                     phash=excluded.phash,
                     dhash=excluded.dhash,
                     auto_reject=excluded.auto_reject,
                     reject_reason=excluded.reject_reason,
                     metadata_json=excluded.metadata_json,
-                    embedding_path=NULL,
-                    embedding_provider=NULL
+                    embedding_path=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.embedding_path ELSE NULL END,
+                    embedding_provider=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.embedding_provider ELSE NULL END,
+                    embedding_source_size=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.embedding_source_size ELSE NULL END,
+                    embedding_source_mtime_ns=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.embedding_source_mtime_ns ELSE NULL END
                 """,
                 [
                     (
@@ -223,6 +294,7 @@ class AlbumIndexer:
                         photo.blur_score,
                         photo.similarity_group,
                         photo.file_size,
+                        photo.source_mtime_ns,
                         photo.phash,
                         photo.dhash,
                         int(photo.auto_reject),
@@ -258,3 +330,29 @@ def _capture_time(image: Image.Image) -> str | None:
     exif = image.getexif()
     value = exif.get(36867) or exif.get(306)
     return str(value) if value else None
+
+
+def _cached_source_matches(row: object, path: Path) -> bool:
+    required = (
+        "id",
+        "absolute_path",
+        "thumbnail_path",
+        "width",
+        "height",
+        "file_size",
+        "source_mtime_ns",
+        "quality_score",
+        "blur_score",
+        "phash",
+        "dhash",
+        "metadata_json",
+    )
+    if (
+        any(row[key] is None for key in required)
+        or not Path(row["thumbnail_path"]).is_file()
+    ):
+        return False
+    current = path.stat()
+    return current.st_size == int(row["file_size"]) and current.st_mtime_ns == int(
+        row["source_mtime_ns"]
+    )

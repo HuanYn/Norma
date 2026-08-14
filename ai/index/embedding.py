@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 import cv2
 import numpy as np
@@ -247,6 +247,30 @@ def normalize_embedding(
     if norm <= 1e-12:
         raise ValueError(f"{label} is a zero embedding")
     return array / norm
+
+
+def embedding_cache_is_current(row: Mapping[str, object], provider_name: str) -> bool:
+    path = row["embedding_path"]
+    if not path or row["embedding_provider"] != provider_name:
+        return False
+    source_size = row["file_size"]
+    source_mtime_ns = row["source_mtime_ns"]
+    if source_size is None or source_mtime_ns is None:
+        return False
+    if (
+        row["embedding_source_size"] != source_size
+        or row["embedding_source_mtime_ns"] != source_mtime_ns
+    ):
+        return False
+    try:
+        source_stat = Path(str(row["absolute_path"])).stat()
+    except OSError:
+        return False
+    return (
+        source_stat.st_size == int(source_size)
+        and source_stat.st_mtime_ns == int(source_mtime_ns)
+        and Path(str(path)).is_file()
+    )
 
 
 def _normalize(vector: np.ndarray) -> np.ndarray:

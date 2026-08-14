@@ -59,6 +59,8 @@ class AlbumIndexResponse(BaseModel):
     name: str
     source_path: str
     total: int
+    computed_count: int
+    reused_count: int
     rejected: int
     similar_groups: int
     duration_ms: int
@@ -117,6 +119,8 @@ class SelectionHistoryResponse(BaseModel):
 class AlbumEmbeddingResponse(BaseModel):
     album_id: str
     count: int
+    computed_count: int
+    reused_count: int
     provider: str
     dimension: int
     duration_ms: int

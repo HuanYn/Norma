@@ -72,7 +72,9 @@ def _album(tmp_path: Path) -> tuple[Database, str, dict[str, str]]:
                 """
                 UPDATE photos SET quality_score = ?, similarity_group = ?,
                                   auto_reject = ?, embedding_path = ?,
-                                  embedding_provider = 'fake-selection-v1'
+                                  embedding_provider = 'fake-selection-v1',
+                                  embedding_source_size = file_size,
+                                  embedding_source_mtime_ns = source_mtime_ns
                 WHERE id = ?
                 """,
                 (quality, group, reject, str(path.resolve()), ids[name]),

@@ -14,6 +14,7 @@ The current MVP supports:
 - one local website and one SQLite database, with no desktop runtime required.
 - persistent album/history APIs and queued background preparation for large folders.
 - optional multilingual OpenCLIP retrieval with provider-versioned cache safety.
+- incremental indexing and resumable embedding that reuse unchanged photos.
 
 ## Run the website
 
@@ -127,6 +128,7 @@ Architecture and evidence:
 - [Library lifecycle benchmark](docs/benchmarks/library-lifecycle-e2e.md)
 - [Multilingual OpenCLIP provider](docs/multimodal-provider.md)
 - [OpenCLIP public-data benchmark](docs/benchmarks/openclip-e2e.md)
+- [Incremental prepare benchmark](docs/benchmarks/incremental-prepare-e2e.md)
 - [Third-party attribution](THIRD_PARTY_NOTICES.md)
 
 The default semantic and face providers are deterministic CPU integration

@@ -6,7 +6,11 @@ from pathlib import Path
 
 import numpy as np
 
-from ai.index.embedding import EmbeddingProvider, normalize_embedding
+from ai.index.embedding import (
+    EmbeddingProvider,
+    embedding_cache_is_current,
+    normalize_embedding,
+)
 from ai.preferences.model import load_preference_model
 from ai.schemas import (
     SelectedPhoto,
@@ -33,7 +37,8 @@ class SelectionService:
                 """
                 SELECT id, absolute_path, thumbnail_path, quality_score,
                        auto_reject, similarity_group, embedding_path,
-                       embedding_provider,
+                       embedding_provider, file_size, source_mtime_ns,
+                       embedding_source_size, embedding_source_mtime_ns,
                        width, height, blur_score, metadata_json
                 FROM photos WHERE album_id = ? ORDER BY id
                 """,
@@ -72,10 +77,7 @@ class SelectionService:
             if quality < intent.min_quality:
                 continue
             if query_vector is not None:
-                if (
-                    not row["embedding_path"]
-                    or row["embedding_provider"] != self.provider.name
-                ):
+                if not embedding_cache_is_current(row, self.provider.name):
                     raise KeyError(
                         "album has no complete semantic cache for provider "
                         f"{self.provider.name}; call the embed endpoint first"

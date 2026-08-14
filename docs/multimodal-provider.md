@@ -52,11 +52,11 @@ The website/API equivalent is `GET /providers/embedding`. It reports the active
 provider, its versioned cache identity, dimensions, availability, and install
 requirements.
 
-SQLite schema v4 records `embedding_provider` for every photo. Search,
-selection, and replacement reject missing or mixed-provider caches. Switching
-between lightweight and OpenCLIP therefore requires running `embed` or
-`prepare` again for the album; existing vectors are treated as stale and are
-never compared across incompatible spaces.
+SQLite schema v4 introduced `embedding_provider`; current schema v5 also records
+the indexed source fingerprint used for every vector. Search, selection, and
+replacement reject missing, stale, or mixed-provider caches. Switching between
+lightweight and OpenCLIP therefore requires running `embed` or `prepare` again
+for the album; existing vectors are never compared across incompatible spaces.
 
 For the currently supported bounded Chinese concepts, Norma converts the
 recognized concept into an auditable English CLIP prompt before inference.

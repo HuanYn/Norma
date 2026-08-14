@@ -47,6 +47,8 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
     assert response.status_code == 200, response.text
     payload = response.json()
     assert payload["total"] == 4
+    assert payload["computed_count"] == 4
+    assert payload["reused_count"] == 0
     assert payload["provider"] == "pillow-opencv-fallback-v1"
     assert payload["similar_groups"] >= 1
     assert all(Path(photo["thumbnail_path"]).exists() for photo in payload["photos"])
@@ -59,7 +61,7 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
             connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
                 0
             ]
-            == 4
+            == 5
         )
 
 
@@ -79,3 +81,41 @@ def test_rejects_folder_without_jpegs(tmp_path: Path, monkeypatch) -> None:
 
     assert response.status_code == 400
     assert "JPG/JPEG" in response.json()["detail"]
+
+
+def test_incremental_index_reuses_unchanged_photos_and_refreshes_one_change(
+    tmp_path: Path, monkeypatch
+) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    changed = album / "changed.jpg"
+    stable = album / "stable.jpg"
+    _jpeg(changed, (30, 70, 120))
+    _jpeg(stable, (80, 120, 50))
+    data_dir = tmp_path / "data"
+    monkeypatch.setattr(app_module, "database", Database(data_dir / "norma.db"))
+    monkeypatch.setattr(
+        app_module,
+        "settings",
+        Settings(host="127.0.0.1", port=8765, data_dir=data_dir, log_level="INFO"),
+    )
+
+    with TestClient(app_module.app) as client:
+        first = client.post("/albums/index", json={"folder": str(album)}).json()
+        thumbnail_mtimes = {
+            photo["filename"]: Path(photo["thumbnail_path"]).stat().st_mtime_ns
+            for photo in first["photos"]
+        }
+        second = client.post("/albums/index", json={"folder": str(album)}).json()
+        second_thumbnail_mtimes = {
+            photo["filename"]: Path(photo["thumbnail_path"]).stat().st_mtime_ns
+            for photo in second["photos"]
+        }
+        _jpeg(changed, (190, 80, 35))
+        third = client.post("/albums/index", json={"folder": str(album)}).json()
+
+    assert second["computed_count"] == 0
+    assert second["reused_count"] == 2
+    assert second_thumbnail_mtimes == thumbnail_mtimes
+    assert third["computed_count"] == 1
+    assert third["reused_count"] == 1

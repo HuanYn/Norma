@@ -25,6 +25,8 @@ interface AlbumIndexResponse {
   album_id: string;
   name: string;
   total: number;
+  computed_count: number;
+  reused_count: number;
   rejected: number;
   similar_groups: number;
   duration_ms: number;
@@ -36,6 +38,8 @@ interface AlbumIndexResponse {
 interface AlbumEmbeddingResponse {
   album_id: string;
   count: number;
+  computed_count: number;
+  reused_count: number;
   provider: string;
   dimension: number;
   duration_ms: number;
@@ -384,8 +388,11 @@ onMounted(refreshWorker);
           <div v-if="album" class="album-stats">
             <span>{{ album.total }} JPGs</span>
             <span>{{ album.similar_groups }} similar groups</span>
-            <span>{{ album.duration_ms }} ms</span>
-            <span v-if="embedding">semantic index {{ embedding.duration_ms }} ms</span>
+            <span>index {{ album.computed_count }} new · {{ album.reused_count }} reused · {{ album.duration_ms }} ms</span>
+            <span v-if="embedding">
+              semantic {{ embedding.computed_count }} new · {{ embedding.reused_count }} reused ·
+              {{ embedding.duration_ms }} ms
+            </span>
             <span v-if="people">{{ people.total_faces }} faces · {{ people.cluster_count }} people groups</span>
           </div>
         </div>

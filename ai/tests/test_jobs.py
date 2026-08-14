@@ -74,11 +74,23 @@ def test_prepare_job_persists_progress_result_and_catalog(
     assert completed["progress"] == 1
     assert completed["result"]["album"]["total"] == 3
     assert completed["result"]["embedding"]["count"] == 3
+    assert completed["result"]["embedding"]["computed_count"] == 3
+    assert completed["result"]["embedding"]["reused_count"] == 0
     assert completed["result"]["people"] is None
     assert completed["started_at"] is not None
     assert completed["finished_at"] is not None
     assert jobs.json()["total"] == 1
     assert albums.json()["items"][0]["embedded_count"] == 3
+
+    with TestClient(app_module.app) as client:
+        repeated = client.post(
+            "/jobs/prepare",
+            json={"folder": str(folder), "include_people": False},
+        )
+        repeated_job = _wait_for_terminal(client, repeated.json()["id"])
+    assert repeated_job["status"] == "completed"
+    assert repeated_job["result"]["embedding"]["computed_count"] == 0
+    assert repeated_job["result"]["embedding"]["reused_count"] == 3
 
 
 def test_prepare_job_rejects_duplicate_and_cancels_between_stages(

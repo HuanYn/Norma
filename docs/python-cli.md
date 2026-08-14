@@ -52,6 +52,11 @@ python -m ai --pretty photos ALBUM_ID
 python -m ai --pretty photos ALBUM_ID --include-rejects
 ```
 
+`index`, `embed`, and `prepare` report `computed_count` and `reused_count`.
+Repeating `prepare` on an unchanged folder reuses thumbnails, analysis, and
+semantic vectors. If an embedding run fails or is cancelled between chunks, the
+next run resumes from the committed photos.
+
 ## Retrieval and collection selection
 
 ```powershell
