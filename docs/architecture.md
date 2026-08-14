@@ -41,9 +41,26 @@ client. Future closed and local models sit behind Python provider interfaces.
 RL, video, and world generation remain deferred until the personalized photo
 selection loop is demonstrably complete.
 
+## Library fast path and fallback
+
+`crates/pianke-core` is the intended production fast path for hashes, quality
+scoring, and clustering. Until the Windows SDK linker is available on a new
+development machine, `ai/index/` provides an explicit
+`pillow-opencv-fallback-v1` implementation. Both write the same photo-domain
+fields so transport and UI code do not depend on the provider. The fallback:
+
+- recursively discovers JPG/JPEG files without a hard album-size limit;
+- verifies source size and modification time before and after every read;
+- writes thumbnails only under `.norma/data/thumbnails/`;
+- computes conservative quality suggestions and never deletes a source;
+- assigns similarity groups from pHash and dHash distance.
+
+The public demo downloader stores image-level creator, source and license
+metadata in `.norma/demo-album/ATTRIBUTION.json`. The dataset is a development
+fixture, not a redistribution bundle committed to this repository.
+
 ## Reuse decision
 
 The vendored `crates/pianke-core` retains its MIT notice and supplies tested
 hash, quality-scoring, and clustering primitives from `pianke-desktop`. Norma
 will integrate these primitives instead of recreating the same algorithms.
-

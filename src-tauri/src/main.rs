@@ -29,6 +29,11 @@ struct WorkerStatus {
     schema_version: Option<u32>,
 }
 
+#[derive(Debug, Serialize)]
+struct AlbumIndexRequest<'a> {
+    folder: &'a str,
+}
+
 #[tauri::command]
 async fn worker_health() -> WorkerStatus {
     match reqwest::Client::new()
@@ -36,16 +41,18 @@ async fn worker_health() -> WorkerStatus {
         .send()
         .await
     {
-        Ok(response) if response.status().is_success() => match response.json::<PythonHealth>().await {
-            Ok(health) => WorkerStatus {
-                running: true,
-                healthy: health.status == "ok",
-                url: WORKER_URL.to_string(),
-                message: "Python AI worker and SQLite are ready".to_string(),
-                schema_version: Some(health.schema_version),
-            },
-            Err(error) => unavailable(format!("Invalid worker response: {error}")),
-        },
+        Ok(response) if response.status().is_success() => {
+            match response.json::<PythonHealth>().await {
+                Ok(health) => WorkerStatus {
+                    running: true,
+                    healthy: health.status == "ok",
+                    url: WORKER_URL.to_string(),
+                    message: "Python AI worker and SQLite are ready".to_string(),
+                    schema_version: Some(health.schema_version),
+                },
+                Err(error) => unavailable(format!("Invalid worker response: {error}")),
+            }
+        }
         Ok(response) => unavailable(format!("Worker returned HTTP {}", response.status())),
         Err(error) => unavailable(format!("Worker connection failed: {error}")),
     }
@@ -57,6 +64,29 @@ fn pick_photo_folder() -> Option<String> {
         .set_title("Choose a JPG photo folder")
         .pick_folder()
         .map(|path| path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+async fn index_album(folder: String) -> Result<serde_json::Value, String> {
+    let response = reqwest::Client::new()
+        .post(format!("{WORKER_URL}/albums/index"))
+        .json(&AlbumIndexRequest { folder: &folder })
+        .send()
+        .await
+        .map_err(|error| format!("Unable to contact AI worker: {error}"))?;
+    let status = response.status();
+    let payload = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|error| format!("Invalid indexing response: {error}"))?;
+    if !status.is_success() {
+        return Err(payload
+            .get("detail")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or("Album indexing failed")
+            .to_string());
+    }
+    Ok(payload)
 }
 
 fn unavailable(message: String) -> WorkerStatus {
@@ -108,7 +138,11 @@ fn main() {
             *process = Some(spawn_worker().map_err(std::io::Error::other)?);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![worker_health, pick_photo_folder])
+        .invoke_handler(tauri::generate_handler![
+            worker_health,
+            pick_photo_folder,
+            index_album
+        ])
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {
                 if let Ok(mut process) = window.state::<WorkerProcess>().0.lock() {

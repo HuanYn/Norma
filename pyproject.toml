@@ -5,6 +5,8 @@ description = "Local AI worker for the Norma personal multimodal photo agent"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
+  "numpy>=2,<3",
+  "opencv-python-headless>=4.10,<5",
   "pillow>=11,<13",
   "pydantic>=2.10,<3",
   "uvicorn[standard]>=0.34,<1",
@@ -19,4 +21,3 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["ai/tests"]
 addopts = "-ra"
-

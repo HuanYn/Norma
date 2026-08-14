@@ -2,12 +2,20 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 
 from ai.config import load_settings
-from ai.schemas import CapabilitiesResponse, HealthResponse
+from ai.index import AlbumIndexer
+from ai.schemas import (
+    AlbumIndexRequest,
+    AlbumIndexResponse,
+    CapabilitiesResponse,
+    HealthResponse,
+)
 from ai.storage import Database
 
 
@@ -34,6 +42,7 @@ app = FastAPI(
     description="Local domain API for multimodal photo understanding and selection.",
     lifespan=lifespan,
 )
+app.mount("/media", StaticFiles(directory=settings.data_dir, check_dir=False), name="media")
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -45,7 +54,7 @@ def health() -> HealthResponse:
 def capabilities() -> CapabilitiesResponse:
     return CapabilitiesResponse(
         milestones={
-            "library": "scaffolded",
+            "library": "cpu-fallback-indexer",
             "multimodal_index": "planned",
             "selection": "planned",
             "preference": "planned",
@@ -54,3 +63,16 @@ def capabilities() -> CapabilitiesResponse:
         }
     )
 
+
+@app.post("/albums/index", response_model=AlbumIndexResponse)
+def index_album(request: AlbumIndexRequest) -> AlbumIndexResponse:
+    try:
+        return AlbumIndexer(database, settings.data_dir).index(
+            Path(request.folder), request.name
+        )
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=404, detail=f"文件夹不存在：{error}") from error
+    except NotADirectoryError as error:
+        raise HTTPException(status_code=400, detail=f"路径不是文件夹：{error}") from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -92,6 +92,15 @@ CREATE TABLE IF NOT EXISTS jobs (
 );
 """
 
+PHOTO_COLUMNS_V2: dict[str, str] = {
+    "file_size": "INTEGER",
+    "phash": "TEXT",
+    "dhash": "TEXT",
+    "auto_reject": "INTEGER NOT NULL DEFAULT 0",
+    "reject_reason": "TEXT",
+    "metadata_json": "TEXT NOT NULL DEFAULT '{}'",
+}
+
 
 class Database:
     def __init__(self, path: Path) -> None:
@@ -103,8 +112,38 @@ class Database:
             connection.executescript(SCHEMA_SQL)
             connection.execute(
                 "INSERT OR IGNORE INTO schema_migrations(version) VALUES (?)",
-                (SCHEMA_VERSION,),
+                (1,),
             )
+            row = connection.execute(
+                "SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations"
+            ).fetchone()
+            current = int(row["version"] if row else 0)
+            for version in range(current + 1, SCHEMA_VERSION + 1):
+                if version <= current:
+                    continue
+                self._apply_migration(connection, version)
+                connection.execute(
+                    "INSERT INTO schema_migrations(version) VALUES (?)", (version,)
+                )
+
+    @staticmethod
+    def _apply_migration(connection: sqlite3.Connection, version: int) -> None:
+        if version != 2:
+            raise RuntimeError(f"Missing database migration {version}")
+        existing_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+        }
+        for name, declaration in PHOTO_COLUMNS_V2.items():
+            if name not in existing_columns:
+                connection.execute(
+                    f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
+                )
+        connection.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_photos_similarity_group
+                ON photos(album_id, similarity_group)
+            """
+        )
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:
@@ -122,4 +161,3 @@ class Database:
                 "SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations"
             ).fetchone()
         return int(row["version"] if row else 0)
-

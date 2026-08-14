@@ -12,6 +12,28 @@ interface WorkerStatus {
   schema_version?: number;
 }
 
+interface PhotoSummary {
+  id: string;
+  filename: string;
+  thumbnail_url: string;
+  quality_score: number;
+  similarity_group: string | null;
+  auto_reject: boolean;
+  reject_reason: string | null;
+}
+
+interface AlbumIndexResponse {
+  album_id: string;
+  name: string;
+  total: number;
+  rejected: number;
+  similar_groups: number;
+  duration_ms: number;
+  provider: string;
+  photos: PhotoSummary[];
+  errors: string[];
+}
+
 const workspaces: Workspace[] = ["Library", "AI Selection", "Create"];
 const activeWorkspace = ref<Workspace>("Library");
 const developerMode = ref(false);
@@ -23,6 +45,9 @@ const worker = ref<WorkerStatus>({
   message: "Checking local AI worker…",
 });
 const command = ref("");
+const album = ref<AlbumIndexResponse | null>(null);
+const indexing = ref(false);
+const indexingError = ref<string | null>(null);
 
 const statusLabel = computed(() =>
   worker.value.healthy ? "AI worker ready" : "AI worker unavailable",
@@ -42,7 +67,26 @@ async function refreshWorker() {
 
 async function chooseFolder() {
   selectedFolder.value = await invoke<string | null>("pick_photo_folder");
+  if (!selectedFolder.value) return;
+  indexing.value = true;
+  indexingError.value = null;
+  try {
+    album.value = await invoke<AlbumIndexResponse>("index_album", {
+      folder: selectedFolder.value,
+    });
+  } catch (error) {
+    indexingError.value = String(error);
+  } finally {
+    indexing.value = false;
+  }
 }
+
+function thumbnailUrl(photo: PhotoSummary) {
+  return `${worker.value.url}${photo.thumbnail_url}`;
+}
+
+const visiblePhotos = computed(() => album.value?.photos.filter((photo) => !photo.auto_reject) ?? []);
+const rejectedPhotos = computed(() => album.value?.photos.filter((photo) => photo.auto_reject) ?? []);
 
 onMounted(refreshWorker);
 </script>
@@ -100,13 +144,40 @@ onMounted(refreshWorker);
             Norma reads JPG metadata and creates local thumbnails. Originals are
             never modified, moved, or deleted.
           </p>
-          <button class="primary-button" @click="chooseFolder">
-            Choose JPG folder
+          <button class="primary-button" :disabled="indexing" @click="chooseFolder">
+            {{ indexing ? "Indexing locally…" : "Choose JPG folder" }}
           </button>
           <p v-if="selectedFolder" class="path-chip">{{ selectedFolder }}</p>
+          <p v-if="indexingError" class="error-message">{{ indexingError }}</p>
+          <div v-if="album" class="album-stats">
+            <span>{{ album.total }} JPGs</span>
+            <span>{{ album.similar_groups }} similar groups</span>
+            <span>{{ album.duration_ms }} ms</span>
+          </div>
         </div>
 
-        <div class="empty-grid" aria-label="Photo library placeholder">
+        <div v-if="album" class="library-results">
+          <div class="photo-grid" aria-label="Indexed photos">
+            <figure v-for="photo in visiblePhotos" :key="photo.id" class="photo-card">
+              <img :src="thumbnailUrl(photo)" :alt="photo.filename" />
+              <figcaption>
+                <span>{{ photo.filename }}</span>
+                <small>Q {{ photo.quality_score.toFixed(0) }}</small>
+              </figcaption>
+            </figure>
+          </div>
+          <details v-if="rejectedPhotos.length" class="reject-fold">
+            <summary>AI suggested exclusions · {{ rejectedPhotos.length }}</summary>
+            <div class="photo-grid compact">
+              <figure v-for="photo in rejectedPhotos" :key="photo.id" class="photo-card rejected">
+                <img :src="thumbnailUrl(photo)" :alt="photo.filename" />
+                <figcaption><span>{{ photo.filename }}</span><small>{{ photo.reject_reason }}</small></figcaption>
+              </figure>
+            </div>
+          </details>
+        </div>
+
+        <div v-else class="empty-grid" aria-label="Photo library placeholder">
           <div v-for="tile in 6" :key="tile" class="photo-placeholder">
             <span>{{ String(tile).padStart(2, "0") }}</span>
           </div>
@@ -147,9 +218,8 @@ onMounted(refreshWorker);
 
       <aside v-if="developerMode" class="developer-panel">
         <span>DEV</span>
-        <code>{{ JSON.stringify(worker, null, 2) }}</code>
+        <code>{{ JSON.stringify({ worker, album }, null, 2) }}</code>
       </aside>
     </main>
   </div>
 </template>
-
