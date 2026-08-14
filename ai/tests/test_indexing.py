@@ -15,7 +15,9 @@ def _jpeg(path: Path, color: tuple[int, int, int], *, blurred: bool = False) -> 
     image = Image.new("RGB", (800, 600), color)
     for offset in range(40, 760, 80):
         for y in range(70, 540):
-            image.putpixel((offset, y), (255 - color[0], 255 - color[1], 255 - color[2]))
+            image.putpixel(
+                (offset, y), (255 - color[0], 255 - color[1], 255 - color[2])
+            )
     if blurred:
         image = image.filter(ImageFilter.GaussianBlur(radius=22))
     image.save(path, "JPEG", quality=92)
@@ -53,7 +55,12 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
     with Database(data_dir / "norma.db").connect() as connection:
         assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
         assert connection.execute("SELECT COUNT(*) FROM photos").fetchone()[0] == 4
-        assert connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[0] == 2
+        assert (
+            connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
+                0
+            ]
+            == 3
+        )
 
 
 def test_rejects_folder_without_jpegs(tmp_path: Path, monkeypatch) -> None:

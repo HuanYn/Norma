@@ -37,6 +37,19 @@ development server and proxies API/media routes to `python -m ai serve`.
 3. **M2:** semantic embeddings, people clusters, text/image retrieval.
 4. **M3:** structured constraints, auditable scoring, CP-SAT optimization.
 5. **M4:** grounded reasons, locked replacement, pairwise preference learning.
+6. **M5:** persistent album catalog, selection history, and queued preparation jobs.
+
+## Library lifecycle
+
+`ai/library.py` exposes persisted album summaries, bounded photo pagination, and
+selection history. Clients reconstruct their workspace after refresh from
+SQLite instead of relying on one indexing response remaining in memory.
+
+`ai/jobs.py` orchestrates index, embedding, and optional people stages through a
+single-worker executor. Job state and compact intermediate results are persisted
+in SQLite schema v3. Duplicate active folders are rejected atomically. Running
+work is marked interrupted after an unclean restart, queued work is scheduled
+again, and cancellation is honored between read-safe stages.
 
 Video and world generation remain deferred until the personalized selection
 loop has stronger model providers and product evidence.

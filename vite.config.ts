@@ -18,6 +18,7 @@ export default defineConfig({
       "/albums": "http://127.0.0.1:8765",
       "/selections": "http://127.0.0.1:8765",
       "/feedback": "http://127.0.0.1:8765",
+      "/jobs": "http://127.0.0.1:8765",
       "/preferences": "http://127.0.0.1:8765",
       "/media": "http://127.0.0.1:8765",
     },

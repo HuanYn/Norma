@@ -36,6 +36,7 @@ python -m ai --pretty people ALBUM_ID
 
 # Inspect IDs and cached status
 python -m ai --pretty albums
+python -m ai --pretty album ALBUM_ID
 python -m ai --pretty photos ALBUM_ID
 python -m ai --pretty photos ALBUM_ID --include-rejects
 ```
@@ -60,6 +61,9 @@ python -m ai --pretty feedback ALBUM_ID PREFERRED_PHOTO_ID REJECTED_PHOTO_ID `
 python -m ai --pretty replace SELECTION_ID REMOVE_PHOTO_ID
 python -m ai --pretty show-selection SELECTION_ID
 python -m ai --pretty show-preferences --user-id local
+python -m ai --pretty selection-history ALBUM_ID
+python -m ai --pretty jobs --status completed
+python -m ai --pretty show-job JOB_ID
 ```
 
 Replacement locks every non-removed photo and returns infeasible rather than

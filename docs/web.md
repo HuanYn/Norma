@@ -42,7 +42,10 @@ pnpm dev
 ```
 
 Open `http://127.0.0.1:1420`. Vite proxies `/health`, `/albums`, `/selections`,
-`/feedback`, `/preferences`, and `/media` to FastAPI at port 8765.
+`/jobs`, `/feedback`, `/preferences`, and `/media` to FastAPI at port 8765.
+
+The backend also exposes a persistent catalog and background preparation API;
+see [backend-library-lifecycle.md](backend-library-lifecycle.md).
 
 Run the checks before rebuilding committed assets:
 

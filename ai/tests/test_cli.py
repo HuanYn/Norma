@@ -30,15 +30,18 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
     _jpeg(album / "bright.jpg", (220, 190, 95), 10)
     data_dir = tmp_path / "data"
 
-    assert main(
-        [
-            "--data-dir",
-            str(data_dir),
-            "prepare",
-            str(album),
-            "--skip-people",
-        ]
-    ) == 0
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "prepare",
+                str(album),
+                "--skip-people",
+            ]
+        )
+        == 0
+    )
     prepared = _result(capsys)
     album_id = prepared["album"]["album_id"]
     assert prepared["album"]["total"] == 3
@@ -49,38 +52,56 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
     assert albums[0]["id"] == album_id
     assert albums[0]["photos"] == 3
 
-    assert main(
-        ["--data-dir", str(data_dir), "photos", album_id, "--include-rejects"]
-    ) == 0
+    assert (
+        main(["--data-dir", str(data_dir), "photos", album_id, "--include-rejects"])
+        == 0
+    )
     photos = _result(capsys)
     assert len(photos) == 3
     assert all(photo["embedded"] for photo in photos)
 
-    assert main(
-        ["--data-dir", str(data_dir), "search", album_id, "night", "--limit", "2"]
-    ) == 0
+    assert (
+        main(["--data-dir", str(data_dir), "search", album_id, "night", "--limit", "2"])
+        == 0
+    )
     search = _result(capsys)
     assert search["mode"] == "text"
     assert len(search["matches"]) == 2
 
-    assert main(
-        [
-            "--data-dir",
-            str(data_dir),
-            "select",
-            album_id,
-            "Select 1 photo of night, include blurry",
-        ]
-    ) == 0
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "select",
+                album_id,
+                "Select 1 photo of night, include blurry",
+            ]
+        )
+        == 0
+    )
     selection = _result(capsys)
     assert selection["feasible"]
     assert len(selection["selected"]) == 1
 
+    assert main(["--data-dir", str(data_dir), "album", album_id]) == 0
+    detail = _result(capsys)
+    assert detail["photo_count"] == 3
+    assert detail["embedded_count"] == 3
+    assert detail["selection_count"] == 1
+
+    assert main(["--data-dir", str(data_dir), "selection-history", album_id]) == 0
+    history = _result(capsys)
+    assert history["total"] == 1
+    assert history["items"][0]["selected_count"] == 1
+
+    assert main(["--data-dir", str(data_dir), "jobs"]) == 0
+    jobs = _result(capsys)
+    assert jobs["total"] == 0
+
 
 def test_python_cli_reports_domain_errors_as_json(tmp_path: Path, capsys) -> None:
-    exit_code = main(
-        ["--data-dir", str(tmp_path / "data"), "embed", "missing-album"]
-    )
+    exit_code = main(["--data-dir", str(tmp_path / "data"), "embed", "missing-album"])
     captured = capsys.readouterr()
     assert exit_code == 1
     payload = json.loads(captured.err)

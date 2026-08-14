@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -87,6 +87,11 @@ CREATE TABLE IF NOT EXISTS jobs (
     payload_json TEXT NOT NULL,
     result_json TEXT,
     error TEXT,
+    stage TEXT NOT NULL DEFAULT 'queued',
+    progress REAL NOT NULL DEFAULT 0,
+    cancel_requested INTEGER NOT NULL DEFAULT 0,
+    started_at TEXT,
+    finished_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -99,6 +104,14 @@ PHOTO_COLUMNS_V2: dict[str, str] = {
     "auto_reject": "INTEGER NOT NULL DEFAULT 0",
     "reject_reason": "TEXT",
     "metadata_json": "TEXT NOT NULL DEFAULT '{}'",
+}
+
+JOB_COLUMNS_V3: dict[str, str] = {
+    "stage": "TEXT NOT NULL DEFAULT 'queued'",
+    "progress": "REAL NOT NULL DEFAULT 0",
+    "cancel_requested": "INTEGER NOT NULL DEFAULT 0",
+    "started_at": "TEXT",
+    "finished_at": "TEXT",
 }
 
 
@@ -128,22 +141,36 @@ class Database:
 
     @staticmethod
     def _apply_migration(connection: sqlite3.Connection, version: int) -> None:
-        if version != 2:
-            raise RuntimeError(f"Missing database migration {version}")
-        existing_columns = {
-            row["name"] for row in connection.execute("PRAGMA table_info(photos)")
-        }
-        for name, declaration in PHOTO_COLUMNS_V2.items():
-            if name not in existing_columns:
-                connection.execute(
-                    f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
-                )
-        connection.execute(
-            """
-            CREATE INDEX IF NOT EXISTS idx_photos_similarity_group
-                ON photos(album_id, similarity_group)
-            """
-        )
+        if version == 2:
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            for name, declaration in PHOTO_COLUMNS_V2.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
+                    )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_photos_similarity_group
+                    ON photos(album_id, similarity_group)
+                """
+            )
+            return
+        if version == 3:
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(jobs)")
+            }
+            for name, declaration in JOB_COLUMNS_V3.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE jobs ADD COLUMN {name} {declaration}"
+                    )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)"
+            )
+            return
+        raise RuntimeError(f"Missing database migration {version}")
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:

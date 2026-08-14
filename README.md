@@ -12,6 +12,7 @@ The current MVP supports:
 - bilingual natural-language selection with explicit hard constraints;
 - OR-Tools CP-SAT optimization, auditable reasons, locked replacement, and pairwise preference learning;
 - one local website and one SQLite database, with no desktop runtime required.
+- persistent album/history APIs and queued background preparation for large folders.
 
 ## Run the website
 
@@ -107,6 +108,8 @@ Architecture and evidence:
 - [Selection benchmark](docs/benchmarks/selection-e2e.md)
 - [Preference/replacement benchmark](docs/benchmarks/preference-replacement-e2e.md)
 - [Direct Python benchmark](docs/benchmarks/python-cli-e2e.md)
+- [Backend library lifecycle](docs/backend-library-lifecycle.md)
+- [Library lifecycle benchmark](docs/benchmarks/library-lifecycle-e2e.md)
 - [Third-party attribution](THIRD_PARTY_NOTICES.md)
 
 The default semantic and face providers are deterministic CPU integration

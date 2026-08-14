@@ -52,6 +52,52 @@ class AlbumIndexResponse(BaseModel):
     errors: list[str] = Field(default_factory=list)
 
 
+class AlbumSummary(BaseModel):
+    id: str
+    name: str
+    source_path: str
+    created_at: str
+    indexed_at: str | None
+    photo_count: int
+    rejected_count: int
+    embedded_count: int
+    face_count: int
+    selection_count: int
+
+
+class AlbumListResponse(BaseModel):
+    items: list[AlbumSummary]
+    total: int
+    limit: int
+    offset: int
+
+
+class AlbumPhotoListResponse(BaseModel):
+    album: AlbumSummary
+    items: list[PhotoSummary]
+    total: int
+    limit: int
+    offset: int
+
+
+class SelectionHistoryItem(BaseModel):
+    id: str
+    album_id: str
+    prompt: str
+    created_at: str
+    feasible: bool
+    selected_count: int
+    solver: str | None
+    solver_status: str | None
+
+
+class SelectionHistoryResponse(BaseModel):
+    items: list[SelectionHistoryItem]
+    total: int
+    limit: int
+    offset: int
+
+
 class AlbumEmbeddingResponse(BaseModel):
     album_id: str
     count: int
@@ -105,6 +151,35 @@ class PeopleIndexResponse(BaseModel):
     provider: str
     duration_ms: int
     clusters: list[PersonClusterSummary]
+
+
+class PrepareJobRequest(BaseModel):
+    folder: str = Field(min_length=1)
+    name: str | None = Field(default=None, max_length=200)
+    include_people: bool = True
+
+
+class JobResponse(BaseModel):
+    id: str
+    job_type: str
+    status: str
+    stage: str
+    progress: float = Field(ge=0, le=1)
+    payload: dict[str, object]
+    result: dict[str, object] | None
+    error: str | None
+    cancel_requested: bool
+    created_at: str
+    updated_at: str
+    started_at: str | None
+    finished_at: str | None
+
+
+class JobListResponse(BaseModel):
+    items: list[JobResponse]
+    total: int
+    limit: int
+    offset: int
 
 
 class SelectionRequest(BaseModel):

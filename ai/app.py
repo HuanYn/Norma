@@ -3,15 +3,17 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from ai.config import load_settings
 from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
+from ai.jobs import PrepareJobManager
+from ai.library import AlbumCatalogService
 from ai.people import PeopleIndexer, create_face_provider
 from ai.preferences import PreferenceService
 from ai.preferences.model import load_preference_model
@@ -21,15 +23,22 @@ from ai.schemas import (
     AlbumEmbeddingResponse,
     AlbumIndexRequest,
     AlbumIndexResponse,
+    AlbumListResponse,
+    AlbumPhotoListResponse,
     AlbumSearchRequest,
     AlbumSearchResponse,
+    AlbumSummary,
     CapabilitiesResponse,
     HealthResponse,
+    JobListResponse,
+    JobResponse,
     PeopleIndexResponse,
     PairwiseFeedbackRequest,
     PreferenceModelResponse,
     PreferenceStateResponse,
+    PrepareJobRequest,
     SelectionRequest,
+    SelectionHistoryResponse,
     SelectionReplacementRequest,
     SelectionReplacementResponse,
     SelectionResponse,
@@ -39,6 +48,7 @@ from ai.storage import Database
 
 settings = load_settings()
 database = Database(settings.database_path)
+prepare_jobs: PrepareJobManager | None = None
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level, logging.INFO),
@@ -49,9 +59,21 @@ logger = logging.getLogger("norma.ai")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    global prepare_jobs
     database.initialize()
+    prepare_jobs = PrepareJobManager(
+        database,
+        settings.data_dir,
+        settings.embedding_provider,
+        settings.face_provider,
+    )
+    prepare_jobs.start()
     logger.info("Norma AI worker ready; data_dir=%s", settings.data_dir)
-    yield
+    try:
+        yield
+    finally:
+        prepare_jobs.shutdown()
+        prepare_jobs = None
 
 
 app = FastAPI(
@@ -60,7 +82,9 @@ app = FastAPI(
     description="Local domain API for multimodal photo understanding and selection.",
     lifespan=lifespan,
 )
-app.mount("/media", StaticFiles(directory=settings.data_dir, check_dir=False), name="media")
+app.mount(
+    "/media", StaticFiles(directory=settings.data_dir, check_dir=False), name="media"
+)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -77,10 +101,121 @@ def capabilities() -> CapabilitiesResponse:
             "people": "opencv-haar-dct-v1",
             "selection": "structured-cp-sat-or-greedy",
             "preference": "online-pairwise-logistic-v1",
+            "library_lifecycle": "persistent-catalog-and-jobs-v1",
             "video": "deferred",
             "world": "deferred",
         }
     )
+
+
+def catalog_service() -> AlbumCatalogService:
+    return AlbumCatalogService(database)
+
+
+def prepare_job_manager() -> PrepareJobManager:
+    if prepare_jobs is None:
+        raise RuntimeError("prepare job manager is not running")
+    return prepare_jobs
+
+
+@app.get("/albums", response_model=AlbumListResponse)
+def list_albums(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+) -> AlbumListResponse:
+    return catalog_service().list_albums(limit=limit, offset=offset)
+
+
+@app.get("/albums/{album_id}", response_model=AlbumSummary)
+def get_album(album_id: str) -> AlbumSummary:
+    try:
+        return catalog_service().get_album(album_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.get("/albums/{album_id}/photos", response_model=AlbumPhotoListResponse)
+def list_album_photos(
+    album_id: str,
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    include_rejects: bool = False,
+    sort: Literal["path", "quality", "capture_time"] = "path",
+) -> AlbumPhotoListResponse:
+    try:
+        return catalog_service().list_photos(
+            album_id,
+            limit=limit,
+            offset=offset,
+            include_rejects=include_rejects,
+            sort=sort,
+        )
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.get("/albums/{album_id}/selections", response_model=SelectionHistoryResponse)
+def list_album_selections(
+    album_id: str,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+) -> SelectionHistoryResponse:
+    try:
+        return catalog_service().list_selections(album_id, limit=limit, offset=offset)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.post(
+    "/jobs/prepare",
+    response_model=JobResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def create_prepare_job(request: PrepareJobRequest) -> JobResponse:
+    try:
+        return prepare_job_manager().submit(request)
+    except FileNotFoundError as error:
+        raise HTTPException(
+            status_code=404, detail=f"folder not found: {error}"
+        ) from error
+    except NotADirectoryError as error:
+        raise HTTPException(
+            status_code=400, detail=f"path is not a folder: {error}"
+        ) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@app.get("/jobs", response_model=JobListResponse)
+def list_jobs(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    status_filter: Literal["queued", "running", "completed", "failed", "cancelled"]
+    | None = Query(default=None, alias="status"),
+) -> JobListResponse:
+    return prepare_job_manager().list(
+        limit=limit,
+        offset=offset,
+        status=status_filter,
+    )
+
+
+@app.get("/jobs/{job_id}", response_model=JobResponse)
+def get_job(job_id: str) -> JobResponse:
+    try:
+        return prepare_job_manager().get(job_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.post("/jobs/{job_id}/cancel", response_model=JobResponse)
+def cancel_job(job_id: str) -> JobResponse:
+    try:
+        return prepare_job_manager().cancel(job_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
 
 
 @app.post("/albums/index", response_model=AlbumIndexResponse)
@@ -92,7 +227,9 @@ def index_album(request: AlbumIndexRequest) -> AlbumIndexResponse:
     except FileNotFoundError as error:
         raise HTTPException(status_code=404, detail=f"文件夹不存在：{error}") from error
     except NotADirectoryError as error:
-        raise HTTPException(status_code=400, detail=f"路径不是文件夹：{error}") from error
+        raise HTTPException(
+            status_code=400, detail=f"路径不是文件夹：{error}"
+        ) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
@@ -230,6 +367,7 @@ if web_dist.joinpath("index.html").is_file():
     # Keep this mount last so API routes continue to take precedence.
     app.mount("/", StaticFiles(directory=web_dist, html=True), name="web")
 else:
+
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def web_not_built() -> str:
         return """<!doctype html><html><body><h1>Norma</h1>
