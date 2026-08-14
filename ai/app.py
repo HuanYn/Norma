@@ -13,6 +13,7 @@ from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
 from ai.people import PeopleIndexer, create_face_provider
 from ai.preferences import PreferenceService
+from ai.preferences.model import load_preference_model
 from ai.retrieval import RetrievalService
 from ai.selection import ReplacementService, SelectionService
 from ai.schemas import (
@@ -26,6 +27,7 @@ from ai.schemas import (
     PeopleIndexResponse,
     PairwiseFeedbackRequest,
     PreferenceModelResponse,
+    PreferenceStateResponse,
     SelectionRequest,
     SelectionReplacementRequest,
     SelectionReplacementResponse,
@@ -174,6 +176,24 @@ def create_selection(request: SelectionRequest) -> SelectionResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.get("/selections/{selection_id}", response_model=SelectionResponse)
+def get_selection(selection_id: str) -> SelectionResponse:
+    try:
+        return selection_service().get(selection_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@app.get("/preferences/{user_id}", response_model=PreferenceStateResponse)
+def get_preference_state(user_id: str) -> PreferenceStateResponse:
+    model = load_preference_model(database, user_id)
+    return PreferenceStateResponse(
+        user_id=model.user_id,
+        comparisons=model.comparisons,
+        weights=model.weights,
+    )
 
 
 @app.post("/feedback/pairwise", response_model=PreferenceModelResponse)

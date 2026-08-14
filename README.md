@@ -141,3 +141,10 @@ Invoke-RestMethod -Method Post `
 Preferences remain local in SQLite. Each selected photo exposes semantic,
 quality, hard-constraint, and learned-preference evidence rather than a generic
 AI explanation.
+
+Selection audits and preference state are read-only inspectable endpoints:
+
+```text
+GET /selections/{selection_id}
+GET /preferences/{user_id}
+```

@@ -49,6 +49,10 @@ local model comparison count.
 - A supplied selection context must belong to the same album.
 - Preference features and weight updates are persisted locally and remain
   inspectable.
+- Selection audit and preference-state GET endpoints round-trip the persisted
+  result and current comparison count.
+- Pairwise updates are serialized inside the local worker to prevent lost
+  updates from concurrent requests.
 - Replacement never changes locked photos.
 - No eligible replacement returns infeasible and no partial selection.
 - A successful replacement creates a new selection audit instead of mutating

@@ -437,6 +437,10 @@ onMounted(refreshWorker);
                   @click="pairwiseClick(photo)"
                 >{{ preferredPhotoId === photo.photo_id ? "Cancel" : preferredPhotoId ? "Less preferred" : "Prefer" }}</button>
               </div>
+              <details class="photo-reasons">
+                <summary>Why this photo</summary>
+                <ul><li v-for="reason in photo.reasons" :key="reason">{{ reason }}</li></ul>
+              </details>
             </figure>
           </div>
         </div>

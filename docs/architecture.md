@@ -116,6 +116,10 @@ The local model and raw feature difference are persisted in
 `user_preferences` and `feedback`; no face descriptor or preference event is
 sent off-device.
 
+Pairwise updates are serialized inside the local worker so concurrent UI/API
+events cannot overwrite one another's learned step. Selection audits and the
+current per-user weight vector are exposed through read-only GET endpoints.
+
 Once comparisons exist, selection reserves 13% of its soft score for the local
 preference probability while preserving all M3 hard constraints. Explanations
 report semantic similarity, quality, constraint eligibility, preference fit,

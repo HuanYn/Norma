@@ -163,3 +163,13 @@ class SelectionService:
                 ),
             )
         return response
+
+    def get(self, selection_id: str) -> SelectionResponse:
+        with self.database.connect() as connection:
+            row = connection.execute(
+                "SELECT result_json FROM selections WHERE id = ?",
+                (selection_id,),
+            ).fetchone()
+        if row is None or not row["result_json"]:
+            raise KeyError(f"selection not found: {selection_id}")
+        return SelectionResponse.model_validate_json(row["result_json"])

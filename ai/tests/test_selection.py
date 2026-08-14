@@ -3,8 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
 
+from ai import app as app_module
 from ai.index import AlbumIndexer
 from ai.index.embedding import EmbeddingProvider
 from ai.preferences import PreferenceService
@@ -242,3 +244,29 @@ def test_replacement_returns_infeasible_without_partial_result(tmp_path: Path) -
     assert result.replacement is None
     assert result.updated_selection is None
     assert result.replacement_selection_id is None
+
+
+def test_selection_and_preference_state_are_readable(tmp_path: Path, monkeypatch) -> None:
+    database, album_id, ids = _album(tmp_path)
+    service = SelectionService(database, FakeSelectionProvider())
+    selection = service.select(
+        SelectionRequest(album_id=album_id, prompt="选 2 张 night")
+    )
+    assert service.get(selection.selection_id) == selection
+    PreferenceService(database, FakeSelectionProvider()).record_pairwise(
+        PairwiseFeedbackRequest(
+            album_id=album_id,
+            preferred_photo_id=ids["b"],
+            rejected_photo_id=ids["e"],
+            selection_id=selection.selection_id,
+        )
+    )
+
+    monkeypatch.setattr(app_module, "database", database)
+    with TestClient(app_module.app) as client:
+        audit = client.get(f"/selections/{selection.selection_id}")
+        preference = client.get("/preferences/local")
+    assert audit.status_code == 200
+    assert audit.json()["selection_id"] == selection.selection_id
+    assert preference.status_code == 200
+    assert preference.json()["comparisons"] == 1

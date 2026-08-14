@@ -163,6 +163,12 @@ class PreferenceModelResponse(BaseModel):
     weights: dict[str, float]
 
 
+class PreferenceStateResponse(BaseModel):
+    user_id: str
+    comparisons: int
+    weights: dict[str, float]
+
+
 class SelectionReplacementRequest(BaseModel):
     remove_photo_id: str = Field(min_length=1)
 
