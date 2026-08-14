@@ -106,6 +106,28 @@ cardinality plus per-group-capacity constraint family. Infeasible requests
 return no partial selection. Parsed constraints and full results are persisted
 in SQLite `selections`.
 
+## Preference and replacement loop
+
+`ai/preferences/` represents each photo with seven bounded, inspectable
+features: semantic relevance, quality, sharpness, brightness, contrast, and
+landscape/portrait orientation. Pairwise feedback applies an online logistic
+update with learning-rate decay, light regularization, and clipped weights.
+The local model and raw feature difference are persisted in
+`user_preferences` and `feedback`; no face descriptor or preference event is
+sent off-device.
+
+Once comparisons exist, selection reserves 13% of its soft score for the local
+preference probability while preserving all M3 hard constraints. Explanations
+report semantic similarity, quality, constraint eligibility, preference fit,
+and the number of comparisons supporting that fit.
+
+`ai/selection/replacement.py` treats every unremoved selected photo as locked.
+It chooses the highest-scoring unselected candidate that preserves the original
+reject policy, quality floor, and similarity-group capacity. A successful
+replacement becomes a new immutable selection audit. If no candidate is
+eligible, the endpoint returns infeasible with no partial or silently changed
+collection.
+
 ## Reuse decision
 
 The vendored `crates/pianke-core` retains its MIT notice and supplies tested

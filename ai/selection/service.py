@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from ai.index.embedding import EmbeddingProvider
+from ai.preferences.model import load_preference_model
 from ai.schemas import (
     SelectedPhoto,
     SelectionConstraints,
@@ -15,6 +16,7 @@ from ai.schemas import (
 )
 from ai.selection.optimizer import OptimizationCandidate, optimize_collection
 from ai.selection.parser import has_semantic_content, parse_selection_prompt
+from ai.selection.scoring import grounded_reasons, score_photo
 from ai.storage import Database
 
 
@@ -30,7 +32,8 @@ class SelectionService:
             rows = connection.execute(
                 """
                 SELECT id, absolute_path, thumbnail_path, quality_score,
-                       auto_reject, similarity_group, embedding_path
+                       auto_reject, similarity_group, embedding_path,
+                       width, height, blur_score, metadata_json
                 FROM photos WHERE album_id = ? ORDER BY id
                 """,
                 (request.album_id,),
@@ -54,32 +57,29 @@ class SelectionService:
             )
 
         scored: list[dict[str, object]] = []
+        preference_model = load_preference_model(self.database)
         for row in rows:
             quality = float(row["quality_score"] or 0.0)
             if intent.exclude_rejects and bool(row["auto_reject"]):
                 continue
             if quality < intent.min_quality:
                 continue
-            semantic = 0.0
             if query_vector is not None:
                 if not row["embedding_path"]:
                     raise KeyError(
                         "album has no complete semantic cache; call the embed endpoint first"
                     )
-                vector = _load_vector(row["embedding_path"], self.provider.dimension)
-                semantic = max(0.0, float(np.dot(query_vector, vector)))
-            quality_normalized = quality / 100.0
-            total = (
-                0.72 * semantic + 0.28 * quality_normalized
-                if query_vector is not None
-                else quality_normalized
+            score = score_photo(
+                row,
+                query_vector,
+                self.provider.dimension,
+                preference_model,
             )
             scored.append(
                 {
                     "row": row,
-                    "semantic": semantic,
-                    "quality": quality,
-                    "total": total,
+                    "score": score,
+                    "total": score.total,
                 }
             )
 
@@ -116,10 +116,11 @@ class SelectionService:
                             f"{Path(row['thumbnail_path']).name}"
                         ),
                         total_score=round(float(item["total"]), 6),
-                        semantic_score=round(float(item["semantic"]), 6),
-                        quality_score=round(float(item["quality"]), 3),
+                        semantic_score=round(item["score"].semantic, 6),
+                        preference_score=round(item["score"].preference, 6),
+                        quality_score=round(item["score"].quality, 3),
                         similarity_group=row["similarity_group"],
-                        reasons=_reasons(item, query_vector is not None),
+                        reasons=grounded_reasons(item["score"], query_vector is not None),
                     )
                 )
         else:
@@ -162,18 +163,3 @@ class SelectionService:
                 ),
             )
         return response
-
-
-def _load_vector(path: str, expected_dimension: int) -> np.ndarray:
-    vector = np.load(path, allow_pickle=False).astype(np.float32)
-    if vector.shape != (expected_dimension,) or not np.all(np.isfinite(vector)):
-        raise ValueError(f"invalid cached embedding at {path}; re-run the embed endpoint")
-    norm = float(np.linalg.norm(vector))
-    return vector if norm <= 1e-12 else vector / norm
-
-
-def _reasons(item: dict[str, object], semantic_enabled: bool) -> list[str]:
-    reasons = [f"quality {float(item['quality']):.1f}/100"]
-    if semantic_enabled:
-        reasons.insert(0, f"semantic similarity {float(item['semantic']):.3f}")
-    return reasons

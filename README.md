@@ -121,3 +121,23 @@ People-pipeline evidence is in
 [docs/benchmarks/people-e2e.md](docs/benchmarks/people-e2e.md).
 Structured-selection evidence is in
 [docs/benchmarks/selection-e2e.md](docs/benchmarks/selection-e2e.md).
+Preference/replacement evidence is in
+[docs/benchmarks/preference-replacement-e2e.md](docs/benchmarks/preference-replacement-e2e.md).
+
+Record a local pairwise preference and request a locked-set replacement:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8765/feedback/pairwise `
+  -ContentType application/json `
+  -Body '{"album_id":"ALBUM_ID","preferred_photo_id":"PHOTO_A","rejected_photo_id":"PHOTO_B","selection_id":"SELECTION_ID"}'
+
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8765/selections/SELECTION_ID/replace `
+  -ContentType application/json `
+  -Body '{"remove_photo_id":"PHOTO_ID"}'
+```
+
+Preferences remain local in SQLite. Each selected photo exposes semantic,
+quality, hard-constraint, and learned-preference evidence rather than a generic
+AI explanation.

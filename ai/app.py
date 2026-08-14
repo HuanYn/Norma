@@ -12,8 +12,9 @@ from ai.config import load_settings
 from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
 from ai.people import PeopleIndexer, create_face_provider
+from ai.preferences import PreferenceService
 from ai.retrieval import RetrievalService
-from ai.selection import SelectionService
+from ai.selection import ReplacementService, SelectionService
 from ai.schemas import (
     AlbumEmbeddingResponse,
     AlbumIndexRequest,
@@ -23,7 +24,11 @@ from ai.schemas import (
     CapabilitiesResponse,
     HealthResponse,
     PeopleIndexResponse,
+    PairwiseFeedbackRequest,
+    PreferenceModelResponse,
     SelectionRequest,
+    SelectionReplacementRequest,
+    SelectionReplacementResponse,
     SelectionResponse,
 )
 from ai.storage import Database
@@ -68,7 +73,7 @@ def capabilities() -> CapabilitiesResponse:
             "multimodal_index": "lightweight-semantic-v1",
             "people": "opencv-haar-dct-v1",
             "selection": "structured-cp-sat-or-greedy",
-            "preference": "planned",
+            "preference": "online-pairwise-logistic-v1",
             "video": "deferred",
             "world": "deferred",
         }
@@ -107,6 +112,20 @@ def people_indexer() -> PeopleIndexer:
 
 def selection_service() -> SelectionService:
     return SelectionService(
+        database,
+        create_embedding_provider(settings.embedding_provider),
+    )
+
+
+def preference_service() -> PreferenceService:
+    return PreferenceService(
+        database,
+        create_embedding_provider(settings.embedding_provider),
+    )
+
+
+def replacement_service() -> ReplacementService:
+    return ReplacementService(
         database,
         create_embedding_provider(settings.embedding_provider),
     )
@@ -151,6 +170,34 @@ def index_people(album_id: str) -> PeopleIndexResponse:
 def create_selection(request: SelectionRequest) -> SelectionResponse:
     try:
         return selection_service().select(request)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/feedback/pairwise", response_model=PreferenceModelResponse)
+def record_pairwise_feedback(
+    request: PairwiseFeedbackRequest,
+) -> PreferenceModelResponse:
+    try:
+        return preference_service().record_pairwise(request)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post(
+    "/selections/{selection_id}/replace",
+    response_model=SelectionReplacementResponse,
+)
+def replace_selection_photo(
+    selection_id: str,
+    request: SelectionReplacementRequest,
+) -> SelectionReplacementResponse:
+    try:
+        return replacement_service().replace(selection_id, request)
     except KeyError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:

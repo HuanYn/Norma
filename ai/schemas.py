@@ -126,6 +126,7 @@ class SelectedPhoto(BaseModel):
     thumbnail_url: str
     total_score: float
     semantic_score: float
+    preference_score: float = 0.5
     quality_score: float
     similarity_group: str | None
     reasons: list[str]
@@ -143,3 +144,35 @@ class SelectionResponse(BaseModel):
     duration_ms: int
     selected: list[SelectedPhoto]
     warnings: list[str] = Field(default_factory=list)
+
+
+class PairwiseFeedbackRequest(BaseModel):
+    album_id: str = Field(min_length=1)
+    preferred_photo_id: str = Field(min_length=1)
+    rejected_photo_id: str = Field(min_length=1)
+    selection_id: str | None = None
+    user_id: str = Field(default="local", min_length=1, max_length=100)
+
+
+class PreferenceModelResponse(BaseModel):
+    feedback_id: str
+    user_id: str
+    comparisons: int
+    probability_before: float
+    feature_difference: dict[str, float]
+    weights: dict[str, float]
+
+
+class SelectionReplacementRequest(BaseModel):
+    remove_photo_id: str = Field(min_length=1)
+
+
+class SelectionReplacementResponse(BaseModel):
+    previous_selection_id: str
+    replacement_selection_id: str | None
+    feasible: bool
+    removed_photo_id: str
+    replacement: SelectedPhoto | None
+    updated_selection: SelectionResponse | None
+    duration_ms: int
+    explanation: list[str]

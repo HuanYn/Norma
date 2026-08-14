@@ -7,8 +7,15 @@ from PIL import Image, ImageDraw
 
 from ai.index import AlbumIndexer
 from ai.index.embedding import EmbeddingProvider
-from ai.schemas import SelectionRequest
+from ai.preferences import PreferenceService
+from ai.preferences.model import load_preference_model
+from ai.schemas import (
+    PairwiseFeedbackRequest,
+    SelectionReplacementRequest,
+    SelectionRequest,
+)
 from ai.selection.parser import parse_selection_prompt
+from ai.selection.replacement import ReplacementService
 from ai.selection.service import SelectionService
 from ai.storage import Database
 
@@ -150,3 +157,88 @@ def test_unknown_requested_concept_is_not_silently_ignored(tmp_path: Path) -> No
         assert "unsupported test concept" in str(error)
     else:
         raise AssertionError("unknown semantic request should fail explicitly")
+
+
+def test_pairwise_feedback_updates_and_persists_local_model(tmp_path: Path) -> None:
+    database, album_id, ids = _album(tmp_path)
+    selection = SelectionService(database, FakeSelectionProvider()).select(
+        SelectionRequest(album_id=album_id, prompt="选 3 张 night")
+    )
+    service = PreferenceService(database, FakeSelectionProvider())
+    first = service.record_pairwise(
+        PairwiseFeedbackRequest(
+            album_id=album_id,
+            preferred_photo_id=ids["b"],
+            rejected_photo_id=ids["e"],
+            selection_id=selection.selection_id,
+        )
+    )
+    second = service.record_pairwise(
+        PairwiseFeedbackRequest(
+            album_id=album_id,
+            preferred_photo_id=ids["b"],
+            rejected_photo_id=ids["e"],
+            selection_id=selection.selection_id,
+        )
+    )
+
+    assert first.comparisons == 1
+    assert second.comparisons == 2
+    assert second.weights["quality"] > 0
+    assert second.weights["semantic"] > 0
+    model = load_preference_model(database)
+    assert model.comparisons == 2
+    with database.connect() as connection:
+        assert connection.execute("SELECT COUNT(*) FROM feedback").fetchone()[0] == 2
+
+    personalized = SelectionService(database, FakeSelectionProvider()).select(
+        SelectionRequest(album_id=album_id, prompt="选 3 张 night")
+    )
+    assert all(photo.preference_score != 0.5 for photo in personalized.selected)
+    assert all(any("preference fit" in reason for reason in photo.reasons) for photo in personalized.selected)
+
+
+def test_replacement_locks_existing_photos_and_preserves_constraints(tmp_path: Path) -> None:
+    database, album_id, ids = _album(tmp_path)
+    original = SelectionService(database, FakeSelectionProvider()).select(
+        SelectionRequest(
+            album_id=album_id,
+            prompt="选 2 张 night，质量至少 50，相似组最多 1 张",
+        )
+    )
+    assert ids["c"] in {photo.photo_id for photo in original.selected}
+    result = ReplacementService(database, FakeSelectionProvider()).replace(
+        original.selection_id,
+        SelectionReplacementRequest(remove_photo_id=ids["c"]),
+    )
+
+    assert result.feasible
+    assert result.replacement is not None
+    assert result.replacement.photo_id == ids["f"]
+    assert result.updated_selection is not None
+    original_ids = {photo.photo_id for photo in original.selected}
+    updated_ids = {photo.photo_id for photo in result.updated_selection.selected}
+    assert updated_ids == (original_ids - {ids["c"]}) | {ids["f"]}
+    assert len(updated_ids) == original.constraints.target_count
+    assert result.updated_selection.constraints == original.constraints
+    assert result.replacement_selection_id is not None
+    with database.connect() as connection:
+        assert connection.execute("SELECT COUNT(*) FROM selections").fetchone()[0] == 2
+
+
+def test_replacement_returns_infeasible_without_partial_result(tmp_path: Path) -> None:
+    database, album_id, ids = _album(tmp_path)
+    original = SelectionService(database, FakeSelectionProvider()).select(
+        SelectionRequest(
+            album_id=album_id,
+            prompt="选 3 张 night，质量至少 50，相似组最多 1 张",
+        )
+    )
+    result = ReplacementService(database, FakeSelectionProvider()).replace(
+        original.selection_id,
+        SelectionReplacementRequest(remove_photo_id=ids["c"]),
+    )
+    assert not result.feasible
+    assert result.replacement is None
+    assert result.updated_selection is None
+    assert result.replacement_selection_id is None

@@ -47,6 +47,19 @@ struct SelectionRequest<'a> {
     prompt: &'a str,
 }
 
+#[derive(Debug, Serialize)]
+struct SelectionReplacementRequest<'a> {
+    remove_photo_id: &'a str,
+}
+
+#[derive(Debug, Serialize)]
+struct PairwiseFeedbackRequest<'a> {
+    album_id: &'a str,
+    preferred_photo_id: &'a str,
+    rejected_photo_id: &'a str,
+    selection_id: Option<&'a str>,
+}
+
 #[tauri::command]
 async fn worker_health() -> WorkerStatus {
     match reqwest::Client::new()
@@ -153,6 +166,41 @@ async fn create_selection(album_id: String, prompt: String) -> Result<serde_json
     .await
 }
 
+#[tauri::command]
+async fn replace_selection_photo(
+    selection_id: String,
+    remove_photo_id: String,
+) -> Result<serde_json::Value, String> {
+    post_worker_json(
+        format!("{WORKER_URL}/selections/{selection_id}/replace"),
+        Some(&SelectionReplacementRequest {
+            remove_photo_id: &remove_photo_id,
+        }),
+        "Photo replacement failed",
+    )
+    .await
+}
+
+#[tauri::command]
+async fn record_pairwise_feedback(
+    album_id: String,
+    preferred_photo_id: String,
+    rejected_photo_id: String,
+    selection_id: Option<String>,
+) -> Result<serde_json::Value, String> {
+    post_worker_json(
+        format!("{WORKER_URL}/feedback/pairwise"),
+        Some(&PairwiseFeedbackRequest {
+            album_id: &album_id,
+            preferred_photo_id: &preferred_photo_id,
+            rejected_photo_id: &rejected_photo_id,
+            selection_id: selection_id.as_deref(),
+        }),
+        "Preference feedback failed",
+    )
+    .await
+}
+
 async fn post_worker_json<T: Serialize + ?Sized>(
     url: String,
     body: Option<&T>,
@@ -237,7 +285,9 @@ fn main() {
             embed_album,
             index_people,
             search_album,
-            create_selection
+            create_selection,
+            replace_selection_photo,
+            record_pairwise_feedback
         ])
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {

@@ -113,6 +113,20 @@ interface SelectionResponse {
   warnings: string[];
 }
 
+interface SelectionReplacementResponse {
+  feasible: boolean;
+  replacement_selection_id: string | null;
+  replacement: SelectedPhoto | null;
+  updated_selection: SelectionResponse | null;
+  explanation: string[];
+}
+
+interface PreferenceModelResponse {
+  comparisons: number;
+  probability_before: number;
+  weights: Record<string, number>;
+}
+
 const workspaces: Workspace[] = ["Library", "AI Selection", "Create"];
 const activeWorkspace = ref<Workspace>("Library");
 const developerMode = ref(false);
@@ -133,6 +147,9 @@ const indexing = ref(false);
 const searching = ref(false);
 const indexingError = ref<string | null>(null);
 const searchError = ref<string | null>(null);
+const preferredPhotoId = ref<string | null>(null);
+const feedbackBusy = ref(false);
+const interactionMessage = ref<string | null>(null);
 
 const statusLabel = computed(() =>
   worker.value.healthy ? "AI worker ready" : "AI worker unavailable",
@@ -159,6 +176,8 @@ async function chooseFolder() {
   people.value = null;
   searchResult.value = null;
   selectionResult.value = null;
+  preferredPhotoId.value = null;
+  interactionMessage.value = null;
   try {
     album.value = await invoke<AlbumIndexResponse>("index_album", {
       folder: selectedFolder.value,
@@ -188,6 +207,8 @@ async function runSearch() {
         prompt: query,
       });
       searchResult.value = null;
+      preferredPhotoId.value = null;
+      interactionMessage.value = null;
     } else {
       searchResult.value = await invoke<AlbumSearchResponse>("search_album", {
         albumId: album.value.album_id,
@@ -200,6 +221,59 @@ async function runSearch() {
     searchError.value = String(error);
   } finally {
     searching.value = false;
+  }
+}
+
+async function replacePhoto(photo: SelectedPhoto) {
+  if (!selectionResult.value || feedbackBusy.value) return;
+  feedbackBusy.value = true;
+  searchError.value = null;
+  interactionMessage.value = null;
+  try {
+    const result = await invoke<SelectionReplacementResponse>("replace_selection_photo", {
+      selectionId: selectionResult.value.selection_id,
+      removePhotoId: photo.photo_id,
+    });
+    if (result.feasible && result.updated_selection && result.replacement) {
+      selectionResult.value = result.updated_selection;
+      interactionMessage.value = `Replaced ${photo.filename} with ${result.replacement.filename}.`;
+    } else {
+      interactionMessage.value = result.explanation[0] ?? "No valid replacement found.";
+    }
+  } catch (error) {
+    searchError.value = String(error);
+  } finally {
+    feedbackBusy.value = false;
+  }
+}
+
+async function pairwiseClick(photo: SelectedPhoto) {
+  if (!selectionResult.value || feedbackBusy.value) return;
+  if (!preferredPhotoId.value) {
+    preferredPhotoId.value = photo.photo_id;
+    interactionMessage.value = `Marked ${photo.filename} as preferred. Choose a less-preferred photo.`;
+    return;
+  }
+  if (preferredPhotoId.value === photo.photo_id) {
+    preferredPhotoId.value = null;
+    interactionMessage.value = null;
+    return;
+  }
+  feedbackBusy.value = true;
+  searchError.value = null;
+  try {
+    const result = await invoke<PreferenceModelResponse>("record_pairwise_feedback", {
+      albumId: selectionResult.value.album_id,
+      preferredPhotoId: preferredPhotoId.value,
+      rejectedPhotoId: photo.photo_id,
+      selectionId: selectionResult.value.selection_id,
+    });
+    preferredPhotoId.value = null;
+    interactionMessage.value = `Preference saved · ${result.comparisons} comparisons learned.`;
+  } catch (error) {
+    searchError.value = String(error);
+  } finally {
+    feedbackBusy.value = false;
   }
 }
 
@@ -347,6 +421,7 @@ onMounted(refreshWorker);
             <span>{{ selectionResult.constraints.exclude_rejects ? "rejects excluded" : "rejects allowed" }}</span>
           </div>
           <p v-for="warning in selectionResult.warnings" :key="warning" class="selection-warning">{{ warning }}</p>
+          <p v-if="interactionMessage" class="interaction-message">{{ interactionMessage }}</p>
           <div v-if="selectionResult.selected.length" class="photo-grid" aria-label="Optimized collection">
             <figure v-for="photo in selectionResult.selected" :key="photo.photo_id" class="photo-card">
               <img :src="`${worker.url}${photo.thumbnail_url}`" :alt="photo.filename" />
@@ -354,6 +429,14 @@ onMounted(refreshWorker);
                 <span>{{ photo.filename }}</span>
                 <small>{{ photo.total_score.toFixed(3) }}</small>
               </figcaption>
+              <div class="photo-actions">
+                <button :disabled="feedbackBusy" @click="replacePhoto(photo)">Replace</button>
+                <button
+                  :class="{ active: preferredPhotoId === photo.photo_id }"
+                  :disabled="feedbackBusy"
+                  @click="pairwiseClick(photo)"
+                >{{ preferredPhotoId === photo.photo_id ? "Cancel" : preferredPhotoId ? "Less preferred" : "Prefer" }}</button>
+              </div>
             </figure>
           </div>
         </div>
