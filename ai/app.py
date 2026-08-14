@@ -10,9 +10,14 @@ from fastapi.staticfiles import StaticFiles
 
 from ai.config import load_settings
 from ai.index import AlbumIndexer
+from ai.index.embedding import create_embedding_provider
+from ai.retrieval import RetrievalService
 from ai.schemas import (
+    AlbumEmbeddingResponse,
     AlbumIndexRequest,
     AlbumIndexResponse,
+    AlbumSearchRequest,
+    AlbumSearchResponse,
     CapabilitiesResponse,
     HealthResponse,
 )
@@ -55,7 +60,7 @@ def capabilities() -> CapabilitiesResponse:
     return CapabilitiesResponse(
         milestones={
             "library": "cpu-fallback-indexer",
-            "multimodal_index": "planned",
+            "multimodal_index": "lightweight-semantic-v1",
             "selection": "planned",
             "preference": "planned",
             "video": "deferred",
@@ -74,5 +79,38 @@ def index_album(request: AlbumIndexRequest) -> AlbumIndexResponse:
         raise HTTPException(status_code=404, detail=f"文件夹不存在：{error}") from error
     except NotADirectoryError as error:
         raise HTTPException(status_code=400, detail=f"路径不是文件夹：{error}") from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+def retrieval_service() -> RetrievalService:
+    return RetrievalService(
+        database,
+        settings.data_dir,
+        create_embedding_provider(settings.embedding_provider),
+    )
+
+
+@app.post("/albums/{album_id}/embed", response_model=AlbumEmbeddingResponse)
+def embed_album(album_id: str) -> AlbumEmbeddingResponse:
+    try:
+        return retrieval_service().embed_album(album_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/albums/search", response_model=AlbumSearchResponse)
+def search_album(request: AlbumSearchRequest) -> AlbumSearchResponse:
+    if bool(request.query) == bool(request.reference_photo_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Provide exactly one of query or reference_photo_id",
+        )
+    try:
+        return retrieval_service().search(request)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error

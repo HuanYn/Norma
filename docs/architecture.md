@@ -27,7 +27,7 @@ client. Future closed and local models sit behind Python provider interfaces.
 - Source JPG/JPEG files are read-only inputs.
 - Generated thumbnails, embeddings, and the database live under `.norma/` by
   default and are ignored by Git.
-- SQLite is enough for album-sized datasets. Embeddings will be cached as NumPy
+- SQLite is enough for album-sized datasets. Embeddings are cached as NumPy
   arrays and searched with cosine similarity before adding any vector database.
 
 ## Milestone boundaries
@@ -58,6 +58,20 @@ fields so transport and UI code do not depend on the provider. The fallback:
 The public demo downloader stores image-level creator, source and license
 metadata in `.norma/demo-album/ATTRIBUTION.json`. The dataset is a development
 fixture, not a redistribution bundle committed to this repository.
+
+## Retrieval provider boundary
+
+`ai/index/embedding.py` defines a shared image/text embedding interface. The
+default `lightweight-semantic-v1` implementation produces deterministic,
+normalized 16-dimensional CPU descriptors for color, luminance, composition,
+and coarse visual concepts. It is an interpretable integration baseline rather
+than a claim of CLIP-level open-vocabulary understanding.
+
+`ai/retrieval/` owns cache generation and exact cosine search. Cache paths are
+provider-scoped below `.norma/data/embeddings/`; the API supports text queries,
+reference-photo queries, and an optional candidate subset. This boundary lets a
+future CLIP/SigLIP provider replace descriptor generation without changing the
+desktop transport or result schema.
 
 ## Reuse decision
 

@@ -50,3 +50,36 @@ class AlbumIndexResponse(BaseModel):
     provider: str
     photos: list[PhotoSummary]
     errors: list[str] = Field(default_factory=list)
+
+
+class AlbumEmbeddingResponse(BaseModel):
+    album_id: str
+    count: int
+    provider: str
+    dimension: int
+    duration_ms: int
+
+
+class AlbumSearchRequest(BaseModel):
+    album_id: str = Field(min_length=1)
+    query: str | None = None
+    reference_photo_id: str | None = None
+    limit: int = Field(default=20, ge=1, le=50)
+    subset_photo_ids: list[str] | None = None
+
+
+class SearchMatch(BaseModel):
+    photo_id: str
+    filename: str
+    thumbnail_url: str
+    score: float
+    quality_score: float
+    auto_reject: bool
+    similarity_group: str | None
+
+
+class AlbumSearchResponse(BaseModel):
+    album_id: str
+    mode: str
+    provider: str
+    matches: list[SearchMatch]

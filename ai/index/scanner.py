@@ -186,7 +186,8 @@ class AlbumIndexer:
                     dhash=excluded.dhash,
                     auto_reject=excluded.auto_reject,
                     reject_reason=excluded.reject_reason,
-                    metadata_json=excluded.metadata_json
+                    metadata_json=excluded.metadata_json,
+                    embedding_path=NULL
                 """,
                 [
                     (
@@ -236,4 +237,3 @@ def _capture_time(image: Image.Image) -> str | None:
     exif = image.getexif()
     value = exif.get(36867) or exif.get(306)
     return str(value) if value else None
-

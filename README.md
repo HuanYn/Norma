@@ -4,10 +4,11 @@ Norma is a local-first **Personal Multimodal Photo Agent** built as a portfolio
 demo for multimodal selection, retrieval, preference learning, video, and
 interactive world generation.
 
-The current implementation includes the Milestone 0 foundation and a working
-Milestone 1 CPU fallback: recursive JPG/JPEG scan, local thumbnails, cheap
-quality signals, perceptual-hash similarity groups, SQLite persistence, and a
-collapsed AI-suggested-exclusions section. Source photos are always read-only.
+The current implementation includes the Milestone 0 foundation, the Milestone
+1 CPU library pipeline, and the first Milestone 2 retrieval baseline: recursive
+JPG/JPEG scan, local thumbnails, quality signals, perceptual-hash similarity
+groups, cached 16-dimensional semantic descriptors, and local text/image
+retrieval. Source photos are always read-only.
 
 ## Development
 
@@ -42,6 +43,22 @@ Invoke-RestMethod -Method Post `
   -Body '{"folder":"C:\\path\\to\\jpg-album"}'
 ```
 
+Use the returned `album_id` to build the semantic cache and search it:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8765/albums/ALBUM_ID/embed
+
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8765/albums/search `
+  -ContentType application/json `
+  -Body '{"album_id":"ALBUM_ID","query":"夜景 blue city","limit":20}'
+```
+
+The default `lightweight-semantic-v1` provider is a deterministic CPU baseline,
+not a pretrained vision-language model. It keeps the provider/cache/API
+boundary testable while larger model dependencies remain optional.
+
 If no local album is available, download a reproducible 72-image Wikimedia
 Commons demo album. Image files remain untracked; `ATTRIBUTION.json` records
 the source page, creator and per-file license metadata.
@@ -61,3 +78,5 @@ python scripts/build_demo_eval_album.py
 See [docs/architecture.md](docs/architecture.md) for process and data
 boundaries. Third-party attribution is in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Public-fixture results are recorded in
+[docs/benchmarks/retrieval-e2e.md](docs/benchmarks/retrieval-e2e.md).

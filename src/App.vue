@@ -34,6 +34,31 @@ interface AlbumIndexResponse {
   errors: string[];
 }
 
+interface AlbumEmbeddingResponse {
+  album_id: string;
+  count: number;
+  provider: string;
+  dimension: number;
+  duration_ms: number;
+}
+
+interface SearchMatch {
+  photo_id: string;
+  filename: string;
+  thumbnail_url: string;
+  score: number;
+  quality_score: number;
+  auto_reject: boolean;
+  similarity_group: string | null;
+}
+
+interface AlbumSearchResponse {
+  album_id: string;
+  mode: "text" | "image";
+  provider: string;
+  matches: SearchMatch[];
+}
+
 const workspaces: Workspace[] = ["Library", "AI Selection", "Create"];
 const activeWorkspace = ref<Workspace>("Library");
 const developerMode = ref(false);
@@ -46,8 +71,12 @@ const worker = ref<WorkerStatus>({
 });
 const command = ref("");
 const album = ref<AlbumIndexResponse | null>(null);
+const embedding = ref<AlbumEmbeddingResponse | null>(null);
+const searchResult = ref<AlbumSearchResponse | null>(null);
 const indexing = ref(false);
+const searching = ref(false);
 const indexingError = ref<string | null>(null);
+const searchError = ref<string | null>(null);
 
 const statusLabel = computed(() =>
   worker.value.healthy ? "AI worker ready" : "AI worker unavailable",
@@ -70,14 +99,37 @@ async function chooseFolder() {
   if (!selectedFolder.value) return;
   indexing.value = true;
   indexingError.value = null;
+  embedding.value = null;
+  searchResult.value = null;
   try {
     album.value = await invoke<AlbumIndexResponse>("index_album", {
       folder: selectedFolder.value,
+    });
+    embedding.value = await invoke<AlbumEmbeddingResponse>("embed_album", {
+      albumId: album.value.album_id,
     });
   } catch (error) {
     indexingError.value = String(error);
   } finally {
     indexing.value = false;
+  }
+}
+
+async function runSearch() {
+  const query = command.value.trim();
+  if (!album.value || !embedding.value || !query || searching.value) return;
+  searching.value = true;
+  searchError.value = null;
+  try {
+    searchResult.value = await invoke<AlbumSearchResponse>("search_album", {
+      albumId: album.value.album_id,
+      query,
+      limit: 20,
+    });
+  } catch (error) {
+    searchError.value = String(error);
+  } finally {
+    searching.value = false;
   }
 }
 
@@ -153,6 +205,7 @@ onMounted(refreshWorker);
             <span>{{ album.total }} JPGs</span>
             <span>{{ album.similar_groups }} similar groups</span>
             <span>{{ album.duration_ms }} ms</span>
+            <span v-if="embedding">semantic index {{ embedding.duration_ms }} ms</span>
           </div>
         </div>
 
@@ -194,13 +247,35 @@ onMounted(refreshWorker);
           <input
             v-model="command"
             aria-label="Ask anything about this album"
-            placeholder="Ask anything about this album…"
+            :disabled="!embedding || searching"
+            :placeholder="embedding ? 'Try: 夜景、蓝色、建筑、自然…' : 'Import an album first…'"
+            @keyup.enter="runSearch"
           />
-          <button aria-label="Run command">↗</button>
+          <button
+            aria-label="Run command"
+            :disabled="!embedding || !command.trim() || searching"
+            @click="runSearch"
+          >{{ searching ? "…" : "↗" }}</button>
         </div>
-        <div class="result-surface">
-          <p>No selection yet</p>
-          <small>Import an album, then ask Norma to find or select photos.</small>
+        <p v-if="searchError" class="error-message">{{ searchError }}</p>
+        <div v-if="searchResult" class="search-results">
+          <div class="search-summary">
+            <p>{{ searchResult.matches.length }} semantic matches</p>
+            <small>{{ searchResult.provider }} · cosine similarity</small>
+          </div>
+          <div class="photo-grid" aria-label="Semantic search results">
+            <figure v-for="match in searchResult.matches" :key="match.photo_id" class="photo-card">
+              <img :src="`${worker.url}${match.thumbnail_url}`" :alt="match.filename" />
+              <figcaption>
+                <span>{{ match.filename }}</span>
+                <small>{{ match.score.toFixed(3) }}</small>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+        <div v-else class="result-surface">
+          <p>{{ embedding ? "Ready for a grounded search" : "No semantic index yet" }}</p>
+          <small>{{ embedding ? "Search uses only the current local album." : "Import an album, then ask Norma to find photos." }}</small>
         </div>
       </section>
 
@@ -218,7 +293,7 @@ onMounted(refreshWorker);
 
       <aside v-if="developerMode" class="developer-panel">
         <span>DEV</span>
-        <code>{{ JSON.stringify({ worker, album }, null, 2) }}</code>
+        <code>{{ JSON.stringify({ worker, album, embedding, searchResult }, null, 2) }}</code>
       </aside>
     </main>
   </div>

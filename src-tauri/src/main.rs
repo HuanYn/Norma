@@ -34,6 +34,13 @@ struct AlbumIndexRequest<'a> {
     folder: &'a str,
 }
 
+#[derive(Debug, Serialize)]
+struct AlbumSearchRequest<'a> {
+    album_id: &'a str,
+    query: &'a str,
+    limit: u32,
+}
+
 #[tauri::command]
 async fn worker_health() -> WorkerStatus {
     match reqwest::Client::new()
@@ -84,6 +91,62 @@ async fn index_album(folder: String) -> Result<serde_json::Value, String> {
             .get("detail")
             .and_then(serde_json::Value::as_str)
             .unwrap_or("Album indexing failed")
+            .to_string());
+    }
+    Ok(payload)
+}
+
+#[tauri::command]
+async fn embed_album(album_id: String) -> Result<serde_json::Value, String> {
+    post_worker_json(
+        format!("{WORKER_URL}/albums/{album_id}/embed"),
+        None::<&serde_json::Value>,
+        "Album embedding failed",
+    )
+    .await
+}
+
+#[tauri::command]
+async fn search_album(
+    album_id: String,
+    query: String,
+    limit: u32,
+) -> Result<serde_json::Value, String> {
+    post_worker_json(
+        format!("{WORKER_URL}/albums/search"),
+        Some(&AlbumSearchRequest {
+            album_id: &album_id,
+            query: &query,
+            limit,
+        }),
+        "Album search failed",
+    )
+    .await
+}
+
+async fn post_worker_json<T: Serialize + ?Sized>(
+    url: String,
+    body: Option<&T>,
+    fallback_error: &str,
+) -> Result<serde_json::Value, String> {
+    let request = reqwest::Client::new().post(url);
+    let response = match body {
+        Some(value) => request.json(value),
+        None => request,
+    }
+    .send()
+    .await
+    .map_err(|error| format!("Unable to contact AI worker: {error}"))?;
+    let status = response.status();
+    let payload = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|error| format!("Invalid worker response: {error}"))?;
+    if !status.is_success() {
+        return Err(payload
+            .get("detail")
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or(fallback_error)
             .to_string());
     }
     Ok(payload)
@@ -141,7 +204,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             worker_health,
             pick_photo_folder,
-            index_album
+            index_album,
+            embed_album,
+            search_album
         ])
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {
