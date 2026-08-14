@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from ai.config import load_settings
@@ -222,3 +223,15 @@ def replace_selection_photo(
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+web_dist = Path(__file__).resolve().parent / "web_dist"
+if web_dist.joinpath("index.html").is_file():
+    # Keep this mount last so API routes continue to take precedence.
+    app.mount("/", StaticFiles(directory=web_dist, html=True), name="web")
+else:
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    def web_not_built() -> str:
+        return """<!doctype html><html><body><h1>Norma</h1>
+        <p>The web interface has not been built. Run <code>pnpm build</code>.</p>
+        </body></html>"""

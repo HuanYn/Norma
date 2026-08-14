@@ -1,4 +1,0 @@
-[workspace]
-members = ["src-tauri", "crates/pianke-core"]
-resolver = "2"
-

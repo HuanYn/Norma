@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "norma-ai"
 version = "0.1.0"
@@ -12,6 +16,9 @@ dependencies = [
   "uvicorn[standard]>=0.34,<1",
 ]
 
+[project.scripts]
+norma = "ai.cli:main"
+
 [project.optional-dependencies]
 dev = [
   "httpx>=0.28,<1",
@@ -24,3 +31,10 @@ selection = [
 [tool.pytest.ini_options]
 testpaths = ["ai/tests"]
 addopts = "-ra"
+
+[tool.setuptools.packages.find]
+include = ["ai", "ai.*"]
+exclude = ["ai.tests", "ai.tests.*"]
+
+[tool.setuptools.package-data]
+ai = ["web_dist/index.html", "web_dist/assets/*"]

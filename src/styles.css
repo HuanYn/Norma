@@ -7,7 +7,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 960px; min-height: 100vh; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, input { font: inherit; }
 button { color: inherit; }
 
@@ -37,10 +37,13 @@ main { position: relative; padding: 0 48px 48px; overflow: hidden; }
 .workspace { min-height: calc(100vh - 154px); padding-top: 56px; }
 .library { display: grid; grid-template-columns: minmax(340px, .82fr) 1.18fr; gap: 7vw; align-items: center; }
 .hero-copy h3, .selection-heading h3 { max-width: 650px; margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 72px); font-weight: 400; line-height: .98; letter-spacing: -.045em; }
-.hero-copy > p:not(.section-kicker):not(.path-chip), .selection-heading > p:not(.section-kicker) { max-width: 520px; color: #68665f; line-height: 1.6; }
+.hero-copy > p:not(.section-kicker), .selection-heading > p:not(.section-kicker) { max-width: 520px; color: #68665f; line-height: 1.6; }
 .primary-button { margin-top: 18px; padding: 14px 20px; border: 0; color: #fff; background: #d95b34; cursor: pointer; }
 .primary-button:disabled { cursor: wait; opacity: .65; }
-.path-chip { max-width: 480px; overflow: hidden; margin-top: 14px; color: #68665f; font-family: ui-monospace, monospace; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.folder-input { display: flex; max-width: 620px; margin-top: 20px; background: #f7f4ed; box-shadow: 0 15px 34px rgba(45,38,30,.08); }
+.folder-input input { min-width: 0; flex: 1; padding: 0 16px; border: 1px solid rgba(31,33,30,.2); border-right: 0; outline: 0; color: #1f211e; background: transparent; }
+.folder-input input:focus { border-color: #d95b34; box-shadow: inset 0 0 0 1px #d95b34; }
+.folder-input .primary-button { flex: 0 0 auto; margin: 0; }
 .error-message { color: #a94332; font-size: 12px; }
 .album-stats { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
 .album-stats span { padding: 5px 8px; border: 1px solid rgba(31,33,30,.16); color: #67645d; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
@@ -99,3 +102,40 @@ main { position: relative; padding: 0 48px 48px; overflow: hidden; }
 .developer-panel span { color: #e18a68; font-size: 10px; letter-spacing: .15em; }
 .developer-panel code { display: block; margin-top: 8px; font-size: 10px; white-space: pre-wrap; }
 @media (max-width: 1100px) { .library { gap: 30px; } .empty-grid { grid-template-columns: repeat(2, 1fr); } .empty-grid .photo-placeholder:nth-child(n+5) { display: none; } }
+@media (max-width: 800px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: relative; z-index: 2; height: auto; padding: 20px; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; border-right: 0; border-bottom: 1px solid rgba(31,33,30,.15); }
+  .sidebar h1 { font-size: 30px; }
+  .sidebar .eyebrow, .sidebar-footer .toggle-row { display: none; }
+  nav { display: flex; justify-content: center; gap: 4px; margin: 0; }
+  .nav-item { width: auto; padding: 10px 12px; }
+  .nav-item.active { box-shadow: inset 0 -3px #d95b34; }
+  .nav-index { display: none; }
+  .sidebar-footer { display: block; }
+  .status-card { width: 42px; height: 42px; padding: 12px; place-content: center; }
+  .status-card > span:last-child { display: none; }
+  main { padding: 0 24px 36px; }
+  .topbar { height: 82px; }
+  .workspace { min-height: auto; padding-top: 38px; }
+  .library { grid-template-columns: 1fr; }
+  .library-results { max-height: none; }
+  .search-results { max-height: none; }
+  .create-options { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .sidebar { grid-template-columns: 1fr auto; }
+  .sidebar > div:first-child { display: none; }
+  nav { justify-content: flex-start; overflow-x: auto; }
+  .nav-item { white-space: nowrap; }
+  main { padding: 0 16px 28px; }
+  .topbar { height: 72px; }
+  .topbar h2 { font-size: 22px; }
+  .ghost-button { display: none; }
+  .hero-copy h3, .selection-heading h3 { font-size: 42px; }
+  .folder-input { display: grid; background: transparent; box-shadow: none; }
+  .folder-input input { min-height: 48px; border: 1px solid rgba(31,33,30,.2); background: #f7f4ed; }
+  .folder-input .primary-button { width: 100%; }
+  .photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .command-bar { padding-left: 14px; }
+  .result-surface { padding: 18px; }
+}

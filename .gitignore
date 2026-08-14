@@ -2,13 +2,13 @@
 node_modules/
 dist/
 
-# Rust
+# Native reference-library build output
 target/
-src-tauri/target/
 
 # Python
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .ruff_cache/
 .venv/

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
 
-type Workspace = "Library" | "AI Selection" | "Create";
+type Workspace = "Library" | "AI Selection" | "About";
 
 interface WorkerStatus {
   running: boolean;
@@ -127,10 +126,10 @@ interface PreferenceModelResponse {
   weights: Record<string, number>;
 }
 
-const workspaces: Workspace[] = ["Library", "AI Selection", "Create"];
+const workspaces: Workspace[] = ["Library", "AI Selection", "About"];
 const activeWorkspace = ref<Workspace>("Library");
 const developerMode = ref(false);
-const selectedFolder = ref<string | null>(null);
+const selectedFolder = ref("");
 const worker = ref<WorkerStatus>({
   running: false,
   healthy: false,
@@ -157,7 +156,14 @@ const statusLabel = computed(() =>
 
 async function refreshWorker() {
   try {
-    worker.value = await invoke<WorkerStatus>("worker_health");
+    const health = await api<{ status: string; schema_version: number }>("/health");
+    worker.value = {
+      running: true,
+      healthy: health.status === "ok",
+      url: window.location.origin,
+      message: "Local Python service and SQLite are ready",
+      schema_version: health.schema_version,
+    };
   } catch (error) {
     worker.value = {
       ...worker.value,
@@ -167,9 +173,9 @@ async function refreshWorker() {
   }
 }
 
-async function chooseFolder() {
-  selectedFolder.value = await invoke<string | null>("pick_photo_folder");
-  if (!selectedFolder.value) return;
+async function indexFolder() {
+  const folder = selectedFolder.value.trim();
+  if (!folder) return;
   indexing.value = true;
   indexingError.value = null;
   embedding.value = null;
@@ -179,14 +185,15 @@ async function chooseFolder() {
   preferredPhotoId.value = null;
   interactionMessage.value = null;
   try {
-    album.value = await invoke<AlbumIndexResponse>("index_album", {
-      folder: selectedFolder.value,
+    album.value = await api<AlbumIndexResponse>("/albums/index", {
+      method: "POST",
+      body: JSON.stringify({ folder }),
     });
-    embedding.value = await invoke<AlbumEmbeddingResponse>("embed_album", {
-      albumId: album.value.album_id,
+    embedding.value = await api<AlbumEmbeddingResponse>(`/albums/${album.value.album_id}/embed`, {
+      method: "POST",
     });
-    people.value = await invoke<PeopleIndexResponse>("index_people", {
-      albumId: album.value.album_id,
+    people.value = await api<PeopleIndexResponse>(`/albums/${album.value.album_id}/people/index`, {
+      method: "POST",
     });
   } catch (error) {
     indexingError.value = String(error);
@@ -202,18 +209,17 @@ async function runSearch() {
   searchError.value = null;
   try {
     if (looksLikeSelection(query)) {
-      selectionResult.value = await invoke<SelectionResponse>("create_selection", {
-        albumId: album.value.album_id,
-        prompt: query,
+      selectionResult.value = await api<SelectionResponse>("/selections", {
+        method: "POST",
+        body: JSON.stringify({ album_id: album.value.album_id, prompt: query }),
       });
       searchResult.value = null;
       preferredPhotoId.value = null;
       interactionMessage.value = null;
     } else {
-      searchResult.value = await invoke<AlbumSearchResponse>("search_album", {
-        albumId: album.value.album_id,
-        query,
-        limit: 20,
+      searchResult.value = await api<AlbumSearchResponse>("/albums/search", {
+        method: "POST",
+        body: JSON.stringify({ album_id: album.value.album_id, query, limit: 20 }),
       });
       selectionResult.value = null;
     }
@@ -230,10 +236,13 @@ async function replacePhoto(photo: SelectedPhoto) {
   searchError.value = null;
   interactionMessage.value = null;
   try {
-    const result = await invoke<SelectionReplacementResponse>("replace_selection_photo", {
-      selectionId: selectionResult.value.selection_id,
-      removePhotoId: photo.photo_id,
-    });
+    const result = await api<SelectionReplacementResponse>(
+      `/selections/${selectionResult.value.selection_id}/replace`,
+      {
+        method: "POST",
+        body: JSON.stringify({ remove_photo_id: photo.photo_id }),
+      },
+    );
     if (result.feasible && result.updated_selection && result.replacement) {
       selectionResult.value = result.updated_selection;
       interactionMessage.value = `Replaced ${photo.filename} with ${result.replacement.filename}.`;
@@ -262,11 +271,14 @@ async function pairwiseClick(photo: SelectedPhoto) {
   feedbackBusy.value = true;
   searchError.value = null;
   try {
-    const result = await invoke<PreferenceModelResponse>("record_pairwise_feedback", {
-      albumId: selectionResult.value.album_id,
-      preferredPhotoId: preferredPhotoId.value,
-      rejectedPhotoId: photo.photo_id,
-      selectionId: selectionResult.value.selection_id,
+    const result = await api<PreferenceModelResponse>("/feedback/pairwise", {
+      method: "POST",
+      body: JSON.stringify({
+        album_id: selectionResult.value.album_id,
+        preferred_photo_id: preferredPhotoId.value,
+        rejected_photo_id: photo.photo_id,
+        selection_id: selectionResult.value.selection_id,
+      }),
     });
     preferredPhotoId.value = null;
     interactionMessage.value = `Preference saved · ${result.comparisons} comparisons learned.`;
@@ -282,7 +294,19 @@ function looksLikeSelection(query: string) {
 }
 
 function thumbnailUrl(photo: PhotoSummary) {
-  return `${worker.value.url}${photo.thumbnail_url}`;
+  return photo.thumbnail_url;
+}
+
+async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(path, {
+    ...init,
+    headers: init.body ? { "Content-Type": "application/json", ...init.headers } : init.headers,
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.detail ?? payload.error ?? `Request failed: ${response.status}`);
+  }
+  return payload as T;
 }
 
 const visiblePhotos = computed(() => album.value?.photos.filter((photo) => !photo.auto_reject) ?? []);
@@ -344,10 +368,18 @@ onMounted(refreshWorker);
             Norma reads JPG metadata and creates local thumbnails. Originals are
             never modified, moved, or deleted.
           </p>
-          <button class="primary-button" :disabled="indexing" @click="chooseFolder">
-            {{ indexing ? "Indexing locally…" : "Choose JPG folder" }}
-          </button>
-          <p v-if="selectedFolder" class="path-chip">{{ selectedFolder }}</p>
+          <div class="folder-input">
+            <input
+              v-model="selectedFolder"
+              aria-label="Local JPG folder path"
+              placeholder="C:\Users\you\Pictures\Trip"
+              :disabled="indexing"
+              @keyup.enter="indexFolder"
+            />
+            <button class="primary-button" :disabled="indexing || !selectedFolder.trim()" @click="indexFolder">
+              {{ indexing ? "Preparing locally…" : "Open local folder" }}
+            </button>
+          </div>
           <p v-if="indexingError" class="error-message">{{ indexingError }}</p>
           <div v-if="album" class="album-stats">
             <span>{{ album.total }} JPGs</span>
@@ -424,7 +456,7 @@ onMounted(refreshWorker);
           <p v-if="interactionMessage" class="interaction-message">{{ interactionMessage }}</p>
           <div v-if="selectionResult.selected.length" class="photo-grid" aria-label="Optimized collection">
             <figure v-for="photo in selectionResult.selected" :key="photo.photo_id" class="photo-card">
-              <img :src="`${worker.url}${photo.thumbnail_url}`" :alt="photo.filename" />
+              <img :src="photo.thumbnail_url" :alt="photo.filename" />
               <figcaption>
                 <span>{{ photo.filename }}</span>
                 <small>{{ photo.total_score.toFixed(3) }}</small>
@@ -451,7 +483,7 @@ onMounted(refreshWorker);
           </div>
           <div class="photo-grid" aria-label="Semantic search results">
             <figure v-for="match in searchResult.matches" :key="match.photo_id" class="photo-card">
-              <img :src="`${worker.url}${match.thumbnail_url}`" :alt="match.filename" />
+              <img :src="match.thumbnail_url" :alt="match.filename" />
               <figcaption>
                 <span>{{ match.filename }}</span>
                 <small>{{ match.score.toFixed(3) }}</small>
@@ -471,7 +503,7 @@ onMounted(refreshWorker);
           <div class="people-grid">
             <article v-for="cluster in people.clusters" :key="cluster.cluster_id" class="person-card">
               <img
-                :src="`${worker.url}${cluster.faces[0].thumbnail_url}`"
+                :src="cluster.faces[0].thumbnail_url"
                 :alt="cluster.label"
               />
               <span>{{ cluster.label }}</span>
@@ -483,13 +515,13 @@ onMounted(refreshWorker);
 
       <section v-else class="workspace create">
         <div class="selection-heading">
-          <p class="section-kicker">After the selection</p>
-          <h3>Turn still memories into a short experience.</h3>
+          <p class="section-kicker">Local by design</p>
+          <h3>A private photo workspace in your browser.</h3>
         </div>
         <div class="create-options">
-          <article><span>01</span><h4>Create 15s Video</h4><p>Directed motion, transitions, and licensed music.</p></article>
-          <article><span>02</span><h4>Enter Photo</h4><p>A finite, controlled exploration from one image.</p></article>
-          <article><span>03</span><h4>Share</h4><p>A minimal page for the chosen set and generated media.</p></article>
+          <article><span>01</span><h4>Local originals</h4><p>Norma reads your folder without moving, deleting, or uploading original photos.</p></article>
+          <article><span>02</span><h4>Grounded AI</h4><p>Search and selection run against the indexed album, with visible constraints and scores.</p></article>
+          <article><span>03</span><h4>Learn your taste</h4><p>Pairwise choices are stored locally and refine later selections.</p></article>
         </div>
       </section>
 
