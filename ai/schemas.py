@@ -105,3 +105,41 @@ class PeopleIndexResponse(BaseModel):
     provider: str
     duration_ms: int
     clusters: list[PersonClusterSummary]
+
+
+class SelectionRequest(BaseModel):
+    album_id: str = Field(min_length=1)
+    prompt: str = Field(min_length=1, max_length=1000)
+    subset_photo_ids: list[str] | None = None
+
+
+class SelectionConstraints(BaseModel):
+    target_count: int
+    min_quality: float
+    exclude_rejects: bool
+    max_per_similarity_group: int
+
+
+class SelectedPhoto(BaseModel):
+    photo_id: str
+    filename: str
+    thumbnail_url: str
+    total_score: float
+    semantic_score: float
+    quality_score: float
+    similarity_group: str | None
+    reasons: list[str]
+
+
+class SelectionResponse(BaseModel):
+    selection_id: str
+    album_id: str
+    prompt: str
+    constraints: SelectionConstraints
+    feasible: bool
+    candidate_count: int
+    solver: str
+    solver_status: str
+    duration_ms: int
+    selected: list[SelectedPhoto]
+    warnings: list[str] = Field(default_factory=list)

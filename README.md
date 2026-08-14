@@ -5,7 +5,8 @@ demo for multimodal selection, retrieval, preference learning, video, and
 interactive world generation.
 
 The current implementation includes the Milestone 0 foundation, the Milestone
-1 CPU library pipeline, and the first Milestone 2 retrieval baseline: recursive
+1 CPU library pipeline, Milestone 2 retrieval/people baselines, and the first
+Milestone 3 structured selection path: recursive
 JPG/JPEG scan, local thumbnails, quality signals, perceptual-hash similarity
 groups, cached 16-dimensional semantic descriptors, and local text/image
 retrieval. Source photos are always read-only.
@@ -70,6 +71,19 @@ The default `opencv-haar-dct-v1` provider is a face-detection and regression
 baseline, not a biometric identity system. It intentionally uses a high
 similarity threshold to reduce false merges.
 
+Create an auditable collection selection from natural-language hard constraints:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri http://127.0.0.1:8765/selections `
+  -ContentType application/json `
+  -Body '{"album_id":"ALBUM_ID","prompt":"选 12 张夜景，质量至少 45，相似组最多 1 张"}'
+```
+
+Install `.[selection]` to use OR-Tools CP-SAT. Without it, Norma uses a
+deterministic optimizer that is exact for the current cardinality and
+per-similarity-group capacity constraints.
+
 If no local album is available, download a reproducible 72-image Wikimedia
 Commons demo album. Image files remain untracked; `ATTRIBUTION.json` records
 the source page, creator and per-file license metadata.
@@ -105,3 +119,5 @@ Public-fixture results are recorded in
 [docs/benchmarks/retrieval-e2e.md](docs/benchmarks/retrieval-e2e.md).
 People-pipeline evidence is in
 [docs/benchmarks/people-e2e.md](docs/benchmarks/people-e2e.md).
+Structured-selection evidence is in
+[docs/benchmarks/selection-e2e.md](docs/benchmarks/selection-e2e.md).

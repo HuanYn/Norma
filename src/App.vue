@@ -81,6 +81,38 @@ interface PeopleIndexResponse {
   clusters: PersonClusterSummary[];
 }
 
+interface SelectionConstraints {
+  target_count: number;
+  min_quality: number;
+  exclude_rejects: boolean;
+  max_per_similarity_group: number;
+}
+
+interface SelectedPhoto {
+  photo_id: string;
+  filename: string;
+  thumbnail_url: string;
+  total_score: number;
+  semantic_score: number;
+  quality_score: number;
+  similarity_group: string | null;
+  reasons: string[];
+}
+
+interface SelectionResponse {
+  selection_id: string;
+  album_id: string;
+  prompt: string;
+  constraints: SelectionConstraints;
+  feasible: boolean;
+  candidate_count: number;
+  solver: string;
+  solver_status: string;
+  duration_ms: number;
+  selected: SelectedPhoto[];
+  warnings: string[];
+}
+
 const workspaces: Workspace[] = ["Library", "AI Selection", "Create"];
 const activeWorkspace = ref<Workspace>("Library");
 const developerMode = ref(false);
@@ -96,6 +128,7 @@ const album = ref<AlbumIndexResponse | null>(null);
 const embedding = ref<AlbumEmbeddingResponse | null>(null);
 const people = ref<PeopleIndexResponse | null>(null);
 const searchResult = ref<AlbumSearchResponse | null>(null);
+const selectionResult = ref<SelectionResponse | null>(null);
 const indexing = ref(false);
 const searching = ref(false);
 const indexingError = ref<string | null>(null);
@@ -125,6 +158,7 @@ async function chooseFolder() {
   embedding.value = null;
   people.value = null;
   searchResult.value = null;
+  selectionResult.value = null;
   try {
     album.value = await invoke<AlbumIndexResponse>("index_album", {
       folder: selectedFolder.value,
@@ -148,16 +182,29 @@ async function runSearch() {
   searching.value = true;
   searchError.value = null;
   try {
-    searchResult.value = await invoke<AlbumSearchResponse>("search_album", {
-      albumId: album.value.album_id,
-      query,
-      limit: 20,
-    });
+    if (looksLikeSelection(query)) {
+      selectionResult.value = await invoke<SelectionResponse>("create_selection", {
+        albumId: album.value.album_id,
+        prompt: query,
+      });
+      searchResult.value = null;
+    } else {
+      searchResult.value = await invoke<AlbumSearchResponse>("search_album", {
+        albumId: album.value.album_id,
+        query,
+        limit: 20,
+      });
+      selectionResult.value = null;
+    }
   } catch (error) {
     searchError.value = String(error);
   } finally {
     searching.value = false;
   }
+}
+
+function looksLikeSelection(query: string) {
+  return /(?:选|挑|找|保留)\s*\d+\s*(?:张|幅)|\b\d+\s*(?:photos?|images?|shots?)\b/i.test(query);
 }
 
 function thumbnailUrl(photo: PhotoSummary) {
@@ -276,7 +323,7 @@ onMounted(refreshWorker);
             v-model="command"
             aria-label="Ask anything about this album"
             :disabled="!embedding || searching"
-            :placeholder="embedding ? 'Try: 夜景、蓝色、建筑、自然…' : 'Import an album first…'"
+            :placeholder="embedding ? 'Try: 选 12 张夜景，质量至少 45…' : 'Import an album first…'"
             @keyup.enter="runSearch"
           />
           <button
@@ -286,7 +333,31 @@ onMounted(refreshWorker);
           >{{ searching ? "…" : "↗" }}</button>
         </div>
         <p v-if="searchError" class="error-message">{{ searchError }}</p>
-        <div v-if="searchResult" class="search-results">
+        <div v-if="selectionResult" class="search-results">
+          <div class="search-summary">
+            <p>
+              {{ selectionResult.feasible ? `${selectionResult.selected.length} selected photos` : "Hard constraints are infeasible" }}
+            </p>
+            <small>{{ selectionResult.solver }} · {{ selectionResult.solver_status }} · {{ selectionResult.duration_ms }} ms</small>
+          </div>
+          <div class="constraint-row">
+            <span>count = {{ selectionResult.constraints.target_count }}</span>
+            <span>quality ≥ {{ selectionResult.constraints.min_quality }}</span>
+            <span>similar group ≤ {{ selectionResult.constraints.max_per_similarity_group }}</span>
+            <span>{{ selectionResult.constraints.exclude_rejects ? "rejects excluded" : "rejects allowed" }}</span>
+          </div>
+          <p v-for="warning in selectionResult.warnings" :key="warning" class="selection-warning">{{ warning }}</p>
+          <div v-if="selectionResult.selected.length" class="photo-grid" aria-label="Optimized collection">
+            <figure v-for="photo in selectionResult.selected" :key="photo.photo_id" class="photo-card">
+              <img :src="`${worker.url}${photo.thumbnail_url}`" :alt="photo.filename" />
+              <figcaption>
+                <span>{{ photo.filename }}</span>
+                <small>{{ photo.total_score.toFixed(3) }}</small>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+        <div v-else-if="searchResult" class="search-results">
           <div class="search-summary">
             <p>{{ searchResult.matches.length }} semantic matches</p>
             <small>{{ searchResult.provider }} · cosine similarity</small>
@@ -337,7 +408,7 @@ onMounted(refreshWorker);
 
       <aside v-if="developerMode" class="developer-panel">
         <span>DEV</span>
-        <code>{{ JSON.stringify({ worker, album, embedding, people, searchResult }, null, 2) }}</code>
+        <code>{{ JSON.stringify({ worker, album, embedding, people, searchResult, selectionResult }, null, 2) }}</code>
       </aside>
     </main>
   </div>

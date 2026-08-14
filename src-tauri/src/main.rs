@@ -41,6 +41,12 @@ struct AlbumSearchRequest<'a> {
     limit: u32,
 }
 
+#[derive(Debug, Serialize)]
+struct SelectionRequest<'a> {
+    album_id: &'a str,
+    prompt: &'a str,
+}
+
 #[tauri::command]
 async fn worker_health() -> WorkerStatus {
     match reqwest::Client::new()
@@ -134,6 +140,19 @@ async fn search_album(
     .await
 }
 
+#[tauri::command]
+async fn create_selection(album_id: String, prompt: String) -> Result<serde_json::Value, String> {
+    post_worker_json(
+        format!("{WORKER_URL}/selections"),
+        Some(&SelectionRequest {
+            album_id: &album_id,
+            prompt: &prompt,
+        }),
+        "Collection selection failed",
+    )
+    .await
+}
+
 async fn post_worker_json<T: Serialize + ?Sized>(
     url: String,
     body: Option<&T>,
@@ -217,7 +236,8 @@ fn main() {
             index_album,
             embed_album,
             index_people,
-            search_album
+            search_album,
+            create_selection
         ])
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::Destroyed) {

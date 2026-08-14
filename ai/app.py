@@ -13,6 +13,7 @@ from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
 from ai.people import PeopleIndexer, create_face_provider
 from ai.retrieval import RetrievalService
+from ai.selection import SelectionService
 from ai.schemas import (
     AlbumEmbeddingResponse,
     AlbumIndexRequest,
@@ -22,6 +23,8 @@ from ai.schemas import (
     CapabilitiesResponse,
     HealthResponse,
     PeopleIndexResponse,
+    SelectionRequest,
+    SelectionResponse,
 )
 from ai.storage import Database
 
@@ -64,7 +67,7 @@ def capabilities() -> CapabilitiesResponse:
             "library": "cpu-fallback-indexer",
             "multimodal_index": "lightweight-semantic-v1",
             "people": "opencv-haar-dct-v1",
-            "selection": "planned",
+            "selection": "structured-cp-sat-or-greedy",
             "preference": "planned",
             "video": "deferred",
             "world": "deferred",
@@ -102,6 +105,13 @@ def people_indexer() -> PeopleIndexer:
     )
 
 
+def selection_service() -> SelectionService:
+    return SelectionService(
+        database,
+        create_embedding_provider(settings.embedding_provider),
+    )
+
+
 @app.post("/albums/{album_id}/embed", response_model=AlbumEmbeddingResponse)
 def embed_album(album_id: str) -> AlbumEmbeddingResponse:
     try:
@@ -131,6 +141,16 @@ def search_album(request: AlbumSearchRequest) -> AlbumSearchResponse:
 def index_people(album_id: str) -> PeopleIndexResponse:
     try:
         return people_indexer().index(album_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
+@app.post("/selections", response_model=SelectionResponse)
+def create_selection(request: SelectionRequest) -> SelectionResponse:
+    try:
+        return selection_service().select(request)
     except KeyError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:

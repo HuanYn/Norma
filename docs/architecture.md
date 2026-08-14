@@ -88,6 +88,24 @@ Re-indexing an album invalidates both semantic embeddings and people records;
 generated cache files are disposable, while the database never continues to
 reference stale analysis.
 
+## Structured selection boundary
+
+`ai/selection/parser.py` turns a bounded bilingual prompt grammar into explicit
+hard constraints: exact target count, quality floor, reject policy, and maximum
+photos per similarity group. Unrecognized requested concepts fail visibly;
+only a prompt containing no semantic request may fall back to quality-only
+ranking.
+
+`ai/selection/service.py` combines semantic cosine similarity and normalized
+quality into an auditable soft score. `optimizer.py` then enforces hard
+constraints over the complete collection. With the optional `selection`
+dependency it uses OR-Tools CP-SAT with integer objective coefficients,
+single-threaded deterministic settings, and a two-second limit. Otherwise a
+deterministic partition-matroid greedy solver is exact for the current
+cardinality plus per-group-capacity constraint family. Infeasible requests
+return no partial selection. Parsed constraints and full results are persisted
+in SQLite `selections`.
+
 ## Reuse decision
 
 The vendored `crates/pianke-core` retains its MIT notice and supplies tested
