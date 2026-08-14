@@ -13,6 +13,7 @@ The current MVP supports:
 - OR-Tools CP-SAT optimization, auditable reasons, locked replacement, and pairwise preference learning;
 - one local website and one SQLite database, with no desktop runtime required.
 - persistent album/history APIs and queued background preparation for large folders.
+- optional multilingual OpenCLIP retrieval with provider-versioned cache safety.
 
 ## Run the website
 
@@ -35,6 +36,20 @@ After the frontend has been built once, normal use only needs:
 ```powershell
 python -m ai web
 ```
+
+To enable real multilingual image/text embeddings, install the optional model
+stack and select it before preparing an album:
+
+```powershell
+python -m pip install -e ".[dev,selection,multimodal]"
+$env:NORMA_EMBEDDING_PROVIDER = "openclip-multilingual"
+python -m ai --pretty providers
+python -m ai web
+```
+
+The model is downloaded lazily and is not bundled with Norma. See
+[docs/multimodal-provider.md](docs/multimodal-provider.md) for cache, device,
+offline, and provider-switching details.
 
 Use a different state directory or port when needed:
 
@@ -110,8 +125,11 @@ Architecture and evidence:
 - [Direct Python benchmark](docs/benchmarks/python-cli-e2e.md)
 - [Backend library lifecycle](docs/backend-library-lifecycle.md)
 - [Library lifecycle benchmark](docs/benchmarks/library-lifecycle-e2e.md)
+- [Multilingual OpenCLIP provider](docs/multimodal-provider.md)
+- [OpenCLIP public-data benchmark](docs/benchmarks/openclip-e2e.md)
 - [Third-party attribution](THIRD_PARTY_NOTICES.md)
 
 The default semantic and face providers are deterministic CPU integration
-baselines, not claims of CLIP-level open-vocabulary retrieval or biometric
-identity. Their provider boundaries are designed for later model upgrades.
+baselines. The optional OpenCLIP provider supplies real open-vocabulary
+image/text retrieval; the face provider remains pipeline scaffolding rather
+than biometric identity.

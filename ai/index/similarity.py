@@ -7,7 +7,9 @@ from PIL import Image
 
 def perceptual_hash(image: Image.Image, hash_size: int = 8) -> str:
     gray = np.asarray(
-        image.convert("L").resize((hash_size * 4, hash_size * 4), Image.Resampling.LANCZOS),
+        image.convert("L").resize(
+            (hash_size * 4, hash_size * 4), Image.Resampling.LANCZOS
+        ),
         dtype=np.float32,
     )
     low = cv2.dct(gray)[:hash_size, :hash_size]
@@ -69,4 +71,3 @@ def assign_similarity_groups(hashes: list[tuple[str, str]]) -> dict[int, str]:
 def _bits_to_hex(bits: np.ndarray) -> str:
     binary = "".join("1" if bool(bit) else "0" for bit in bits)
     return f"{int(binary, 2):0{len(binary) // 4}x}"
-

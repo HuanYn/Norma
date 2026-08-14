@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS photos (
     blur_score REAL,
     similarity_group TEXT,
     embedding_path TEXT,
+    embedding_provider TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -114,6 +115,10 @@ JOB_COLUMNS_V3: dict[str, str] = {
     "finished_at": "TEXT",
 }
 
+PHOTO_COLUMNS_V4: dict[str, str] = {
+    "embedding_provider": "TEXT",
+}
+
 
 class Database:
     def __init__(self, path: Path) -> None:
@@ -168,6 +173,22 @@ class Database:
                     )
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at DESC)"
+            )
+            return
+        if version == 4:
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            for name, declaration in PHOTO_COLUMNS_V4.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
+                    )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_photos_embedding_provider
+                    ON photos(album_id, embedding_provider)
+                """
             )
             return
         raise RuntimeError(f"Missing database migration {version}")

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ai.index.embedding import EmbeddingProvider
+from ai.index.embedding import EmbeddingProvider, normalize_embedding
 from ai.preferences.model import load_preference_model
 from ai.schemas import (
     SelectedPhoto,
@@ -42,11 +42,15 @@ class ReplacementService:
             raise ValueError("remove_photo_id is not part of the selection")
 
         locked = [
-            photo for photo in original.selected if photo.photo_id != request.remove_photo_id
+            photo
+            for photo in original.selected
+            if photo.photo_id != request.remove_photo_id
         ]
         excluded_ids = set(selected_by_id)
         group_counts = Counter(
-            photo.similarity_group for photo in locked if photo.similarity_group is not None
+            photo.similarity_group
+            for photo in locked
+            if photo.similarity_group is not None
         )
 
         try:
@@ -55,12 +59,19 @@ class ReplacementService:
             if has_semantic_content(original.prompt):
                 raise ValueError(str(error)) from error
             query_vector = None
+        if query_vector is not None:
+            query_vector = normalize_embedding(
+                query_vector,
+                self.provider.dimension,
+                label="provider text embedding",
+            )
         preference_model = load_preference_model(self.database)
         with self.database.connect() as connection:
             rows = connection.execute(
                 """
                 SELECT id, absolute_path, thumbnail_path, quality_score,
                        auto_reject, similarity_group, embedding_path,
+                       embedding_provider,
                        width, height, blur_score, metadata_json
                 FROM photos WHERE album_id = ? ORDER BY id
                 """,
@@ -77,11 +88,18 @@ class ReplacementService:
             if quality < original.constraints.min_quality:
                 continue
             group = row["similarity_group"]
-            if group and group_counts[group] >= original.constraints.max_per_similarity_group:
+            if (
+                group
+                and group_counts[group] >= original.constraints.max_per_similarity_group
+            ):
                 continue
-            if query_vector is not None and not row["embedding_path"]:
+            if query_vector is not None and (
+                not row["embedding_path"]
+                or row["embedding_provider"] != self.provider.name
+            ):
                 raise KeyError(
-                    "album has no complete semantic cache; call the embed endpoint first"
+                    "album has no complete semantic cache for provider "
+                    f"{self.provider.name}; call the embed endpoint first"
                 )
             score = score_photo(
                 row,
@@ -121,7 +139,8 @@ class ReplacementService:
             reasons=grounded_reasons(score, query_vector is not None),
         )
         updated_photos = sorted(
-            [*locked, replacement], key=lambda photo: (-photo.total_score, photo.photo_id)
+            [*locked, replacement],
+            key=lambda photo: (-photo.total_score, photo.photo_id),
         )
         replacement_selection_id = uuid.uuid4().hex
         updated = SelectionResponse(

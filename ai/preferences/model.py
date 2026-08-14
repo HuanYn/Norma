@@ -7,6 +7,7 @@ from typing import Mapping
 
 import numpy as np
 
+from ai.index.embedding import normalize_embedding
 from ai.storage import Database
 
 
@@ -28,7 +29,9 @@ class PreferenceModel:
     weights: dict[str, float]
 
 
-def load_preference_model(database: Database, user_id: str = "local") -> PreferenceModel:
+def load_preference_model(
+    database: Database, user_id: str = "local"
+) -> PreferenceModel:
     with database.connect() as connection:
         row = connection.execute(
             "SELECT parameters_json FROM user_preferences WHERE user_id = ?",
@@ -80,14 +83,20 @@ def photo_features(
     metadata = json.loads(str(row["metadata_json"] or "{}"))
     semantic = 0.0
     if query_vector is not None and row["embedding_path"]:
-        vector = np.load(str(row["embedding_path"]), allow_pickle=False).astype(np.float32)
-        if vector.shape != (expected_dimension,) or not np.all(np.isfinite(vector)):
-            raise ValueError(
-                f"invalid cached embedding at {row['embedding_path']}; re-run the embed endpoint"
+        vector = np.load(str(row["embedding_path"]), allow_pickle=False).astype(
+            np.float32
+        )
+        try:
+            vector = normalize_embedding(
+                vector,
+                expected_dimension,
+                label=f"cached embedding at {row['embedding_path']}",
             )
-        norm = float(np.linalg.norm(vector))
-        if norm > 1e-12:
-            vector /= norm
+        except ValueError as error:
+            raise ValueError(
+                "invalid cached embedding at "
+                f"{row['embedding_path']}; re-run the embed endpoint: {error}"
+            ) from error
         semantic = max(0.0, float(np.dot(query_vector, vector)))
 
     quality = float(row["quality_score"] or 0.0) / 100.0
@@ -108,7 +117,9 @@ def photo_features(
     }
 
 
-def preference_probability(model: PreferenceModel, features: Mapping[str, float]) -> float:
+def preference_probability(
+    model: PreferenceModel, features: Mapping[str, float]
+) -> float:
     if model.comparisons <= 0:
         return 0.5
     score = sum(model.weights[name] * float(features[name]) for name in FEATURE_NAMES)

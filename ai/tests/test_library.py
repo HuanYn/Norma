@@ -62,6 +62,7 @@ def test_catalog_restores_album_counts_and_paginated_photos(
     assert summary["name"] == "Trip"
     assert summary["photo_count"] == 3
     assert summary["embedded_count"] == 3
+    assert summary["embedding_provider"] == "lightweight-semantic-v1"
     assert summary["selection_count"] == 1
     assert first_page.json()["total"] == 3
     assert len(first_page.json()["items"]) == 2

@@ -12,6 +12,8 @@ python -m pip install -e ".[dev,selection]"
 
 `selection` installs OR-Tools CP-SAT. Omitting it keeps the deterministic exact
 fallback for the currently supported cardinality and similarity-group limits.
+`multimodal` installs the optional multilingual OpenCLIP runtime. It is only
+loaded when `NORMA_EMBEDDING_PROVIDER=openclip-multilingual` is selected.
 
 By default state is stored in `.norma/data`. Override it for any command by
 placing `--data-dir` before the subcommand:
@@ -19,6 +21,15 @@ placing `--data-dir` before the subcommand:
 ```powershell
 python -m ai --data-dir D:\NormaData --pretty init
 ```
+
+Inspect provider availability and the active versioned cache identity:
+
+```powershell
+python -m ai --pretty providers
+```
+
+See [multimodal-provider.md](multimodal-provider.md) for model cache and device
+configuration.
 
 ## Album pipeline
 

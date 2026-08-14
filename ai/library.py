@@ -137,6 +137,10 @@ SELECT a.id, a.name, a.source_path, a.created_at, a.indexed_at,
            AS rejected_count,
        (SELECT COUNT(*) FROM photos p
         WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL) AS embedded_count,
+       (SELECT CASE WHEN COUNT(DISTINCT p.embedding_provider) = 1
+                    THEN MAX(p.embedding_provider) ELSE NULL END
+        FROM photos p WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL)
+           AS embedding_provider,
        (SELECT COUNT(*) FROM faces f JOIN photos p ON p.id = f.photo_id
         WHERE p.album_id = a.id) AS face_count,
        (SELECT COUNT(*) FROM selections s WHERE s.album_id = a.id) AS selection_count
@@ -154,6 +158,7 @@ def _album_summary(row: object) -> AlbumSummary:
         photo_count=int(row["photo_count"]),
         rejected_count=int(row["rejected_count"]),
         embedded_count=int(row["embedded_count"]),
+        embedding_provider=row["embedding_provider"],
         face_count=int(row["face_count"]),
         selection_count=int(row["selection_count"]),
     )

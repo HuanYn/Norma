@@ -42,10 +42,16 @@ pnpm dev
 ```
 
 Open `http://127.0.0.1:1420`. Vite proxies `/health`, `/albums`, `/selections`,
-`/jobs`, `/feedback`, `/preferences`, and `/media` to FastAPI at port 8765.
+`/jobs`, `/feedback`, `/preferences`, `/providers`, and `/media` to FastAPI at
+port 8765.
 
 The backend also exposes a persistent catalog and background preparation API;
 see [backend-library-lifecycle.md](backend-library-lifecycle.md).
+
+The default lightweight embedding backend requires no model download. To use
+the optional multilingual OpenCLIP backend, follow
+[multimodal-provider.md](multimodal-provider.md). The provider endpoint exposes
+capabilities without forcing the model into memory.
 
 Run the checks before rebuilding committed assets:
 

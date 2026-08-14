@@ -28,11 +28,17 @@ class PrepareJobManager:
         data_dir: Path,
         embedding_provider: str,
         face_provider: str,
+        embedding_device: str = "auto",
+        embedding_batch_size: int = 8,
+        model_cache_dir: Path | None = None,
     ) -> None:
         self.database = database
         self.data_dir = data_dir
         self.embedding_provider = embedding_provider
         self.face_provider = face_provider
+        self.embedding_device = embedding_device
+        self.embedding_batch_size = embedding_batch_size
+        self.model_cache_dir = model_cache_dir or (data_dir / "models")
         self.executor = ThreadPoolExecutor(
             max_workers=1, thread_name_prefix="norma-prepare"
         )
@@ -158,7 +164,12 @@ class PrepareJobManager:
             embedded = RetrievalService(
                 self.database,
                 self.data_dir,
-                create_embedding_provider(self.embedding_provider),
+                create_embedding_provider(
+                    self.embedding_provider,
+                    cache_dir=self.model_cache_dir,
+                    device=self.embedding_device,
+                    batch_size=self.embedding_batch_size,
+                ),
             ).embed_album(indexed.album_id)
             result["embedding"] = embedded.model_dump()
             self._set_stage(job_id, stage="people", progress=0.82, result=result)

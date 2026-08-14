@@ -16,6 +16,21 @@ class CapabilitiesResponse(BaseModel):
     milestones: dict[str, str]
 
 
+class EmbeddingProviderCapability(BaseModel):
+    id: str
+    name: str
+    dimension: int
+    available: bool
+    model_backed: bool
+    multilingual: str
+    active: bool
+    install_extra: str | None
+
+
+class EmbeddingProviderListResponse(BaseModel):
+    items: list[EmbeddingProviderCapability]
+
+
 class AlbumIndexRequest(BaseModel):
     folder: str = Field(min_length=1)
     name: str | None = Field(default=None, max_length=200)
@@ -61,6 +76,7 @@ class AlbumSummary(BaseModel):
     photo_count: int
     rejected_count: int
     embedded_count: int
+    embedding_provider: str | None
     face_count: int
     selection_count: int
 

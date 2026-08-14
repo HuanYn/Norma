@@ -100,4 +100,3 @@ def analyze_quality(image: Image.Image) -> QualityAnalysis:
         reject_reason=reject_reason,
         flags=tuple(flags),
     )
-

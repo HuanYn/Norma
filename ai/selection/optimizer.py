@@ -32,7 +32,9 @@ def optimize_collection(
         return _greedy(candidates, target_count, max_per_group)
 
     model = cp_model.CpModel()
-    variables = [model.new_bool_var(f"photo_{candidate.index}") for candidate in candidates]
+    variables = [
+        model.new_bool_var(f"photo_{candidate.index}") for candidate in candidates
+    ]
     model.add(sum(variables) == target_count)
     groups: dict[str, list[int]] = {}
     for position, candidate in enumerate(candidates):
@@ -45,7 +47,9 @@ def optimize_collection(
     for position, candidate in enumerate(candidates):
         primary = round(candidate.score * 1_000_000)
         deterministic_tie_break = count - position
-        objective.append((primary * (count + 1) + deterministic_tie_break) * variables[position])
+        objective.append(
+            (primary * (count + 1) + deterministic_tie_break) * variables[position]
+        )
     model.maximize(sum(objective))
 
     solver = cp_model.CpSolver()
@@ -54,13 +58,17 @@ def optimize_collection(
     solver.parameters.random_seed = 0
     status = solver.solve(model)
     if status not in {cp_model.OPTIMAL, cp_model.FEASIBLE}:
-        return OptimizationResult([], "ortools-cp-sat", solver.status_name(status).lower())
+        return OptimizationResult(
+            [], "ortools-cp-sat", solver.status_name(status).lower()
+        )
     selected = [
         candidate.index
         for position, candidate in enumerate(candidates)
         if solver.value(variables[position])
     ]
-    return OptimizationResult(selected, "ortools-cp-sat", solver.status_name(status).lower())
+    return OptimizationResult(
+        selected, "ortools-cp-sat", solver.status_name(status).lower()
+    )
 
 
 def _greedy(

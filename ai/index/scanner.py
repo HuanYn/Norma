@@ -9,7 +9,11 @@ from pathlib import Path
 from PIL import Image, ImageOps
 
 from ai.index.quality import analyze_quality
-from ai.index.similarity import assign_similarity_groups, difference_hash, perceptual_hash
+from ai.index.similarity import (
+    assign_similarity_groups,
+    difference_hash,
+    perceptual_hash,
+)
 from ai.schemas import AlbumIndexResponse, PhotoSummary
 from ai.storage import Database
 
@@ -57,7 +61,9 @@ class AlbumIndexer:
         if not paths:
             raise ValueError("所选文件夹中没有 JPG/JPEG 图片")
 
-        album_id = uuid.uuid5(uuid.NAMESPACE_URL, f"norma:album:{str(folder).casefold()}").hex
+        album_id = uuid.uuid5(
+            uuid.NAMESPACE_URL, f"norma:album:{str(folder).casefold()}"
+        ).hex
         name = (album_name or folder.name).strip() or "Untitled Album"
         thumbnail_dir = self.data_dir / "thumbnails" / album_id
         thumbnail_dir.mkdir(parents=True, exist_ok=True)
@@ -70,7 +76,9 @@ class AlbumIndexer:
             except Exception as error:  # surfaced in the API; never silently swallowed
                 errors.append(f"{path.name}: {error}")
 
-        groups = assign_similarity_groups([(photo.phash, photo.dhash) for photo in photos])
+        groups = assign_similarity_groups(
+            [(photo.phash, photo.dhash) for photo in photos]
+        )
         for index, group_id in groups.items():
             photos[index].similarity_group = group_id
 
@@ -89,7 +97,9 @@ class AlbumIndexer:
             errors=errors,
         )
 
-    def _scan_photo(self, path: Path, album_id: str, thumbnail_dir: Path) -> ScannedPhoto:
+    def _scan_photo(
+        self, path: Path, album_id: str, thumbnail_dir: Path
+    ) -> ScannedPhoto:
         before = path.stat()
         photo_id = uuid.uuid5(
             uuid.NAMESPACE_URL,
@@ -165,13 +175,17 @@ class AlbumIndexer:
                 "(SELECT id FROM photos WHERE album_id = ?)",
                 (album_id,),
             )
-            connection.execute("DELETE FROM person_clusters WHERE album_id = ?", (album_id,))
+            connection.execute(
+                "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
+            )
             existing = connection.execute(
                 "SELECT id FROM photos WHERE album_id = ?", (album_id,)
             ).fetchall()
             stale = [row["id"] for row in existing if row["id"] not in current_ids]
             if stale:
-                connection.executemany("DELETE FROM photos WHERE id = ?", [(id_,) for id_ in stale])
+                connection.executemany(
+                    "DELETE FROM photos WHERE id = ?", [(id_,) for id_ in stale]
+                )
             connection.executemany(
                 """
                 INSERT INTO photos(
@@ -193,7 +207,8 @@ class AlbumIndexer:
                     auto_reject=excluded.auto_reject,
                     reject_reason=excluded.reject_reason,
                     metadata_json=excluded.metadata_json,
-                    embedding_path=NULL
+                    embedding_path=NULL,
+                    embedding_provider=NULL
                 """,
                 [
                     (

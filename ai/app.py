@@ -11,7 +11,12 @@ from fastapi.staticfiles import StaticFiles
 
 from ai.config import load_settings
 from ai.index import AlbumIndexer
-from ai.index.embedding import create_embedding_provider
+from ai.index.embedding import (
+    EmbeddingProvider,
+    EmbeddingProviderUnavailableError,
+    create_embedding_provider,
+    embedding_provider_capabilities,
+)
 from ai.jobs import PrepareJobManager
 from ai.library import AlbumCatalogService
 from ai.people import PeopleIndexer, create_face_provider
@@ -29,6 +34,7 @@ from ai.schemas import (
     AlbumSearchResponse,
     AlbumSummary,
     CapabilitiesResponse,
+    EmbeddingProviderListResponse,
     HealthResponse,
     JobListResponse,
     JobResponse,
@@ -66,6 +72,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         settings.data_dir,
         settings.embedding_provider,
         settings.face_provider,
+        settings.embedding_device,
+        settings.embedding_batch_size,
+        settings.model_cache_dir,
     )
     prepare_jobs.start()
     logger.info("Norma AI worker ready; data_dir=%s", settings.data_dir)
@@ -95,21 +104,38 @@ def health() -> HealthResponse:
 @app.get("/capabilities", response_model=CapabilitiesResponse)
 def capabilities() -> CapabilitiesResponse:
     return CapabilitiesResponse(
+        embedding_provider=embedding_provider().name,
         milestones={
             "library": "cpu-fallback-indexer",
-            "multimodal_index": "lightweight-semantic-v1",
+            "multimodal_index": embedding_provider().name,
             "people": "opencv-haar-dct-v1",
             "selection": "structured-cp-sat-or-greedy",
             "preference": "online-pairwise-logistic-v1",
             "library_lifecycle": "persistent-catalog-and-jobs-v1",
             "video": "deferred",
             "world": "deferred",
-        }
+        },
     )
 
 
 def catalog_service() -> AlbumCatalogService:
     return AlbumCatalogService(database)
+
+
+def embedding_provider() -> EmbeddingProvider:
+    return create_embedding_provider(
+        settings.embedding_provider,
+        cache_dir=settings.model_cache_dir,
+        device=settings.embedding_device,
+        batch_size=settings.embedding_batch_size,
+    )
+
+
+@app.get("/providers/embedding", response_model=EmbeddingProviderListResponse)
+def list_embedding_providers() -> EmbeddingProviderListResponse:
+    return EmbeddingProviderListResponse(
+        items=embedding_provider_capabilities(settings.embedding_provider)
+    )
 
 
 def prepare_job_manager() -> PrepareJobManager:
@@ -238,7 +264,7 @@ def retrieval_service() -> RetrievalService:
     return RetrievalService(
         database,
         settings.data_dir,
-        create_embedding_provider(settings.embedding_provider),
+        embedding_provider(),
     )
 
 
@@ -253,21 +279,21 @@ def people_indexer() -> PeopleIndexer:
 def selection_service() -> SelectionService:
     return SelectionService(
         database,
-        create_embedding_provider(settings.embedding_provider),
+        embedding_provider(),
     )
 
 
 def preference_service() -> PreferenceService:
     return PreferenceService(
         database,
-        create_embedding_provider(settings.embedding_provider),
+        embedding_provider(),
     )
 
 
 def replacement_service() -> ReplacementService:
     return ReplacementService(
         database,
-        create_embedding_provider(settings.embedding_provider),
+        embedding_provider(),
     )
 
 
@@ -279,6 +305,8 @@ def embed_album(album_id: str) -> AlbumEmbeddingResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except EmbeddingProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 @app.post("/albums/search", response_model=AlbumSearchResponse)
@@ -294,6 +322,8 @@ def search_album(request: AlbumSearchRequest) -> AlbumSearchResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except EmbeddingProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 @app.post("/albums/{album_id}/people/index", response_model=PeopleIndexResponse)
@@ -314,6 +344,8 @@ def create_selection(request: SelectionRequest) -> SelectionResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except EmbeddingProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 @app.get("/selections/{selection_id}", response_model=SelectionResponse)
@@ -344,6 +376,8 @@ def record_pairwise_feedback(
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except EmbeddingProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 @app.post(
@@ -360,6 +394,8 @@ def replace_selection_photo(
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except EmbeddingProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 web_dist = Path(__file__).resolve().parent / "web_dist"

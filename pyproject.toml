@@ -27,6 +27,10 @@ dev = [
 selection = [
   "ortools>=9.12,<10",
 ]
+multimodal = [
+  "open-clip-torch>=3.3,<4",
+  "transformers>=4.56,<6",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["ai/tests"]

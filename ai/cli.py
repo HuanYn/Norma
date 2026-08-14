@@ -10,7 +10,10 @@ import uvicorn
 
 from ai.config import Settings, load_settings
 from ai.index import AlbumIndexer
-from ai.index.embedding import create_embedding_provider
+from ai.index.embedding import (
+    create_embedding_provider,
+    embedding_provider_capabilities,
+)
 from ai.jobs import get_persisted_job, list_persisted_jobs
 from ai.library import AlbumCatalogService
 from ai.people import PeopleIndexer, create_face_provider
@@ -44,6 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     commands.add_parser("init", help="Initialize the local SQLite database")
     commands.add_parser("albums", help="List indexed albums")
+    commands.add_parser("providers", help="List embedding providers and availability")
 
     album = commands.add_parser("album", help="Show persisted album statistics")
     album.add_argument("album_id")
@@ -157,7 +161,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     database = Database(settings.database_path)
     database.initialize()
-    provider = create_embedding_provider(settings.embedding_provider)
+    provider = create_embedding_provider(
+        settings.embedding_provider,
+        cache_dir=settings.model_cache_dir,
+        device=settings.embedding_device,
+        batch_size=settings.embedding_batch_size,
+    )
     try:
         payload = _dispatch(args, settings, database, provider)
     except (
@@ -194,6 +203,8 @@ def _dispatch(
                 """
             ).fetchall()
         return [dict(row) for row in rows]
+    if args.command == "providers":
+        return embedding_provider_capabilities(settings.embedding_provider)
     if args.command == "album":
         return AlbumCatalogService(database).get_album(args.album_id).model_dump()
     if args.command == "photos":
@@ -360,6 +371,9 @@ def _settings(data_dir: Path | None) -> Settings:
         log_level=current.log_level,
         embedding_provider=current.embedding_provider,
         face_provider=current.face_provider,
+        embedding_device=current.embedding_device,
+        embedding_batch_size=current.embedding_batch_size,
+        model_cache_root=current.model_cache_root,
     )
 
 

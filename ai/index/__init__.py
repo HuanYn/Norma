@@ -3,4 +3,3 @@
 from ai.index.scanner import AlbumIndexer
 
 __all__ = ["AlbumIndexer"]
-

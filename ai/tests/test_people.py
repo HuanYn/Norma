@@ -88,12 +88,18 @@ def test_people_index_clusters_conservatively_and_persists(
 
     with database.connect() as connection:
         assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 3
-        assert connection.execute("SELECT COUNT(*) FROM person_clusters").fetchone()[0] == 2
+        assert (
+            connection.execute("SELECT COUNT(*) FROM person_clusters").fetchone()[0]
+            == 2
+        )
 
     AlbumIndexer(database, data_dir).index(album)
     with database.connect() as connection:
         assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 0
-        assert connection.execute("SELECT COUNT(*) FROM person_clusters").fetchone()[0] == 0
+        assert (
+            connection.execute("SELECT COUNT(*) FROM person_clusters").fetchone()[0]
+            == 0
+        )
 
 
 def test_people_index_rejects_missing_album(tmp_path: Path) -> None:

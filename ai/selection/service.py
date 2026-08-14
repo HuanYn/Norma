@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ai.index.embedding import EmbeddingProvider
+from ai.index.embedding import EmbeddingProvider, normalize_embedding
 from ai.preferences.model import load_preference_model
 from ai.schemas import (
     SelectedPhoto,
@@ -33,6 +33,7 @@ class SelectionService:
                 """
                 SELECT id, absolute_path, thumbnail_path, quality_score,
                        auto_reject, similarity_group, embedding_path,
+                       embedding_provider,
                        width, height, blur_score, metadata_json
                 FROM photos WHERE album_id = ? ORDER BY id
                 """,
@@ -55,6 +56,12 @@ class SelectionService:
             warnings.append(
                 "No supported semantic concept was recognized; ranking uses quality only."
             )
+        if query_vector is not None:
+            query_vector = normalize_embedding(
+                query_vector,
+                self.provider.dimension,
+                label="provider text embedding",
+            )
 
         scored: list[dict[str, object]] = []
         preference_model = load_preference_model(self.database)
@@ -65,9 +72,13 @@ class SelectionService:
             if quality < intent.min_quality:
                 continue
             if query_vector is not None:
-                if not row["embedding_path"]:
+                if (
+                    not row["embedding_path"]
+                    or row["embedding_provider"] != self.provider.name
+                ):
                     raise KeyError(
-                        "album has no complete semantic cache; call the embed endpoint first"
+                        "album has no complete semantic cache for provider "
+                        f"{self.provider.name}; call the embed endpoint first"
                     )
             score = score_photo(
                 row,
@@ -88,7 +99,9 @@ class SelectionService:
             row = item["row"]
             group = row["similarity_group"] or f"photo:{row['id']}"
             optimization_candidates.append(
-                OptimizationCandidate(index=index, score=float(item["total"]), group_key=group)
+                OptimizationCandidate(
+                    index=index, score=float(item["total"]), group_key=group
+                )
             )
         optimized = optimize_collection(
             optimization_candidates,
@@ -120,7 +133,9 @@ class SelectionService:
                         preference_score=round(item["score"].preference, 6),
                         quality_score=round(item["score"].quality, 3),
                         similarity_group=row["similarity_group"],
-                        reasons=grounded_reasons(item["score"], query_vector is not None),
+                        reasons=grounded_reasons(
+                            item["score"], query_vector is not None
+                        ),
                     )
                 )
         else:

@@ -20,6 +20,7 @@ export default defineConfig({
       "/feedback": "http://127.0.0.1:8765",
       "/jobs": "http://127.0.0.1:8765",
       "/preferences": "http://127.0.0.1:8765",
+      "/providers": "http://127.0.0.1:8765",
       "/media": "http://127.0.0.1:8765",
     },
   },

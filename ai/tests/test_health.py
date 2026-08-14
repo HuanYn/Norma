@@ -20,7 +20,7 @@ def test_health_initializes_sqlite(tmp_path: Path, monkeypatch) -> None:
     assert response.json() == {
         "service": "norma-ai",
         "status": "ok",
-        "schema_version": 3,
+        "schema_version": 4,
     }
     assert database.path.exists()
 
@@ -30,6 +30,7 @@ def test_capabilities_are_explicit(tmp_path: Path, monkeypatch) -> None:
 
     with TestClient(app_module.app) as client:
         response = client.get("/capabilities")
+        providers = client.get("/providers/embedding")
 
     payload = response.json()
     assert payload["image_types"] == [".jpg", ".jpeg"]
@@ -38,6 +39,12 @@ def test_capabilities_are_explicit(tmp_path: Path, monkeypatch) -> None:
     assert (
         payload["milestones"]["library_lifecycle"] == "persistent-catalog-and-jobs-v1"
     )
+    provider_items = providers.json()["items"]
+    assert [item["id"] for item in provider_items] == [
+        "lightweight",
+        "openclip-multilingual",
+    ]
+    assert provider_items[0]["active"] is True
 
 
 def test_migrates_existing_v1_database(tmp_path: Path) -> None:
@@ -75,7 +82,7 @@ def test_migrates_existing_v1_database(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 3
+    assert version == 4
     assert {"phash", "dhash", "auto_reject", "metadata_json"} <= columns
 
 
@@ -108,7 +115,7 @@ def test_migrates_existing_v2_jobs_table(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 3
+    assert version == 4
     assert {
         "stage",
         "progress",
@@ -116,3 +123,32 @@ def test_migrates_existing_v2_jobs_table(tmp_path: Path) -> None:
         "started_at",
         "finished_at",
     } <= columns
+
+
+def test_migrates_existing_v3_photo_provider_column(tmp_path: Path) -> None:
+    path = tmp_path / "norma.db"
+    connection = sqlite3.connect(path)
+    connection.executescript(
+        """
+        CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT);
+        INSERT INTO schema_migrations(version) VALUES (1), (2), (3);
+        CREATE TABLE photos(
+            id TEXT PRIMARY KEY,
+            album_id TEXT,
+            absolute_path TEXT,
+            embedding_path TEXT
+        );
+        """
+    )
+    connection.close()
+
+    database = Database(path)
+    database.initialize()
+
+    with database.connect() as migrated:
+        columns = {row["name"] for row in migrated.execute("PRAGMA table_info(photos)")}
+        version = migrated.execute(
+            "SELECT MAX(version) FROM schema_migrations"
+        ).fetchone()[0]
+    assert version == 4
+    assert "embedding_provider" in columns

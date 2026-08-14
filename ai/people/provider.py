@@ -32,7 +32,9 @@ class OpenCvHaarDctProvider(FaceProvider):
     dimension = 79
 
     def __init__(self) -> None:
-        cascade_path = Path(cv2.data.haarcascades) / "haarcascade_frontalface_default.xml"
+        cascade_path = (
+            Path(cv2.data.haarcascades) / "haarcascade_frontalface_default.xml"
+        )
         self.cascade = cv2.CascadeClassifier(str(cascade_path))
         if self.cascade.empty():
             raise RuntimeError(f"unable to load OpenCV face cascade: {cascade_path}")
@@ -74,7 +76,9 @@ class OpenCvHaarDctProvider(FaceProvider):
         after = path.stat()
         if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
             raise RuntimeError(f"source changed during face detection: {path}")
-        faces.sort(key=lambda face: (face.box[1], face.box[0], face.box[2], face.box[3]))
+        faces.sort(
+            key=lambda face: (face.box[1], face.box[0], face.box[2], face.box[3])
+        )
         return faces
 
 

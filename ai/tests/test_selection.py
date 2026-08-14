@@ -71,7 +71,8 @@ def _album(tmp_path: Path) -> tuple[Database, str, dict[str, str]]:
             connection.execute(
                 """
                 UPDATE photos SET quality_score = ?, similarity_group = ?,
-                                  auto_reject = ?, embedding_path = ?
+                                  auto_reject = ?, embedding_path = ?,
+                                  embedding_provider = 'fake-selection-v1'
                 WHERE id = ?
                 """,
                 (quality, group, reject, str(path.resolve()), ids[name]),
@@ -197,10 +198,15 @@ def test_pairwise_feedback_updates_and_persists_local_model(tmp_path: Path) -> N
         SelectionRequest(album_id=album_id, prompt="选 3 张 night")
     )
     assert all(photo.preference_score != 0.5 for photo in personalized.selected)
-    assert all(any("preference fit" in reason for reason in photo.reasons) for photo in personalized.selected)
+    assert all(
+        any("preference fit" in reason for reason in photo.reasons)
+        for photo in personalized.selected
+    )
 
 
-def test_replacement_locks_existing_photos_and_preserves_constraints(tmp_path: Path) -> None:
+def test_replacement_locks_existing_photos_and_preserves_constraints(
+    tmp_path: Path,
+) -> None:
     database, album_id, ids = _album(tmp_path)
     original = SelectionService(database, FakeSelectionProvider()).select(
         SelectionRequest(
@@ -246,7 +252,9 @@ def test_replacement_returns_infeasible_without_partial_result(tmp_path: Path) -
     assert result.replacement_selection_id is None
 
 
-def test_selection_and_preference_state_are_readable(tmp_path: Path, monkeypatch) -> None:
+def test_selection_and_preference_state_are_readable(
+    tmp_path: Path, monkeypatch
+) -> None:
     database, album_id, ids = _album(tmp_path)
     service = SelectionService(database, FakeSelectionProvider())
     selection = service.select(

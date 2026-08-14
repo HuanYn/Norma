@@ -88,6 +88,7 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
     detail = _result(capsys)
     assert detail["photo_count"] == 3
     assert detail["embedded_count"] == 3
+    assert detail["embedding_provider"] == "lightweight-semantic-v1"
     assert detail["selection_count"] == 1
 
     assert main(["--data-dir", str(data_dir), "selection-history", album_id]) == 0

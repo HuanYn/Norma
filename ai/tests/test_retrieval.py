@@ -8,10 +8,13 @@ from PIL import Image, ImageDraw
 
 from ai import app as app_module
 from ai.config import Settings
+from ai.index.embedding import EmbeddingProviderUnavailableError
 from ai.storage import Database
 
 
-def _scene(path: Path, background: tuple[int, int, int], accent: tuple[int, int, int]) -> None:
+def _scene(
+    path: Path, background: tuple[int, int, int], accent: tuple[int, int, int]
+) -> None:
     image = Image.new("RGB", (640, 420), background)
     draw = ImageDraw.Draw(image)
     for x in range(30, 620, 70):
@@ -145,13 +148,69 @@ def test_reindex_invalidates_cached_embeddings(tmp_path: Path, monkeypatch) -> N
         indexed = client.post("/albums/index", json={"folder": str(album)}).json()
         album_id = indexed["album_id"]
         assert client.post(f"/albums/{album_id}/embed").status_code == 200
-        assert client.post(
-            "/albums/search", json={"album_id": album_id, "query": "night"}
-        ).status_code == 200
+        assert (
+            client.post(
+                "/albums/search", json={"album_id": album_id, "query": "night"}
+            ).status_code
+            == 200
+        )
 
         _scene(photo, (230, 210, 80), (250, 100, 30))
-        assert client.post("/albums/index", json={"folder": str(album)}).status_code == 200
+        assert (
+            client.post("/albums/index", json={"folder": str(album)}).status_code == 200
+        )
         stale_search = client.post(
             "/albums/search", json={"album_id": album_id, "query": "night"}
         )
         assert stale_search.status_code == 404
+
+
+def test_retrieval_rejects_cache_from_another_provider(
+    tmp_path: Path, monkeypatch
+) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    _scene(album / "one.jpg", (10, 20, 50), (80, 120, 190))
+    _scene(album / "two.jpg", (30, 80, 45), (120, 190, 90))
+
+    with _client(tmp_path, monkeypatch) as client:
+        indexed = client.post("/albums/index", json={"folder": str(album)}).json()
+        album_id = indexed["album_id"]
+        assert client.post(f"/albums/{album_id}/embed").status_code == 200
+        with app_module.database.connect() as connection:
+            connection.execute(
+                """UPDATE photos SET embedding_provider = 'different-provider'
+                   WHERE id = ?""",
+                (indexed["photos"][0]["id"],),
+            )
+        response = client.post(
+            "/albums/search", json={"album_id": album_id, "query": "night"}
+        )
+
+    assert response.status_code == 404
+    assert "lightweight-semantic-v1" in response.json()["detail"]
+
+
+def test_model_load_failure_is_reported_as_service_unavailable(
+    tmp_path: Path, monkeypatch
+) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    _scene(album / "photo.jpg", (10, 20, 50), (80, 120, 190))
+
+    class UnavailableProvider:
+        name = "unavailable-test-provider-v1"
+        dimension = 512
+
+        def embed_images(self, paths):
+            raise EmbeddingProviderUnavailableError("model cache is unavailable")
+
+    with _client(tmp_path, monkeypatch) as client:
+        indexed = client.post("/albums/index", json={"folder": str(album)}).json()
+        monkeypatch.setattr(
+            app_module, "embedding_provider", lambda: UnavailableProvider()
+        )
+        response = client.post(f"/albums/{indexed['album_id']}/embed")
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "model cache is unavailable"

@@ -7,10 +7,9 @@ import uuid
 
 import numpy as np
 
-from ai.index.embedding import EmbeddingProvider
+from ai.index.embedding import EmbeddingProvider, normalize_embedding
 from ai.preferences.model import (
     FEATURE_NAMES,
-    PreferenceModel,
     load_preference_model,
     photo_features,
     save_preference_model,
@@ -27,14 +26,16 @@ class PreferenceService:
         self.database = database
         self.provider = provider
 
-    def record_pairwise(self, request: PairwiseFeedbackRequest) -> PreferenceModelResponse:
+    def record_pairwise(
+        self, request: PairwiseFeedbackRequest
+    ) -> PreferenceModelResponse:
         if request.preferred_photo_id == request.rejected_photo_id:
             raise ValueError("preferred and rejected photos must be different")
         with self.database.connect() as connection:
             rows = connection.execute(
                 """
                 SELECT id, width, height, quality_score, blur_score,
-                       embedding_path, metadata_json
+                       embedding_path, embedding_provider, metadata_json
                 FROM photos
                 WHERE album_id = ? AND id IN (?, ?)
                 """,
@@ -51,7 +52,9 @@ class PreferenceService:
                     (request.selection_id,),
                 ).fetchone()
                 if selection is None or selection["album_id"] != request.album_id:
-                    raise KeyError(f"selection not found in album: {request.selection_id}")
+                    raise KeyError(
+                        f"selection not found in album: {request.selection_id}"
+                    )
                 prompt = selection["raw_prompt"]
         by_id = {row["id"]: row for row in rows}
         if set(by_id) != {request.preferred_photo_id, request.rejected_photo_id}:
@@ -63,6 +66,21 @@ class PreferenceService:
                 query_vector = self.provider.embed_text(prompt)
             except ValueError:
                 query_vector = None
+        if query_vector is not None:
+            query_vector = normalize_embedding(
+                query_vector,
+                self.provider.dimension,
+                label="provider text embedding",
+            )
+            if any(
+                not row["embedding_path"]
+                or row["embedding_provider"] != self.provider.name
+                for row in by_id.values()
+            ):
+                raise KeyError(
+                    "feedback photos have no semantic cache for provider "
+                    f"{self.provider.name}; call the embed endpoint first"
+                )
         preferred_features = photo_features(
             by_id[request.preferred_photo_id], query_vector, self.provider.dimension
         )
@@ -76,10 +94,10 @@ class PreferenceService:
 
         with UPDATE_LOCK:
             model = load_preference_model(self.database, request.user_id)
-            logit = sum(model.weights[name] * difference[name] for name in FEATURE_NAMES)
-            probability_before = 1.0 / (
-                1.0 + math.exp(-max(-20.0, min(20.0, logit)))
+            logit = sum(
+                model.weights[name] * difference[name] for name in FEATURE_NAMES
             )
+            probability_before = 1.0 / (1.0 + math.exp(-max(-20.0, min(20.0, logit))))
             learning_rate = 0.35 / math.sqrt(model.comparisons + 1.0)
             for name in FEATURE_NAMES:
                 gradient = (1.0 - probability_before) * difference[name]
@@ -123,6 +141,8 @@ class PreferenceService:
             user_id=model.user_id,
             comparisons=model.comparisons,
             probability_before=round(probability_before, 6),
-            feature_difference={name: round(value, 6) for name, value in difference.items()},
+            feature_difference={
+                name: round(value, 6) for name, value in difference.items()
+            },
             weights=model.weights,
         )

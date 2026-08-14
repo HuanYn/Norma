@@ -38,6 +38,7 @@ development server and proxies API/media routes to `python -m ai serve`.
 4. **M3:** structured constraints, auditable scoring, CP-SAT optimization.
 5. **M4:** grounded reasons, locked replacement, pairwise preference learning.
 6. **M5:** persistent album catalog, selection history, and queued preparation jobs.
+7. **M6:** optional multilingual OpenCLIP, batch inference, and strict provider-scoped caches.
 
 ## Library lifecycle
 
@@ -73,12 +74,19 @@ the supported web runtime.
 `ai/index/embedding.py` defines a shared image/text embedding interface. The
 default `lightweight-semantic-v1` provider produces deterministic normalized
 16-dimensional CPU descriptors for color, luminance, composition, and coarse
-visual concepts. It is an interpretable integration baseline, not a claim of
-CLIP-level understanding.
+visual concepts. It is an interpretable integration baseline.
 
-`ai/retrieval/` owns provider-scoped cache generation and cosine search. Text,
-reference-photo, and candidate-subset requests use one result schema, allowing a
-future CLIP/SigLIP provider without changes to the web contract.
+`ai/index/openclip_provider.py` optionally loads the multilingual XLM-R +
+ViT-B/32 OpenCLIP model on first inference. It batches image reads, supports CPU
+or CUDA selection, and validates all 512-dimensional normalized outputs before
+they enter the cache. Model import or load failures remain explicit and map to
+HTTP 503 at the API boundary.
+
+`ai/retrieval/` owns provider-scoped cache generation and cosine search. SQLite
+schema v4 stores the versioned provider identity alongside every photo vector.
+Text, reference-photo, selection, and replacement paths reject incomplete,
+stale, or mixed-provider albums instead of comparing incompatible vector
+spaces.
 
 ## People provider
 

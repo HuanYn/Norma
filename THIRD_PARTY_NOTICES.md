@@ -1,5 +1,13 @@
 # Third-party notices
 
+## Optional multilingual OpenCLIP model
+
+Norma can download and use
+[`laion/CLIP-ViT-B-32-xlm-roberta-base-laion5B-s13B-b90k`](https://huggingface.co/laion/CLIP-ViT-B-32-xlm-roberta-base-laion5B-s13B-b90k)
+through `open-clip-torch`. The model card lists the model license as MIT. Model
+weights and the PyTorch/OpenCLIP runtime are optional downloads and are not
+bundled in this repository.
+
 ## pianke-desktop / pianke-core
 
 Norma vendors and adapts portions of
@@ -27,4 +35,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-

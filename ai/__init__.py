@@ -1,2 +1,1 @@
 """Norma local AI worker."""
-

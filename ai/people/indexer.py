@@ -28,7 +28,9 @@ class IndexedFace:
 
 
 class PeopleIndexer:
-    def __init__(self, database: Database, data_dir: Path, provider: FaceProvider) -> None:
+    def __init__(
+        self, database: Database, data_dir: Path, provider: FaceProvider
+    ) -> None:
         self.database = database
         self.data_dir = data_dir
         self.provider = provider
@@ -53,9 +55,9 @@ class PeopleIndexer:
         for row in rows:
             detections = self.provider.detect(Path(row["absolute_path"]))
             for face_index, detection in enumerate(detections):
-                if detection.descriptor.shape != (self.provider.dimension,) or not np.all(
-                    np.isfinite(detection.descriptor)
-                ):
+                if detection.descriptor.shape != (
+                    self.provider.dimension,
+                ) or not np.all(np.isfinite(detection.descriptor)):
                     raise ValueError(
                         f"provider returned an invalid face descriptor for {row['absolute_path']}"
                     )
@@ -137,7 +139,9 @@ class PeopleIndexer:
                 "(SELECT id FROM photos WHERE album_id = ?)",
                 (album_id,),
             )
-            connection.execute("DELETE FROM person_clusters WHERE album_id = ?", (album_id,))
+            connection.execute(
+                "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
+            )
             connection.executemany(
                 "INSERT INTO person_clusters(id, album_id, label) VALUES (?, ?, 'Unknown')",
                 [(cluster_id, album_id) for cluster_id in cluster_ids],

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
+from functools import lru_cache
+from importlib.util import find_spec
 from pathlib import Path
+from typing import Sequence
 
 import cv2
 import numpy as np
@@ -60,6 +63,13 @@ class EmbeddingProvider(ABC):
     def embed_text(self, text: str) -> np.ndarray:
         raise NotImplementedError
 
+    def embed_images(self, paths: Sequence[Path]) -> list[np.ndarray]:
+        return [self.embed_image(path) for path in paths]
+
+
+class EmbeddingProviderUnavailableError(RuntimeError):
+    pass
+
 
 class LightweightSemanticProvider(EmbeddingProvider):
     """Deterministic CPU baseline in a shared, interpretable semantic space."""
@@ -96,7 +106,9 @@ class LightweightSemanticProvider(EmbeddingProvider):
 
         edges = cv2.Canny(gray, 80, 180)
         edge_density = float(np.mean(edges > 0))
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 35, minLineLength=18, maxLineGap=6)
+        lines = cv2.HoughLinesP(
+            edges, 1, np.pi / 180, 35, minLineLength=18, maxLineGap=6
+        )
         straight_line_score = min(1.0, 0.0 if lines is None else len(lines) / 45.0)
         aspect = width / max(height, 1)
         warm = float(warm_mask.mean())
@@ -143,14 +155,98 @@ class LightweightSemanticProvider(EmbeddingProvider):
         return _normalize(features)
 
 
-def create_embedding_provider(name: str) -> EmbeddingProvider:
-    normalized = name.strip().casefold()
+def create_embedding_provider(
+    name: str,
+    *,
+    cache_dir: Path | None = None,
+    device: str = "auto",
+    batch_size: int = 8,
+) -> EmbeddingProvider:
+    return _create_embedding_provider(
+        name.strip().casefold(),
+        str(cache_dir.resolve()) if cache_dir else "",
+        device.strip().casefold(),
+        batch_size,
+    )
+
+
+@lru_cache(maxsize=8)
+def _create_embedding_provider(
+    normalized: str,
+    cache_dir: str,
+    device: str,
+    batch_size: int,
+) -> EmbeddingProvider:
+    if batch_size < 1 or batch_size > 256:
+        raise ValueError("embedding batch size must be between 1 and 256")
     if normalized in {"lightweight", "lightweight-semantic-v1"}:
         return LightweightSemanticProvider()
+    if normalized in {
+        "openclip",
+        "openclip-multilingual",
+        "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+    }:
+        from ai.index.openclip_provider import OpenClipMultilingualProvider
+
+        return OpenClipMultilingualProvider(
+            cache_dir=Path(cache_dir) if cache_dir else Path(".norma/models"),
+            device=device,
+            batch_size=batch_size,
+        )
     raise ValueError(
-        f"Unknown embedding provider '{name}'. Available: lightweight. "
-        "Large providers are intentionally lazy and must be installed explicitly."
+        f"Unknown embedding provider '{normalized}'. "
+        "Available: lightweight, openclip-multilingual."
     )
+
+
+def embedding_provider_capabilities(active: str) -> list[dict[str, object]]:
+    active_normalized = active.strip().casefold()
+    return [
+        {
+            "id": "lightweight",
+            "name": LightweightSemanticProvider.name,
+            "dimension": LightweightSemanticProvider.dimension,
+            "available": True,
+            "model_backed": False,
+            "multilingual": "bounded-dictionary",
+            "active": active_normalized in {"lightweight", "lightweight-semantic-v1"},
+            "install_extra": None,
+        },
+        {
+            "id": "openclip-multilingual",
+            "name": "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+            "dimension": 512,
+            "available": all(
+                find_spec(module) is not None
+                for module in ("torch", "open_clip", "transformers")
+            ),
+            "model_backed": True,
+            "multilingual": "xlm-roberta",
+            "active": active_normalized
+            in {
+                "openclip",
+                "openclip-multilingual",
+                "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+            },
+            "install_extra": "multimodal",
+        },
+    ]
+
+
+def normalize_embedding(
+    vector: np.ndarray, expected_dimension: int, *, label: str
+) -> np.ndarray:
+    array = np.asarray(vector, dtype=np.float32)
+    if array.shape != (expected_dimension,):
+        raise ValueError(
+            f"{label} has shape {array.shape}, expected {(expected_dimension,)}"
+        )
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{label} contains non-finite values")
+    norm = float(np.linalg.norm(array))
+    if norm <= 1e-12:
+        raise ValueError(f"{label} is a zero embedding")
+    return array / norm
 
 
 def _normalize(vector: np.ndarray) -> np.ndarray:
