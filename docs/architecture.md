@@ -40,6 +40,10 @@ development server and proxies API/media routes to `python -m ai serve`.
 6. **M5:** persistent album catalog, selection history, and queued preparation jobs.
 7. **M6:** optional multilingual OpenCLIP, batch inference, and strict provider-scoped caches.
 8. **M7:** incremental indexing, source-fingerprinted vectors, chunk recovery, and job progress.
+9. **M8:** persistent relevance judgments and provider-scoped retrieval evaluation.
+10. **M9:** source-fingerprinted incremental people detection and cluster rebuilds.
+11. **M10:** reference-aware cache collection and asynchronous provider warmup.
+12. **M11:** disk usage accounting, quota policy, and persisted maintenance audits.
 
 ## Library lifecycle
 
@@ -57,6 +61,27 @@ and total photo counts.
 
 Video and world generation remain deferred until the personalized selection
 loop has stronger model providers and product evidence.
+
+## Maintenance and provider runtime
+
+`ai/maintenance/` scans only the generated `thumbnails`, `embeddings`, and
+`faces` roots. SQLite paths and inferred face-crop paths form the keep set.
+Model caches and source folders are outside the scan boundary. Collection is a
+dry-run by default, ignores young orphans for one hour by default, and refuses
+deletion while prepare jobs are queued or running.
+
+`ai/provider_runtime.py` owns one idempotent background warmup state machine for
+the active embedding provider. Status reads never load a model. A warmup request
+returns immediately and moves through `idle -> loading -> ready|failed`; a
+repeated request while loading does not create another model load. Optional
+startup prewarming uses the same path.
+
+SQLite schema v8 persists each explicit GC or quota request as a maintenance
+run with operation, dry-run flag, request, result/error, status, and timestamps.
+Usage accounting separates generated thumbnails/embeddings/faces, model files,
+and SQLite state. Quota enforcement can only invoke the orphan collector; it
+never evicts referenced caches or models automatically, and reports when the
+budget is impossible under that safety boundary.
 
 ## Library fast path and fallback
 
@@ -92,7 +117,24 @@ every photo vector. Stale photos are embedded in provider-sized chunks, each
 committed independently so a retry continues after the last completed chunk.
 Text, reference-photo, selection, and replacement paths reject incomplete,
 stale, or mixed-provider albums instead of comparing incompatible vector
-spaces.
+spaces. SQLite schema v6 additionally stores evaluation queries, 0..3 relevance
+judgments, and immutable evaluation run reports. Schema v7 adds per-photo face
+provider, source fingerprint, processed marker, and face count.
+
+## Retrieval evaluation
+
+`ai/evaluation/` turns model quality checks into a persistent workflow. A query
+belongs to one album, each photo can receive one current 0..3 judgment per
+query, and candidate ranking uses the same `RetrievalService` as production
+search. Therefore stale source files, incomplete caches, and provider mismatch
+fail evaluation through the same safety gate.
+
+Runs compute binary Precision/Recall and MRR from grades greater than zero, plus
+graded nDCG using the full 0..3 labels. Reports preserve the provider identity,
+cutoffs, ranked photo IDs, judgment snapshot, per-query metrics, macro metrics,
+and creation time in SQLite. Unjudged candidates are treated as non-relevant;
+queries with no judgments are counted as skipped instead of silently entering
+the macro average.
 
 ## People provider
 
@@ -102,9 +144,14 @@ and uses a conservative `0.985` similarity threshold. Single-face clusters stay
 visible instead of being forced into an identity group. This is pipeline
 scaffolding, not biometric identification.
 
-Re-indexing preserves semantic and people records for unchanged photos and
-invalidates them when a source changes or disappears. Generated files are
-disposable and SQLite never intentionally retains references to invalid caches.
+Re-indexing preserves semantic and face descriptor records for unchanged photos
+and invalidates only changed or removed photos. A source-fingerprint-current
+photo reuses its detection result, including an explicit zero-face result, when
+provider, recorded face count, descriptor files, and crop files all validate.
+After any local recomputation, clustering is rebuilt over both reused and new
+descriptors so cluster membership never mixes old and new topology. Generated
+files are disposable and SQLite never intentionally retains references to
+invalid caches.
 
 ## Structured selection
 

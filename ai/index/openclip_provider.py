@@ -42,6 +42,18 @@ class OpenClipMultilingualProvider(EmbeddingProvider):
         self._ensure_loaded()
         return self._device or "cpu"
 
+    @property
+    def model_backed(self) -> bool:
+        return True
+
+    @property
+    def is_loaded(self) -> bool:
+        return self._model is not None
+
+    @property
+    def runtime_device(self) -> str | None:
+        return self._device
+
     def embed_image(self, path: Path) -> np.ndarray:
         return self.embed_images([path])[0]
 

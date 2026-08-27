@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 type Workspace = "Library" | "AI Selection" | "About";
 
@@ -79,6 +79,8 @@ interface PeopleIndexResponse {
   album_id: string;
   total_faces: number;
   cluster_count: number;
+  computed_count: number;
+  reused_count: number;
   provider: string;
   duration_ms: number;
   clusters: PersonClusterSummary[];
@@ -150,9 +152,13 @@ const indexing = ref(false);
 const searching = ref(false);
 const indexingError = ref<string | null>(null);
 const searchError = ref<string | null>(null);
-const preferredPhotoId = ref<string | null>(null);
 const feedbackBusy = ref(false);
 const interactionMessage = ref<string | null>(null);
+const compareMode = ref(false);
+const compareChampionId = ref<string | null>(null);
+const compareCandidateIndex = ref(1);
+const compareCompleted = ref(false);
+const learnedComparisonCount = ref<number | null>(null);
 
 const statusLabel = computed(() =>
   worker.value.healthy ? "AI worker ready" : "AI worker unavailable",
@@ -186,7 +192,7 @@ async function indexFolder() {
   people.value = null;
   searchResult.value = null;
   selectionResult.value = null;
-  preferredPhotoId.value = null;
+  resetPreferenceCompare();
   interactionMessage.value = null;
   try {
     album.value = await api<AlbumIndexResponse>("/albums/index", {
@@ -218,7 +224,7 @@ async function runSearch() {
         body: JSON.stringify({ album_id: album.value.album_id, prompt: query }),
       });
       searchResult.value = null;
-      preferredPhotoId.value = null;
+      resetPreferenceCompare();
       interactionMessage.value = null;
     } else {
       searchResult.value = await api<AlbumSearchResponse>("/albums/search", {
@@ -226,6 +232,7 @@ async function runSearch() {
         body: JSON.stringify({ album_id: album.value.album_id, query, limit: 20 }),
       });
       selectionResult.value = null;
+      resetPreferenceCompare();
     }
   } catch (error) {
     searchError.value = String(error);
@@ -249,6 +256,7 @@ async function replacePhoto(photo: SelectedPhoto) {
     );
     if (result.feasible && result.updated_selection && result.replacement) {
       selectionResult.value = result.updated_selection;
+      resetPreferenceCompare();
       interactionMessage.value = `Replaced ${photo.filename} with ${result.replacement.filename}.`;
     } else {
       interactionMessage.value = result.explanation[0] ?? "No valid replacement found.";
@@ -260,18 +268,50 @@ async function replacePhoto(photo: SelectedPhoto) {
   }
 }
 
-async function pairwiseClick(photo: SelectedPhoto) {
-  if (!selectionResult.value || feedbackBusy.value) return;
-  if (!preferredPhotoId.value) {
-    preferredPhotoId.value = photo.photo_id;
-    interactionMessage.value = `Marked ${photo.filename} as preferred. Choose a less-preferred photo.`;
-    return;
-  }
-  if (preferredPhotoId.value === photo.photo_id) {
-    preferredPhotoId.value = null;
-    interactionMessage.value = null;
-    return;
-  }
+function resetPreferenceCompare() {
+  compareMode.value = false;
+  compareChampionId.value = null;
+  compareCandidateIndex.value = 1;
+  compareCompleted.value = false;
+}
+
+function startPreferenceCompare() {
+  const selected = selectionResult.value?.selected ?? [];
+  if (selected.length < 2 || feedbackBusy.value) return;
+  compareChampionId.value = selected[0].photo_id;
+  compareCandidateIndex.value = 1;
+  compareCompleted.value = false;
+  compareMode.value = true;
+  interactionMessage.value = null;
+}
+
+function stopPreferenceCompare() {
+  compareMode.value = false;
+}
+
+const compareChampion = computed<SelectedPhoto | null>(() => {
+  const selected = selectionResult.value?.selected ?? [];
+  return selected.find((photo) => photo.photo_id === compareChampionId.value) ?? null;
+});
+
+const compareChallenger = computed<SelectedPhoto | null>(() =>
+  selectionResult.value?.selected[compareCandidateIndex.value] ?? null,
+);
+
+const compareLeft = computed<SelectedPhoto | null>(() =>
+  compareCandidateIndex.value % 2 === 1 ? compareChampion.value : compareChallenger.value,
+);
+
+const compareRight = computed<SelectedPhoto | null>(() =>
+  compareCandidateIndex.value % 2 === 1 ? compareChallenger.value : compareChampion.value,
+);
+
+const compareRoundTotal = computed(() =>
+  Math.max(0, (selectionResult.value?.selected.length ?? 0) - 1),
+);
+
+async function choosePreference(preferred: SelectedPhoto, rejected: SelectedPhoto) {
+  if (!selectionResult.value || !compareMode.value || feedbackBusy.value) return;
   feedbackBusy.value = true;
   searchError.value = null;
   try {
@@ -279,17 +319,43 @@ async function pairwiseClick(photo: SelectedPhoto) {
       method: "POST",
       body: JSON.stringify({
         album_id: selectionResult.value.album_id,
-        preferred_photo_id: preferredPhotoId.value,
-        rejected_photo_id: photo.photo_id,
+        preferred_photo_id: preferred.photo_id,
+        rejected_photo_id: rejected.photo_id,
         selection_id: selectionResult.value.selection_id,
       }),
     });
-    preferredPhotoId.value = null;
-    interactionMessage.value = `Preference saved · ${result.comparisons} comparisons learned.`;
+    learnedComparisonCount.value = result.comparisons;
+    compareChampionId.value = preferred.photo_id;
+    if (compareCandidateIndex.value >= selectionResult.value.selected.length - 1) {
+      compareMode.value = false;
+      compareCompleted.value = true;
+      interactionMessage.value = `${preferred.filename} wins this preference round · ${result.comparisons} comparisons learned.`;
+    } else {
+      compareCandidateIndex.value += 1;
+    }
   } catch (error) {
     searchError.value = String(error);
   } finally {
     feedbackBusy.value = false;
+  }
+}
+
+function handleCompareKeydown(event: KeyboardEvent) {
+  if (!compareMode.value || feedbackBusy.value) return;
+  const target = event.target as HTMLElement | null;
+  if (target?.matches("input, textarea, select")) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    stopPreferenceCompare();
+    return;
+  }
+  if (event.key === "ArrowLeft" && compareLeft.value && compareRight.value) {
+    event.preventDefault();
+    void choosePreference(compareLeft.value, compareRight.value);
+  }
+  if (event.key === "ArrowRight" && compareLeft.value && compareRight.value) {
+    event.preventDefault();
+    void choosePreference(compareRight.value, compareLeft.value);
   }
 }
 
@@ -316,15 +382,23 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 const visiblePhotos = computed(() => album.value?.photos.filter((photo) => !photo.auto_reject) ?? []);
 const rejectedPhotos = computed(() => album.value?.photos.filter((photo) => photo.auto_reject) ?? []);
 
-onMounted(refreshWorker);
+onMounted(() => {
+  void refreshWorker();
+  window.addEventListener("keydown", handleCompareKeydown);
+});
+
+onBeforeUnmount(() => window.removeEventListener("keydown", handleCompareKeydown));
 </script>
 
 <template>
   <div class="app-shell">
     <aside class="sidebar">
-      <div>
-        <p class="eyebrow">Personal photo intelligence</p>
-        <h1>Norma</h1>
+      <div class="brand-lockup">
+        <span class="brand-mark">N</span>
+        <div>
+          <h1>Norma</h1>
+          <small>Local photo intelligence</small>
+        </div>
       </div>
 
       <nav aria-label="Workspaces">
@@ -336,42 +410,33 @@ onMounted(refreshWorker);
           @click="activeWorkspace = workspace"
         >
           <span>{{ workspace }}</span>
-          <span class="nav-index">0{{ workspaces.indexOf(workspace) + 1 }}</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
-        <label class="toggle-row">
-          <span>Developer Mode</span>
+        <label class="toggle-row" title="Developer mode">
+          <span>DEV</span>
           <input v-model="developerMode" type="checkbox" />
         </label>
-        <button class="status-card" @click="refreshWorker">
+        <button class="status-card" :title="worker.message" @click="refreshWorker">
           <span class="status-dot" :class="{ healthy: worker.healthy }" />
-          <span>
-            <strong>{{ statusLabel }}</strong>
-            <small>{{ worker.message }}</small>
-          </span>
+          <strong>{{ statusLabel }}</strong>
         </button>
       </div>
     </aside>
 
     <main>
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Workspace</p>
-          <h2>{{ activeWorkspace }}</h2>
-        </div>
-        <button class="ghost-button">Me <span class="avatar">N</span></button>
-      </header>
-
-      <section v-if="activeWorkspace === 'Library'" class="workspace library">
-        <div class="hero-copy">
-          <p class="section-kicker">Start with a place you remember</p>
-          <h3>Your photos stay where they are.</h3>
-          <p>
-            Norma reads JPG metadata and creates local thumbnails. Originals are
-            never modified, moved, or deleted.
-          </p>
+      <section
+        v-if="activeWorkspace === 'Library'"
+        class="workspace library"
+        :class="{ 'has-album': album }"
+      >
+        <div class="library-toolbar">
+          <div class="toolbar-title">
+            <p class="section-kicker">{{ album ? album.name : "Local library" }}</p>
+            <h3>{{ album ? `${album.total} photos` : "Open a photo folder" }}</h3>
+            <p v-if="!album">Originals stay untouched. Analysis and previews remain on this computer.</p>
+          </div>
           <div class="folder-input">
             <input
               v-model="selectedFolder"
@@ -386,19 +451,16 @@ onMounted(refreshWorker);
           </div>
           <p v-if="indexingError" class="error-message">{{ indexingError }}</p>
           <div v-if="album" class="album-stats">
-            <span>{{ album.total }} JPGs</span>
-            <span>{{ album.similar_groups }} similar groups</span>
-            <span>index {{ album.computed_count }} new · {{ album.reused_count }} reused · {{ album.duration_ms }} ms</span>
-            <span v-if="embedding">
-              semantic {{ embedding.computed_count }} new · {{ embedding.reused_count }} reused ·
-              {{ embedding.duration_ms }} ms
-            </span>
-            <span v-if="people">{{ people.total_faces }} faces · {{ people.cluster_count }} people groups</span>
+            <span>{{ visiblePhotos.length }} keep</span>
+            <span v-if="rejectedPhotos.length">{{ rejectedPhotos.length }} review</span>
+            <span>{{ album.similar_groups }} groups</span>
+            <span v-if="people">{{ people.cluster_count }} people</span>
+            <span v-if="embedding">{{ embedding.provider }}</span>
           </div>
         </div>
 
         <div v-if="album" class="library-results">
-          <div class="photo-grid" aria-label="Indexed photos">
+          <div class="photo-grid library-grid" aria-label="Indexed photos">
             <figure v-for="photo in visiblePhotos" :key="photo.id" class="photo-card">
               <img :src="thumbnailUrl(photo)" :alt="photo.filename" />
               <figcaption>
@@ -408,7 +470,7 @@ onMounted(refreshWorker);
             </figure>
           </div>
           <details v-if="rejectedPhotos.length" class="reject-fold">
-            <summary>AI suggested exclusions · {{ rejectedPhotos.length }}</summary>
+            <summary><span>Review</span> AI suggested exclusions · {{ rejectedPhotos.length }}</summary>
             <div class="photo-grid compact">
               <figure v-for="photo in rejectedPhotos" :key="photo.id" class="photo-card rejected">
                 <img :src="thumbnailUrl(photo)" :alt="photo.filename" />
@@ -419,31 +481,32 @@ onMounted(refreshWorker);
         </div>
 
         <div v-else class="empty-grid" aria-label="Photo library placeholder">
-          <div v-for="tile in 6" :key="tile" class="photo-placeholder">
+          <div v-for="tile in 8" :key="tile" class="photo-placeholder">
             <span>{{ String(tile).padStart(2, "0") }}</span>
           </div>
         </div>
       </section>
 
       <section v-else-if="activeWorkspace === 'AI Selection'" class="workspace selection">
-        <div class="selection-heading">
-          <p class="section-kicker">Grounded selection</p>
-          <h3>Describe the collection, not the clicks.</h3>
-          <p>Hard constraints remain explicit. Soft taste stays adjustable.</p>
-        </div>
-        <div class="command-bar">
-          <input
-            v-model="command"
-            aria-label="Ask anything about this album"
-            :disabled="!embedding || searching"
-            :placeholder="embedding ? 'Try: 选 12 张夜景，质量至少 45…' : 'Import an album first…'"
-            @keyup.enter="runSearch"
-          />
-          <button
-            aria-label="Run command"
-            :disabled="!embedding || !command.trim() || searching"
-            @click="runSearch"
-          >{{ searching ? "…" : "↗" }}</button>
+        <div class="selection-toolbar">
+          <div class="toolbar-title">
+            <p class="section-kicker">AI selection</p>
+            <h3>{{ album?.name ?? "No album open" }}</h3>
+          </div>
+          <div class="command-bar">
+            <input
+              v-model="command"
+              aria-label="Ask anything about this album"
+              :disabled="!embedding || searching"
+              :placeholder="embedding ? '搜索照片，或输入：选 12 张夜景，质量至少 45…' : '先在 Library 打开相册'"
+              @keyup.enter="runSearch"
+            />
+            <button
+              aria-label="Run command"
+              :disabled="!embedding || !command.trim() || searching"
+              @click="runSearch"
+            >{{ searching ? "…" : "Search" }}</button>
+          </div>
         </div>
         <p v-if="searchError" class="error-message">{{ searchError }}</p>
         <div v-if="selectionResult" class="search-results">
@@ -451,17 +514,77 @@ onMounted(refreshWorker);
             <p>
               {{ selectionResult.feasible ? `${selectionResult.selected.length} selected photos` : "Hard constraints are infeasible" }}
             </p>
-            <small>{{ selectionResult.solver }} · {{ selectionResult.solver_status }} · {{ selectionResult.duration_ms }} ms</small>
+            <div class="selection-summary-actions">
+              <small>{{ selectionResult.solver }} · {{ selectionResult.solver_status }} · {{ selectionResult.duration_ms }} ms</small>
+              <button
+                v-if="selectionResult.selected.length > 1 && !compareMode"
+                class="compare-launch"
+                :disabled="feedbackBusy"
+                @click="startPreferenceCompare"
+              >{{ compareCompleted ? "Compare again" : "A/B preference" }}</button>
+            </div>
           </div>
-          <div class="constraint-row">
+          <div v-if="!compareMode" class="constraint-row">
             <span>count = {{ selectionResult.constraints.target_count }}</span>
             <span>quality ≥ {{ selectionResult.constraints.min_quality }}</span>
             <span>similar group ≤ {{ selectionResult.constraints.max_per_similarity_group }}</span>
             <span>{{ selectionResult.constraints.exclude_rejects ? "rejects excluded" : "rejects allowed" }}</span>
+            <span v-if="learnedComparisonCount !== null">{{ learnedComparisonCount }} preferences learned</span>
           </div>
           <p v-for="warning in selectionResult.warnings" :key="warning" class="selection-warning">{{ warning }}</p>
-          <p v-if="interactionMessage" class="interaction-message">{{ interactionMessage }}</p>
-          <div v-if="selectionResult.selected.length" class="photo-grid" aria-label="Optimized collection">
+          <p v-if="interactionMessage" class="interaction-message" role="status" aria-live="polite">{{ interactionMessage }}</p>
+
+          <section
+            v-if="compareMode && compareLeft && compareRight"
+            class="preference-arena"
+            aria-label="A/B photo preference comparison"
+          >
+            <header class="preference-arena-header">
+              <div>
+                <span>Preference arena</span>
+                <strong>Round {{ compareCandidateIndex }} / {{ compareRoundTotal }}</strong>
+              </div>
+              <p>Choose the photo you prefer. The winner meets the next challenger.</p>
+              <button class="arena-exit" :disabled="feedbackBusy" @click="stopPreferenceCompare">Exit</button>
+            </header>
+
+            <div class="preference-stage" :aria-busy="feedbackBusy">
+              <button
+                class="preference-choice left"
+                :disabled="feedbackBusy"
+                :aria-label="`Prefer ${compareLeft.filename}`"
+                @click="choosePreference(compareLeft, compareRight)"
+              >
+                <img :src="compareLeft.thumbnail_url" :alt="compareLeft.filename" />
+                <span class="choice-key">←</span>
+                <span class="choice-caption">
+                  <strong>{{ compareLeft.filename }}</strong>
+                  <small>Q {{ compareLeft.quality_score.toFixed(0) }} · score {{ compareLeft.total_score.toFixed(3) }}</small>
+                </span>
+              </button>
+              <button
+                class="preference-choice right"
+                :disabled="feedbackBusy"
+                :aria-label="`Prefer ${compareRight.filename}`"
+                @click="choosePreference(compareRight, compareLeft)"
+              >
+                <img :src="compareRight.thumbnail_url" :alt="compareRight.filename" />
+                <span class="choice-key">→</span>
+                <span class="choice-caption">
+                  <strong>{{ compareRight.filename }}</strong>
+                  <small>Q {{ compareRight.quality_score.toFixed(0) }} · score {{ compareRight.total_score.toFixed(3) }}</small>
+                </span>
+              </button>
+            </div>
+
+            <footer class="preference-arena-footer">
+              <span><kbd>←</kbd> prefer left</span>
+              <span>{{ feedbackBusy ? "Saving preference…" : "Click a photo or use the arrow keys" }}</span>
+              <span><kbd>→</kbd> prefer right</span>
+            </footer>
+          </section>
+
+          <div v-else-if="selectionResult.selected.length" class="photo-grid" aria-label="Optimized collection">
             <figure v-for="photo in selectionResult.selected" :key="photo.photo_id" class="photo-card">
               <img :src="photo.thumbnail_url" :alt="photo.filename" />
               <figcaption>
@@ -470,11 +593,6 @@ onMounted(refreshWorker);
               </figcaption>
               <div class="photo-actions">
                 <button :disabled="feedbackBusy" @click="replacePhoto(photo)">Replace</button>
-                <button
-                  :class="{ active: preferredPhotoId === photo.photo_id }"
-                  :disabled="feedbackBusy"
-                  @click="pairwiseClick(photo)"
-                >{{ preferredPhotoId === photo.photo_id ? "Cancel" : preferredPhotoId ? "Less preferred" : "Prefer" }}</button>
               </div>
               <details class="photo-reasons">
                 <summary>Why this photo</summary>
@@ -499,13 +617,16 @@ onMounted(refreshWorker);
           </div>
         </div>
         <div v-else class="result-surface">
-          <p>{{ embedding ? "Ready for a grounded search" : "No semantic index yet" }}</p>
-          <small>{{ embedding ? "Search uses only the current local album." : "Import an album, then ask Norma to find photos." }}</small>
+          <p>{{ embedding ? "Search, select, compare." : "Open an album to begin." }}</p>
+          <small>{{ embedding ? "Try “夜景”, or “选 12 张人像，每个相似组最多 1 张”." : "Your local photo index will appear here." }}</small>
         </div>
         <section v-if="people?.clusters.length" class="people-surface" aria-label="People groups">
           <div class="search-summary">
             <p>People in this album</p>
-            <small>{{ people.provider }} · {{ people.total_faces }} faces</small>
+            <small>
+              {{ people.provider }} · {{ people.total_faces }} faces ·
+              {{ people.computed_count }} new / {{ people.reused_count }} reused
+            </small>
           </div>
           <div class="people-grid">
             <article v-for="cluster in people.clusters" :key="cluster.cluster_id" class="person-card">

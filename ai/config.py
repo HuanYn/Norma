@@ -16,6 +16,8 @@ class Settings:
     embedding_device: str = "auto"
     embedding_batch_size: int = 8
     model_cache_root: Path | None = None
+    prewarm_embedding: bool = False
+    cache_budget_bytes: int | None = None
 
     @property
     def database_path(self) -> Path:
@@ -28,6 +30,13 @@ class Settings:
 
 def load_settings() -> Settings:
     model_cache = os.getenv("NORMA_MODEL_CACHE_DIR")
+    cache_budget_gb = os.getenv("NORMA_CACHE_BUDGET_GB")
+    cache_budget_bytes = None
+    if cache_budget_gb:
+        value = float(cache_budget_gb)
+        if value <= 0:
+            raise ValueError("NORMA_CACHE_BUDGET_GB must be greater than zero")
+        cache_budget_bytes = round(value * 1024**3)
     return Settings(
         host=os.getenv("NORMA_HOST", "127.0.0.1"),
         port=int(os.getenv("NORMA_PORT", "8765")),
@@ -38,4 +47,7 @@ def load_settings() -> Settings:
         embedding_device=os.getenv("NORMA_EMBEDDING_DEVICE", "auto"),
         embedding_batch_size=int(os.getenv("NORMA_EMBEDDING_BATCH_SIZE", "8")),
         model_cache_root=Path(model_cache).resolve() if model_cache else None,
+        prewarm_embedding=os.getenv("NORMA_PREWARM_EMBEDDING", "0").strip().casefold()
+        in {"1", "true", "yes", "on"},
+        cache_budget_bytes=cache_budget_bytes,
     )

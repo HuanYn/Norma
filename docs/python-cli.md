@@ -26,6 +26,8 @@ Inspect provider availability and the active versioned cache identity:
 
 ```powershell
 python -m ai --pretty providers
+python -m ai --pretty provider-status
+python -m ai --pretty warmup
 ```
 
 See [multimodal-provider.md](multimodal-provider.md) for model cache and device
@@ -84,6 +86,43 @@ python -m ai --pretty show-job JOB_ID
 
 Replacement locks every non-removed photo and returns infeasible rather than
 silently relaxing the original hard constraints.
+
+## Human relevance evaluation
+
+```powershell
+python -m ai --pretty eval-add-query ALBUM_ID "城市夜景" `
+  --notes "人工评估查询"
+python -m ai --pretty eval-queries ALBUM_ID
+python -m ai --pretty eval-candidates QUERY_ID --limit 50
+python -m ai --pretty eval-judge QUERY_ID PHOTO_ID 3 --annotator local
+python -m ai --pretty eval-run ALBUM_ID --cutoffs 1 5 10 20
+python -m ai --pretty eval-show-run RUN_ID
+```
+
+Relevance uses four grades: `0` not relevant, `1` marginal, `2` relevant, and
+`3` highly relevant. Label the retrieved pool as well as known misses whenever
+possible. Unjudged photos count as non-relevant in a run, so sparse labels can
+underestimate recall. Each run persists its rankings and label snapshot for
+later audit.
+
+## Cache maintenance
+
+```powershell
+# Default: report old unreferenced generated files without deleting anything
+python -m ai --pretty cache-gc
+
+# Review the report, then explicitly apply with the same age boundary
+python -m ai --pretty cache-gc --apply --min-age-seconds 3600
+python -m ai --pretty cache-usage
+python -m ai --pretty cache-enforce --budget-gb 20
+python -m ai --pretty cache-enforce --budget-gb 20 --apply
+python -m ai --pretty maintenance-runs --limit 20
+```
+
+The collector only scans derived thumbnail, embedding, and face roots under the
+selected `--data-dir`. It never scans the model cache or source photo folders.
+Apply mode is blocked while prepare jobs are queued or running. Keep a nonzero
+age boundary when direct synchronous API work may be running.
 
 ## Website and API process
 

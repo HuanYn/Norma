@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 from ai import app as app_module
 from ai.config import Settings
 from ai.index import AlbumIndexer
-from ai.people.indexer import PeopleIndexer
+from ai.people.indexer import PeopleCancelledError, PeopleIndexer
 from ai.people.provider import DetectedFace, FaceProvider
 from ai.storage import Database
 
@@ -18,7 +18,11 @@ class FakeFaceProvider(FaceProvider):
     name = "fake-face-v1"
     dimension = 3
 
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
     def detect(self, path: Path) -> list[DetectedFace]:
+        self.calls.append(path.name)
         if "no-face" in path.name:
             return []
         descriptor = (
@@ -79,6 +83,8 @@ def test_people_index_clusters_conservatively_and_persists(
     assert payload["provider"] == "fake-face-v1"
     assert payload["total_faces"] == 3
     assert payload["cluster_count"] == 2
+    assert payload["computed_count"] == 4
+    assert payload["reused_count"] == 0
     assert sorted(len(cluster["faces"]) for cluster in payload["clusters"]) == [1, 2]
     assert all(
         Path(data_dir / match["thumbnail_url"].removeprefix("/media/")).exists()
@@ -97,14 +103,26 @@ def test_people_index_clusters_conservatively_and_persists(
     with database.connect() as connection:
         assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 3
 
+    repeated = service.index(indexed.album_id)
+    assert repeated.computed_count == 0
+    assert repeated.reused_count == 4
+    assert len(service.provider.calls) == 4
+
     _photo(album / "person-a-1.jpg", "red")
     AlbumIndexer(database, data_dir).index(album)
     with database.connect() as connection:
-        assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 2
         assert (
             connection.execute("SELECT COUNT(*) FROM person_clusters").fetchone()[0]
             == 0
         )
+
+    refreshed = service.index(indexed.album_id)
+    assert refreshed.total_faces == 3
+    assert refreshed.cluster_count == 2
+    assert refreshed.computed_count == 1
+    assert refreshed.reused_count == 3
+    assert service.provider.calls[-1] == "person-a-1.jpg"
 
 
 def test_people_index_rejects_missing_album(tmp_path: Path) -> None:
@@ -117,3 +135,79 @@ def test_people_index_rejects_missing_album(tmp_path: Path) -> None:
         assert "not found" in str(error)
     else:
         raise AssertionError("missing album should raise KeyError")
+
+
+def test_people_index_recomputes_only_corrupt_face_cache(tmp_path: Path) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    _photo(album / "person-a.jpg", "navy")
+    _photo(album / "person-b.jpg", "green")
+    data_dir = tmp_path / "data"
+    database = Database(data_dir / "norma.db")
+    indexed = AlbumIndexer(database, data_dir).index(album)
+    provider = FakeFaceProvider()
+    service = PeopleIndexer(database, data_dir, provider)
+    first = service.index(indexed.album_id)
+    assert first.computed_count == 2
+
+    with database.connect() as connection:
+        corrupt = connection.execute(
+            """
+            SELECT f.embedding_path FROM faces f JOIN photos p ON p.id = f.photo_id
+            WHERE p.absolute_path LIKE '%person-b.jpg'
+            """
+        ).fetchone()
+    Path(corrupt["embedding_path"]).unlink()
+
+    second = service.index(indexed.album_id)
+    assert second.computed_count == 1
+    assert second.reused_count == 1
+    assert provider.calls.count("person-a.jpg") == 1
+    assert provider.calls.count("person-b.jpg") == 2
+
+
+def test_people_index_checks_stale_sources_and_cancels_between_photos(
+    tmp_path: Path,
+) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    _photo(album / "person-a.jpg", "navy")
+    _photo(album / "person-b.jpg", "green")
+    data_dir = tmp_path / "data"
+    database = Database(data_dir / "norma.db")
+    indexed = AlbumIndexer(database, data_dir).index(album)
+    service = PeopleIndexer(database, data_dir, FakeFaceProvider())
+
+    cancel = False
+
+    def progress(completed: int, total: int) -> None:
+        nonlocal cancel
+        assert total == 2
+        if completed == 1:
+            cancel = True
+
+    try:
+        service.index(
+            indexed.album_id,
+            on_progress=progress,
+            should_cancel=lambda: cancel,
+        )
+    except PeopleCancelledError as error:
+        assert "between photos" in str(error)
+    else:
+        raise AssertionError("people indexing should honor cancellation")
+
+    with database.connect() as connection:
+        processed = connection.execute(
+            "SELECT SUM(face_processed) FROM photos WHERE album_id = ?",
+            (indexed.album_id,),
+        ).fetchone()[0]
+    assert processed == 0
+
+    _photo(album / "person-a.jpg", "red")
+    try:
+        service.index(indexed.album_id)
+    except ValueError as error:
+        assert "source changed since indexing" in str(error)
+    else:
+        raise AssertionError("stale source should require re-indexing")

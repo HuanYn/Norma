@@ -224,14 +224,26 @@ class AlbumIndexer:
             )
             current_ids = {photo.id for photo in photos}
             existing = connection.execute(
-                "SELECT id FROM photos WHERE album_id = ?", (album_id,)
+                "SELECT id, file_size, source_mtime_ns FROM photos WHERE album_id = ?",
+                (album_id,),
             ).fetchall()
+            existing_by_id = {row["id"]: row for row in existing}
             stale = [row["id"] for row in existing if row["id"] not in current_ids]
-            if stale or any(not photo.reused for photo in photos):
-                connection.execute(
-                    "DELETE FROM faces WHERE photo_id IN "
-                    "(SELECT id FROM photos WHERE album_id = ?)",
-                    (album_id,),
+            changed = [
+                photo.id
+                for photo in photos
+                if photo.id in existing_by_id
+                and (
+                    existing_by_id[photo.id]["file_size"] != photo.file_size
+                    or existing_by_id[photo.id]["source_mtime_ns"]
+                    != photo.source_mtime_ns
+                )
+            ]
+            invalid_people_ids = stale + changed
+            if invalid_people_ids:
+                connection.executemany(
+                    "DELETE FROM faces WHERE photo_id = ?",
+                    [(photo_id,) for photo_id in invalid_people_ids],
                 )
                 connection.execute(
                     "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
@@ -279,7 +291,27 @@ class AlbumIndexer:
                     embedding_source_mtime_ns=CASE
                         WHEN photos.file_size = excluded.file_size
                          AND photos.source_mtime_ns = excluded.source_mtime_ns
-                        THEN photos.embedding_source_mtime_ns ELSE NULL END
+                        THEN photos.embedding_source_mtime_ns ELSE NULL END,
+                    face_provider=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.face_provider ELSE NULL END,
+                    face_source_size=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.face_source_size ELSE NULL END,
+                    face_source_mtime_ns=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.face_source_mtime_ns ELSE NULL END,
+                    face_processed=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.face_processed ELSE 0 END,
+                    face_count=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                        THEN photos.face_count ELSE 0 END
                 """,
                 [
                     (

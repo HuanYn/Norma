@@ -3,12 +3,14 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Any, Sequence
 
 import uvicorn
 
 from ai.config import Settings, load_settings
+from ai.evaluation import EvaluationService
 from ai.index import AlbumIndexer
 from ai.index.embedding import (
     create_embedding_provider,
@@ -16,13 +18,22 @@ from ai.index.embedding import (
 )
 from ai.jobs import get_persisted_job, list_persisted_jobs
 from ai.library import AlbumCatalogService
+from ai.maintenance import CacheMaintenanceService
 from ai.people import PeopleIndexer, create_face_provider
 from ai.preferences import PreferenceService
 from ai.preferences.model import load_preference_model
 from ai.retrieval import RetrievalService
 from ai.schemas import (
     AlbumSearchRequest,
+    CacheGcRequest,
+    CacheQuotaRequest,
+    EmbeddingProviderStatusResponse,
+    EmbeddingProviderWarmupResponse,
+    EvaluationQueryCreateRequest,
+    EvaluationRunRequest,
     PairwiseFeedbackRequest,
+    RelevanceJudgmentBatchRequest,
+    RelevanceJudgmentInput,
     SelectionReplacementRequest,
     SelectionRequest,
 )
@@ -48,6 +59,29 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("init", help="Initialize the local SQLite database")
     commands.add_parser("albums", help="List indexed albums")
     commands.add_parser("providers", help="List embedding providers and availability")
+    commands.add_parser("provider-status", help="Show active provider load state")
+    commands.add_parser("warmup", help="Load and probe the active embedding provider")
+
+    cache_gc = commands.add_parser(
+        "cache-gc", help="Audit or delete old unreferenced generated cache files"
+    )
+    cache_gc.add_argument(
+        "--apply", action="store_true", help="Delete eligible files; default is dry-run"
+    )
+    cache_gc.add_argument("--min-age-seconds", type=int, default=3600)
+
+    commands.add_parser("cache-usage", help="Show cache/model/database disk usage")
+    cache_enforce = commands.add_parser(
+        "cache-enforce", help="Dry-run or enforce the configured cache budget"
+    )
+    cache_enforce.add_argument("--budget-gb", type=float)
+    cache_enforce.add_argument("--apply", action="store_true")
+    cache_enforce.add_argument("--min-age-seconds", type=int, default=3600)
+    maintenance_runs = commands.add_parser(
+        "maintenance-runs", help="List persisted maintenance audit records"
+    )
+    maintenance_runs.add_argument("--limit", type=int, default=50)
+    maintenance_runs.add_argument("--offset", type=int, default=0)
 
     album = commands.add_parser("album", help="Show persisted album statistics")
     album.add_argument("album_id")
@@ -129,6 +163,44 @@ def build_parser() -> argparse.ArgumentParser:
     job = commands.add_parser("show-job", help="Show one persisted background job")
     job.add_argument("job_id")
 
+    eval_add = commands.add_parser(
+        "eval-add-query", help="Add a human relevance evaluation query"
+    )
+    eval_add.add_argument("album_id")
+    eval_add.add_argument("query")
+    eval_add.add_argument("--notes")
+
+    eval_queries = commands.add_parser(
+        "eval-queries", help="List evaluation queries for an album"
+    )
+    eval_queries.add_argument("album_id")
+
+    eval_candidates = commands.add_parser(
+        "eval-candidates", help="Rank candidates for manual relevance labeling"
+    )
+    eval_candidates.add_argument("query_id")
+    eval_candidates.add_argument("--limit", type=int, default=50)
+
+    eval_judge = commands.add_parser(
+        "eval-judge", help="Set one 0..3 relevance judgment"
+    )
+    eval_judge.add_argument("query_id")
+    eval_judge.add_argument("photo_id")
+    eval_judge.add_argument("relevance", type=int, choices=range(4))
+    eval_judge.add_argument("--annotator", default="local")
+
+    eval_run = commands.add_parser(
+        "eval-run", help="Compute and persist retrieval metrics"
+    )
+    eval_run.add_argument("album_id")
+    eval_run.add_argument("--cutoffs", type=int, nargs="+", default=[1, 5, 10])
+    eval_run.add_argument("--query-id", action="append", dest="query_ids")
+
+    eval_show = commands.add_parser(
+        "eval-show-run", help="Read a persisted retrieval evaluation report"
+    )
+    eval_show.add_argument("run_id")
+
     for name, help_text in (
         ("web", "Run the local Norma website"),
         ("serve", "Run the local FastAPI server"),
@@ -188,6 +260,8 @@ def _dispatch(
     database: Database,
     provider: Any,
 ) -> Any:
+    retrieval = RetrievalService(database, settings.data_dir, provider)
+    evaluation = EvaluationService(database, retrieval)
     if args.command == "init":
         return {
             "database": str(database.path),
@@ -205,6 +279,69 @@ def _dispatch(
         return [dict(row) for row in rows]
     if args.command == "providers":
         return embedding_provider_capabilities(settings.embedding_provider)
+    if args.command == "provider-status":
+        return EmbeddingProviderStatusResponse(
+            provider=provider.name,
+            dimension=provider.dimension,
+            model_backed=provider.model_backed,
+            loaded=provider.is_loaded,
+            device=provider.runtime_device,
+            warmup_state="ready" if provider.is_loaded else "idle",
+        ).model_dump()
+    if args.command == "warmup":
+        loaded_before = provider.is_loaded
+        started = time.perf_counter()
+        provider.warmup()
+        return EmbeddingProviderWarmupResponse(
+            provider=provider.name,
+            dimension=provider.dimension,
+            model_backed=provider.model_backed,
+            loaded_before=loaded_before,
+            loaded_after=provider.is_loaded,
+            device=provider.runtime_device,
+            duration_ms=round((time.perf_counter() - started) * 1000),
+        ).model_dump()
+    if args.command == "cache-gc":
+        return (
+            CacheMaintenanceService(
+                database,
+                settings.data_dir,
+                model_cache_dir=settings.model_cache_dir,
+                budget_bytes=settings.cache_budget_bytes,
+            )
+            .collect(
+                CacheGcRequest(
+                    dry_run=not args.apply,
+                    min_age_seconds=args.min_age_seconds,
+                )
+            )
+            .model_dump()
+        )
+    if args.command in {"cache-usage", "cache-enforce", "maintenance-runs"}:
+        maintenance = CacheMaintenanceService(
+            database,
+            settings.data_dir,
+            model_cache_dir=settings.model_cache_dir,
+            budget_bytes=settings.cache_budget_bytes,
+        )
+        if args.command == "cache-usage":
+            return maintenance.usage().model_dump()
+        if args.command == "cache-enforce":
+            if args.budget_gb is not None and args.budget_gb <= 0:
+                raise ValueError("budget-gb must be greater than zero")
+            budget = (
+                round(args.budget_gb * 1024**3) if args.budget_gb is not None else None
+            )
+            return maintenance.enforce_quota(
+                CacheQuotaRequest(
+                    budget_bytes=budget,
+                    dry_run=not args.apply,
+                    min_age_seconds=args.min_age_seconds,
+                )
+            ).model_dump()
+        if args.limit < 1 or args.limit > 200 or args.offset < 0:
+            raise ValueError("limit must be 1..200 and offset must be non-negative")
+        return maintenance.list_runs(limit=args.limit, offset=args.offset).model_dump()
     if args.command == "album":
         return AlbumCatalogService(database).get_album(args.album_id).model_dump()
     if args.command == "photos":
@@ -261,11 +398,7 @@ def _dispatch(
             "people": people.model_dump() if people else None,
         }
     if args.command == "embed":
-        return (
-            RetrievalService(database, settings.data_dir, provider)
-            .embed_album(args.album_id)
-            .model_dump()
-        )
+        return retrieval.embed_album(args.album_id).model_dump()
     if args.command == "search":
         return (
             RetrievalService(database, settings.data_dir, provider)
@@ -357,6 +490,41 @@ def _dispatch(
         ).model_dump()
     if args.command == "show-job":
         return get_persisted_job(database, args.job_id).model_dump()
+    if args.command == "eval-add-query":
+        return evaluation.create_query(
+            EvaluationQueryCreateRequest(
+                album_id=args.album_id,
+                query_text=args.query,
+                notes=args.notes,
+            )
+        ).model_dump()
+    if args.command == "eval-queries":
+        return evaluation.list_queries(args.album_id).model_dump()
+    if args.command == "eval-candidates":
+        return evaluation.candidates(args.query_id, limit=args.limit).model_dump()
+    if args.command == "eval-judge":
+        return evaluation.upsert_judgments(
+            args.query_id,
+            RelevanceJudgmentBatchRequest(
+                annotator=args.annotator,
+                judgments=[
+                    RelevanceJudgmentInput(
+                        photo_id=args.photo_id,
+                        relevance=args.relevance,
+                    )
+                ],
+            ),
+        ).model_dump()
+    if args.command == "eval-run":
+        return evaluation.run(
+            args.album_id,
+            EvaluationRunRequest(
+                query_ids=args.query_ids,
+                cutoffs=args.cutoffs,
+            ),
+        ).model_dump()
+    if args.command == "eval-show-run":
+        return evaluation.get_run(args.run_id).model_dump()
     raise RuntimeError(f"unhandled command: {args.command}")
 
 
@@ -374,6 +542,8 @@ def _settings(data_dir: Path | None) -> Settings:
         embedding_device=current.embedding_device,
         embedding_batch_size=current.embedding_batch_size,
         model_cache_root=current.model_cache_root,
+        prewarm_embedding=current.prewarm_embedding,
+        cache_budget_bytes=current.cache_budget_bytes,
     )
 
 

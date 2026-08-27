@@ -66,6 +66,25 @@ class EmbeddingProvider(ABC):
     def embed_images(self, paths: Sequence[Path]) -> list[np.ndarray]:
         return [self.embed_image(path) for path in paths]
 
+    @property
+    def model_backed(self) -> bool:
+        return False
+
+    @property
+    def is_loaded(self) -> bool:
+        return True
+
+    @property
+    def runtime_device(self) -> str | None:
+        return "cpu"
+
+    def warmup(self) -> None:
+        normalize_embedding(
+            self.embed_text("portrait"),
+            self.dimension,
+            label="embedding warmup probe",
+        )
+
 
 class EmbeddingProviderUnavailableError(RuntimeError):
     pass

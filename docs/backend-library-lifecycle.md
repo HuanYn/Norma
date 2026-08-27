@@ -51,17 +51,21 @@ queued -> running/indexing -> running/embedding -> running/people -> completed
                               \-> failed
 ```
 
-Cancellation is cooperative between stages and embedding chunks. It never
-interrupts a photo while the source is being read. Embedding-stage progress
-stores compact `completed` / `total` counts and advances between 55% and 80%.
+Cancellation is cooperative between stages, embedding chunks, and people-stage
+photo boundaries. It never interrupts a photo while the source is being read.
+Embedding progress advances between 55% and 80%; people progress advances
+between 82% and 98%. Both store compact `completed` / `total` counts.
 If the process exits during a running job, the next startup records that job as
 `failed/interrupted`; queued jobs are scheduled again. Valid chunks remain
 reusable, so a new prepare job computes only the missing photos.
 
-SQLite schema v5 fingerprints indexed sources with file size and nanosecond
+SQLite schema v7 fingerprints indexed sources with file size and nanosecond
 modification time. An unchanged re-index reuses analysis/thumbnails; embedding
 also requires the active provider and its recorded source fingerprint to match.
-Stage summaries expose `computed_count` and `reused_count` for auditing.
+People analysis separately records provider, source fingerprint, processed
+state, and face count, so unchanged photos—including zero-face photos—reuse
+detection while clusters are rebuilt from the combined descriptors. Stage
+summaries expose `computed_count` and `reused_count` for auditing.
 
 Duplicate active jobs for the same resolved folder are rejected with HTTP 409.
 Completed results contain compact stage summaries rather than thousands of

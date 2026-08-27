@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 8
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -41,6 +41,11 @@ CREATE TABLE IF NOT EXISTS photos (
     embedding_provider TEXT,
     embedding_source_size INTEGER,
     embedding_source_mtime_ns INTEGER,
+    face_provider TEXT,
+    face_source_size INTEGER,
+    face_source_mtime_ns INTEGER,
+    face_processed INTEGER NOT NULL DEFAULT 0,
+    face_count INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -99,6 +104,56 @@ CREATE TABLE IF NOT EXISTS jobs (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS evaluation_queries (
+    id TEXT PRIMARY KEY,
+    album_id TEXT NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
+    query_text TEXT NOT NULL,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(album_id, query_text)
+);
+
+CREATE TABLE IF NOT EXISTS relevance_judgments (
+    query_id TEXT NOT NULL REFERENCES evaluation_queries(id) ON DELETE CASCADE,
+    photo_id TEXT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+    relevance INTEGER NOT NULL CHECK(relevance BETWEEN 0 AND 3),
+    annotator TEXT NOT NULL DEFAULT 'local',
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(query_id, photo_id)
+);
+
+CREATE TABLE IF NOT EXISTS evaluation_runs (
+    id TEXT PRIMARY KEY,
+    album_id TEXT NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
+    embedding_provider TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_evaluation_queries_album
+    ON evaluation_queries(album_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_relevance_judgments_query
+    ON relevance_judgments(query_id, relevance);
+CREATE INDEX IF NOT EXISTS idx_evaluation_runs_album
+    ON evaluation_runs(album_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS maintenance_runs (
+    id TEXT PRIMARY KEY,
+    operation TEXT NOT NULL,
+    status TEXT NOT NULL,
+    dry_run INTEGER NOT NULL DEFAULT 1,
+    request_json TEXT NOT NULL,
+    result_json TEXT,
+    error TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finished_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_maintenance_runs_created
+    ON maintenance_runs(created_at DESC, id DESC);
 """
 
 PHOTO_COLUMNS_V2: dict[str, str] = {
@@ -126,6 +181,14 @@ PHOTO_COLUMNS_V5: dict[str, str] = {
     "source_mtime_ns": "INTEGER",
     "embedding_source_size": "INTEGER",
     "embedding_source_mtime_ns": "INTEGER",
+}
+
+PHOTO_COLUMNS_V7: dict[str, str] = {
+    "face_provider": "TEXT",
+    "face_source_size": "INTEGER",
+    "face_source_mtime_ns": "INTEGER",
+    "face_processed": "INTEGER NOT NULL DEFAULT 0",
+    "face_count": "INTEGER NOT NULL DEFAULT 0",
 }
 
 
@@ -216,6 +279,82 @@ class Database:
                         album_id, embedding_provider,
                         embedding_source_size, embedding_source_mtime_ns
                     )
+                """
+            )
+            return
+        if version == 6:
+            connection.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS evaluation_queries (
+                    id TEXT PRIMARY KEY,
+                    album_id TEXT NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
+                    query_text TEXT NOT NULL,
+                    notes TEXT,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(album_id, query_text)
+                );
+                CREATE TABLE IF NOT EXISTS relevance_judgments (
+                    query_id TEXT NOT NULL
+                        REFERENCES evaluation_queries(id) ON DELETE CASCADE,
+                    photo_id TEXT NOT NULL REFERENCES photos(id) ON DELETE CASCADE,
+                    relevance INTEGER NOT NULL CHECK(relevance BETWEEN 0 AND 3),
+                    annotator TEXT NOT NULL DEFAULT 'local',
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY(query_id, photo_id)
+                );
+                CREATE TABLE IF NOT EXISTS evaluation_runs (
+                    id TEXT PRIMARY KEY,
+                    album_id TEXT NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
+                    embedding_provider TEXT NOT NULL,
+                    request_json TEXT NOT NULL,
+                    result_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_evaluation_queries_album
+                    ON evaluation_queries(album_id, created_at);
+                CREATE INDEX IF NOT EXISTS idx_relevance_judgments_query
+                    ON relevance_judgments(query_id, relevance);
+                CREATE INDEX IF NOT EXISTS idx_evaluation_runs_album
+                    ON evaluation_runs(album_id, created_at DESC);
+                """
+            )
+            return
+        if version == 7:
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            for name, declaration in PHOTO_COLUMNS_V7.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
+                    )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_photos_face_freshness
+                    ON photos(
+                        album_id, face_provider, face_processed,
+                        face_source_size, face_source_mtime_ns
+                    )
+                """
+            )
+            return
+        if version == 8:
+            connection.executescript(
+                """
+                CREATE TABLE IF NOT EXISTS maintenance_runs (
+                    id TEXT PRIMARY KEY,
+                    operation TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    dry_run INTEGER NOT NULL DEFAULT 1,
+                    request_json TEXT NOT NULL,
+                    result_json TEXT,
+                    error TEXT,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    finished_at TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_maintenance_runs_created
+                    ON maintenance_runs(created_at DESC, id DESC);
                 """
             )
             return

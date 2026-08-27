@@ -9,7 +9,7 @@ from pathlib import Path
 
 from ai.index import AlbumIndexer
 from ai.index.embedding import create_embedding_provider
-from ai.people import PeopleIndexer, create_face_provider
+from ai.people import PeopleCancelledError, PeopleIndexer, create_face_provider
 from ai.retrieval import EmbeddingCancelledError, RetrievalService
 from ai.schemas import JobListResponse, JobResponse, PrepareJobRequest
 from ai.storage import Database
@@ -189,15 +189,28 @@ class PrepareJobManager:
             if self._cancel_if_requested(job_id):
                 return
             if request.include_people:
-                people = PeopleIndexer(
-                    self.database,
-                    self.data_dir,
-                    create_face_provider(self.face_provider),
-                ).index(indexed.album_id)
+                try:
+                    people = PeopleIndexer(
+                        self.database,
+                        self.data_dir,
+                        create_face_provider(self.face_provider),
+                    ).index(
+                        indexed.album_id,
+                        on_progress=lambda completed, total: self._people_progress(
+                            job_id, result, completed, total
+                        ),
+                        should_cancel=lambda: self.get(job_id).cancel_requested,
+                    )
+                except PeopleCancelledError:
+                    self._mark_cancelled(job_id)
+                    return
+                result.pop("people_progress", None)
                 result["people"] = {
                     "album_id": people.album_id,
                     "total_faces": people.total_faces,
                     "cluster_count": people.cluster_count,
+                    "computed_count": people.computed_count,
+                    "reused_count": people.reused_count,
                     "provider": people.provider,
                     "duration_ms": people.duration_ms,
                 }
@@ -265,6 +278,22 @@ class PrepareJobManager:
             job_id,
             stage="embedding",
             progress=0.55 + 0.25 * fraction,
+            result=result,
+        )
+
+    def _people_progress(
+        self,
+        job_id: str,
+        result: dict[str, object],
+        completed: int,
+        total: int,
+    ) -> None:
+        result["people_progress"] = {"completed": completed, "total": total}
+        fraction = completed / max(total, 1)
+        self._set_stage(
+            job_id,
+            stage="people",
+            progress=0.82 + 0.16 * fraction,
             result=result,
         )
 

@@ -47,6 +47,44 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
     assert prepared["album"]["total"] == 3
     assert prepared["embedding"]["count"] == 3
 
+    assert main(["--data-dir", str(data_dir), "provider-status"]) == 0
+    provider_status = _result(capsys)
+    assert provider_status["provider"] == "lightweight-semantic-v1"
+    assert provider_status["loaded"] is True
+
+    assert main(["--data-dir", str(data_dir), "warmup"]) == 0
+    warmup = _result(capsys)
+    assert warmup["loaded_after"] is True
+
+    assert main(["--data-dir", str(data_dir), "cache-gc"]) == 0
+    cache_audit = _result(capsys)
+    assert cache_audit["dry_run"] is True
+    assert cache_audit["deleted_files"] == 0
+
+    assert main(["--data-dir", str(data_dir), "cache-usage"]) == 0
+    cache_usage = _result(capsys)
+    assert cache_usage["generated_files"] >= 6
+
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "cache-enforce",
+                "--budget-gb",
+                "1",
+            ]
+        )
+        == 0
+    )
+    quota = _result(capsys)
+    assert quota["dry_run"] is True
+    assert quota["satisfied"] is True
+
+    assert main(["--data-dir", str(data_dir), "maintenance-runs"]) == 0
+    maintenance_runs = _result(capsys)
+    assert maintenance_runs["total"] == 2
+
     assert main(["--data-dir", str(data_dir), "albums"]) == 0
     albums = _result(capsys)
     assert albums[0]["id"] == album_id
@@ -67,6 +105,66 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
     search = _result(capsys)
     assert search["mode"] == "text"
     assert len(search["matches"]) == 2
+
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "eval-add-query",
+                album_id,
+                "night",
+            ]
+        )
+        == 0
+    )
+    evaluation_query = _result(capsys)
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "eval-candidates",
+                evaluation_query["id"],
+                "--limit",
+                "2",
+            ]
+        )
+        == 0
+    )
+    candidates = _result(capsys)
+    assert candidates["items"][0]["rank"] == 1
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "eval-judge",
+                evaluation_query["id"],
+                candidates["items"][0]["photo_id"],
+                "3",
+            ]
+        )
+        == 0
+    )
+    assert _result(capsys)["relevant_count"] == 1
+    assert (
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "eval-run",
+                album_id,
+                "--cutoffs",
+                "1",
+                "2",
+            ]
+        )
+        == 0
+    )
+    evaluation = _result(capsys)
+    assert evaluation["macro_mrr"] == 1.0
+    assert evaluation["macro_ndcg_at"]["1"] == 1.0
 
     assert (
         main(

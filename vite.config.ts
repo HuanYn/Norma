@@ -21,6 +21,8 @@ export default defineConfig({
       "/jobs": "http://127.0.0.1:8765",
       "/preferences": "http://127.0.0.1:8765",
       "/providers": "http://127.0.0.1:8765",
+      "/evaluation": "http://127.0.0.1:8765",
+      "/maintenance": "http://127.0.0.1:8765",
       "/media": "http://127.0.0.1:8765",
     },
   },

@@ -15,6 +15,10 @@ The current MVP supports:
 - persistent album/history APIs and queued background preparation for large folders.
 - optional multilingual OpenCLIP retrieval with provider-versioned cache safety.
 - incremental indexing and resumable embedding that reuse unchanged photos.
+- persistent human relevance labels and auditable Precision/Recall/nDCG/MRR reports.
+- incremental people analysis that reuses unchanged face/no-face results.
+- dry-run-first derived-cache cleanup and background embedding-model warmup.
+- persisted maintenance audits and conservative disk-budget enforcement.
 
 ## Run the website
 
@@ -129,6 +133,12 @@ Architecture and evidence:
 - [Multilingual OpenCLIP provider](docs/multimodal-provider.md)
 - [OpenCLIP public-data benchmark](docs/benchmarks/openclip-e2e.md)
 - [Incremental prepare benchmark](docs/benchmarks/incremental-prepare-e2e.md)
+- [Retrieval evaluation workflow](docs/retrieval-evaluation.md)
+- [Retrieval evaluation benchmark](docs/benchmarks/retrieval-evaluation-e2e.md)
+- [Incremental people benchmark](docs/benchmarks/incremental-people-e2e.md)
+- [Cache maintenance and warmup](docs/cache-maintenance.md)
+- [Maintenance benchmark](docs/benchmarks/cache-maintenance-e2e.md)
+- [Maintenance audit benchmark](docs/benchmarks/maintenance-audit-e2e.md)
 - [Third-party attribution](THIRD_PARTY_NOTICES.md)
 
 The default semantic and face providers are deterministic CPU integration

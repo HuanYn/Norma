@@ -29,6 +29,22 @@ After a successful download, an already populated cache can be used with
 Transformers/XLM-R lookups at the configured Norma model cache, so offline
 reload does not depend on a separate user-level Hugging Face cache.
 
+## Background warmup
+
+Inspect state without loading the model, then trigger an idempotent background
+load:
+
+```text
+GET  /providers/embedding/status
+POST /providers/embedding/warmup
+```
+
+The POST returns HTTP 202 with `loading` or `ready`; poll the status endpoint for
+`ready` or `failed`. Repeated requests while loading share the same attempt.
+Set `NORMA_PREWARM_EMBEDDING=1` to submit this warmup automatically when the
+website starts. The Python CLI command `python -m ai --pretty warmup` performs a
+synchronous probe for scripts that need the model ready before continuing.
+
 The model is loaded lazily on the first embedding request, not during API
 startup. Image inference is batched. Norma validates vector shape, finite
 values, and normalization before committing a complete album cache. A failed

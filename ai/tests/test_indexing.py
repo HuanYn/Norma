@@ -61,7 +61,7 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
             connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
                 0
             ]
-            == 5
+            == 8
         )
 
 

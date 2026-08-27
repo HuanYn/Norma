@@ -31,6 +31,28 @@ class EmbeddingProviderListResponse(BaseModel):
     items: list[EmbeddingProviderCapability]
 
 
+class EmbeddingProviderStatusResponse(BaseModel):
+    provider: str
+    dimension: int
+    model_backed: bool
+    loaded: bool
+    device: str | None
+    warmup_state: str
+    error: str | None = None
+    started_at: str | None = None
+    finished_at: str | None = None
+
+
+class EmbeddingProviderWarmupResponse(BaseModel):
+    provider: str
+    dimension: int
+    model_backed: bool
+    loaded_before: bool
+    loaded_after: bool
+    device: str | None
+    duration_ms: int
+
+
 class AlbumIndexRequest(BaseModel):
     folder: str = Field(min_length=1)
     name: str | None = Field(default=None, max_length=200)
@@ -151,6 +173,171 @@ class AlbumSearchResponse(BaseModel):
     matches: list[SearchMatch]
 
 
+class EvaluationQueryCreateRequest(BaseModel):
+    album_id: str = Field(min_length=1)
+    query_text: str = Field(min_length=1, max_length=500)
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class EvaluationQuerySummary(BaseModel):
+    id: str
+    album_id: str
+    query_text: str
+    notes: str | None
+    judgment_count: int
+    relevant_count: int
+    created_at: str
+    updated_at: str
+
+
+class EvaluationQueryListResponse(BaseModel):
+    items: list[EvaluationQuerySummary]
+    total: int
+
+
+class RelevanceJudgmentInput(BaseModel):
+    photo_id: str = Field(min_length=1)
+    relevance: int = Field(ge=0, le=3)
+
+
+class RelevanceJudgmentBatchRequest(BaseModel):
+    judgments: list[RelevanceJudgmentInput] = Field(min_length=1, max_length=500)
+    annotator: str = Field(default="local", min_length=1, max_length=100)
+
+
+class RelevanceJudgmentBatchResponse(BaseModel):
+    query_id: str
+    upserted_count: int
+    judgment_count: int
+    relevant_count: int
+
+
+class EvaluationCandidate(BaseModel):
+    rank: int
+    photo_id: str
+    filename: str
+    thumbnail_url: str
+    score: float
+    relevance: int | None
+    annotator: str | None
+
+
+class EvaluationCandidateResponse(BaseModel):
+    query: EvaluationQuerySummary
+    provider: str
+    items: list[EvaluationCandidate]
+
+
+class EvaluationRunRequest(BaseModel):
+    query_ids: list[str] | None = None
+    cutoffs: list[int] = Field(default_factory=lambda: [1, 5, 10])
+
+
+class EvaluationQueryMetrics(BaseModel):
+    query_id: str
+    query_text: str
+    judgment_count: int
+    relevant_count: int
+    ranked_photo_ids: list[str]
+    relevance_by_photo: dict[str, int]
+    reciprocal_rank: float
+    precision_at: dict[str, float]
+    recall_at: dict[str, float]
+    ndcg_at: dict[str, float]
+
+
+class EvaluationRunResponse(BaseModel):
+    run_id: str
+    album_id: str
+    provider: str
+    cutoffs: list[int]
+    query_count: int
+    skipped_query_count: int
+    macro_mrr: float
+    macro_precision_at: dict[str, float]
+    macro_recall_at: dict[str, float]
+    macro_ndcg_at: dict[str, float]
+    queries: list[EvaluationQueryMetrics]
+    created_at: str
+
+
+class CacheGcRequest(BaseModel):
+    dry_run: bool = True
+    min_age_seconds: int = Field(default=3600, ge=0, le=31_536_000)
+
+
+class CacheGcResponse(BaseModel):
+    dry_run: bool
+    min_age_seconds: int
+    scanned_files: int
+    referenced_files: int
+    orphan_files: int
+    orphan_bytes: int
+    deleted_files: int
+    deleted_bytes: int
+    young_orphan_files: int
+    skipped_unsafe_files: int
+    failed_files: int
+    orphan_samples: list[str]
+    errors: list[str]
+
+
+class CacheCategoryUsage(BaseModel):
+    files: int
+    bytes: int
+
+
+class CacheUsageResponse(BaseModel):
+    data_dir: str
+    categories: dict[str, CacheCategoryUsage]
+    generated_files: int
+    generated_bytes: int
+    model_files: int
+    model_bytes: int
+    database_bytes: int
+    total_state_bytes: int
+    budget_bytes: int | None
+    over_budget: bool
+    over_budget_bytes: int
+
+
+class CacheQuotaRequest(BaseModel):
+    budget_bytes: int | None = Field(default=None, ge=1)
+    dry_run: bool = True
+    min_age_seconds: int = Field(default=3600, ge=0, le=31_536_000)
+
+
+class CacheQuotaResponse(BaseModel):
+    dry_run: bool
+    budget_bytes: int
+    usage_before: CacheUsageResponse
+    collection: CacheGcResponse
+    usage_after: CacheUsageResponse
+    projected_total_state_bytes: int
+    projected_satisfied: bool
+    satisfied: bool
+    warnings: list[str]
+
+
+class MaintenanceRunSummary(BaseModel):
+    id: str
+    operation: str
+    status: str
+    dry_run: bool
+    request: dict[str, object]
+    result: dict[str, object] | None
+    error: str | None
+    created_at: str
+    finished_at: str | None
+
+
+class MaintenanceRunListResponse(BaseModel):
+    items: list[MaintenanceRunSummary]
+    total: int
+    limit: int
+    offset: int
+
+
 class FaceSummary(BaseModel):
     face_id: str
     photo_id: str
@@ -168,6 +355,8 @@ class PeopleIndexResponse(BaseModel):
     album_id: str
     total_faces: int
     cluster_count: int
+    computed_count: int
+    reused_count: int
     provider: str
     duration_ms: int
     clusters: list[PersonClusterSummary]
