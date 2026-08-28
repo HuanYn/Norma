@@ -136,9 +136,6 @@ class RetrievalService:
             if on_progress is not None:
                 on_progress(reused_count + computed_count, len(rows))
 
-        if should_cancel is not None and should_cancel():
-            raise EmbeddingCancelledError("embedding cancelled between chunks")
-
         return AlbumEmbeddingResponse(
             album_id=album_id,
             count=len(rows),
@@ -207,13 +204,21 @@ class RetrievalService:
                         request.album_id, row["thumbnail_path"]
                     ),
                     score=round(score, 6),
-                    quality_score=float(row["quality_score"] or 0.0),
+                    quality_score=(
+                        float(row["quality_score"])
+                        if row["quality_score"] is not None
+                        else None
+                    ),
                     auto_reject=bool(row["auto_reject"]),
                     similarity_group=row["similarity_group"],
                 )
             )
         matches.sort(
-            key=lambda match: (-match.score, -match.quality_score, match.photo_id)
+            key=lambda match: (
+                -match.score,
+                -(match.quality_score or 0.0),
+                match.photo_id,
+            )
         )
         return AlbumSearchResponse(
             album_id=request.album_id,

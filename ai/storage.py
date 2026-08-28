@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS albums (
 CREATE TABLE IF NOT EXISTS photos (
     id TEXT PRIMARY KEY,
     album_id TEXT NOT NULL REFERENCES albums(id) ON DELETE CASCADE,
-    absolute_path TEXT NOT NULL UNIQUE,
+    absolute_path TEXT NOT NULL,
     thumbnail_path TEXT,
     width INTEGER,
     height INTEGER,
@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS photos (
     face_source_mtime_ns INTEGER,
     face_processed INTEGER NOT NULL DEFAULT 0,
     face_count INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(album_id, absolute_path)
 );
 
 CREATE INDEX IF NOT EXISTS idx_photos_album_id ON photos(album_id);
@@ -357,6 +358,142 @@ class Database:
                     ON maintenance_runs(created_at DESC, id DESC);
                 """
             )
+            return
+        if version == 9:
+            # SQLite cannot drop the legacy UNIQUE(absolute_path) constraint in
+            # place. Rebuild photos transactionally so one source file can be
+            # represented independently in overlapping parent/child albums.
+            photo_columns = (
+                "id",
+                "album_id",
+                "absolute_path",
+                "thumbnail_path",
+                "width",
+                "height",
+                "capture_time",
+                "quality_score",
+                "blur_score",
+                "similarity_group",
+                "source_mtime_ns",
+                "embedding_path",
+                "embedding_provider",
+                "embedding_source_size",
+                "embedding_source_mtime_ns",
+                "face_provider",
+                "face_source_size",
+                "face_source_mtime_ns",
+                "face_processed",
+                "face_count",
+                "created_at",
+                "file_size",
+                "phash",
+                "dhash",
+                "auto_reject",
+                "reject_reason",
+                "metadata_json",
+            )
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            defaults = {
+                "album_id": "''",
+                "absolute_path": "id",
+                "face_processed": "0",
+                "face_count": "0",
+                "created_at": "CURRENT_TIMESTAMP",
+                "auto_reject": "0",
+                "metadata_json": "'{}'",
+            }
+            select_columns = [
+                name
+                if name in existing_columns
+                else f"{defaults.get(name, 'NULL')} AS {name}"
+                for name in photo_columns
+            ]
+            connection.commit()
+            connection.execute("PRAGMA foreign_keys = OFF")
+            try:
+                connection.execute("BEGIN IMMEDIATE")
+                connection.execute("DROP TABLE IF EXISTS photos_v9")
+                connection.execute(
+                    """
+                    CREATE TABLE photos_v9 (
+                        id TEXT PRIMARY KEY,
+                        album_id TEXT NOT NULL
+                            REFERENCES albums(id) ON DELETE CASCADE,
+                        absolute_path TEXT NOT NULL,
+                        thumbnail_path TEXT,
+                        width INTEGER,
+                        height INTEGER,
+                        capture_time TEXT,
+                        quality_score REAL,
+                        blur_score REAL,
+                        similarity_group TEXT,
+                        source_mtime_ns INTEGER,
+                        embedding_path TEXT,
+                        embedding_provider TEXT,
+                        embedding_source_size INTEGER,
+                        embedding_source_mtime_ns INTEGER,
+                        face_provider TEXT,
+                        face_source_size INTEGER,
+                        face_source_mtime_ns INTEGER,
+                        face_processed INTEGER NOT NULL DEFAULT 0,
+                        face_count INTEGER NOT NULL DEFAULT 0,
+                        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        file_size INTEGER,
+                        phash TEXT,
+                        dhash TEXT,
+                        auto_reject INTEGER NOT NULL DEFAULT 0,
+                        reject_reason TEXT,
+                        metadata_json TEXT NOT NULL DEFAULT '{}',
+                        UNIQUE(album_id, absolute_path)
+                    )
+                    """
+                )
+                column_sql = ", ".join(photo_columns)
+                select_sql = ", ".join(select_columns)
+                connection.execute(
+                    f"INSERT INTO photos_v9({column_sql}) "
+                    f"SELECT {select_sql} FROM photos"
+                )
+                connection.execute("DROP TABLE photos")
+                connection.execute("ALTER TABLE photos_v9 RENAME TO photos")
+                connection.execute(
+                    "CREATE INDEX idx_photos_album_id ON photos(album_id)"
+                )
+                connection.execute(
+                    """CREATE INDEX idx_photos_similarity_group
+                       ON photos(album_id, similarity_group)"""
+                )
+                connection.execute(
+                    """CREATE INDEX idx_photos_embedding_provider
+                       ON photos(album_id, embedding_provider)"""
+                )
+                connection.execute(
+                    """CREATE INDEX idx_photos_embedding_freshness
+                       ON photos(
+                           album_id, embedding_provider,
+                           embedding_source_size, embedding_source_mtime_ns
+                       )"""
+                )
+                connection.execute(
+                    """CREATE INDEX idx_photos_face_freshness
+                       ON photos(
+                           album_id, face_provider, face_processed,
+                           face_source_size, face_source_mtime_ns
+                       )"""
+                )
+                violations = connection.execute("PRAGMA foreign_key_check").fetchall()
+                if violations:
+                    raise RuntimeError(
+                        f"photo identity migration broke {len(violations)} foreign keys"
+                    )
+                connection.commit()
+            except BaseException:
+                connection.rollback()
+                raise
+            finally:
+                connection.execute("PRAGMA foreign_keys = ON")
             return
         raise RuntimeError(f"Missing database migration {version}")
 

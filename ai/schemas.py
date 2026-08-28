@@ -7,6 +7,7 @@ class HealthResponse(BaseModel):
     service: str = "norma-ai"
     status: str
     schema_version: int
+    face_provider: str
 
 
 class CapabilitiesResponse(BaseModel):
@@ -68,8 +69,8 @@ class PhotoSummary(BaseModel):
     height: int
     file_size: int
     capture_time: str | None
-    quality_score: float
-    blur_score: float
+    quality_score: float | None
+    blur_score: float | None
     similarity_group: str | None
     auto_reject: bool
     reject_reason: str | None
@@ -98,10 +99,14 @@ class AlbumSummary(BaseModel):
     created_at: str
     indexed_at: str | None
     photo_count: int
+    quality_count: int
     rejected_count: int
+    similar_group_count: int
     embedded_count: int
     embedding_provider: str | None
     face_count: int
+    people_processed_count: int
+    people_provider: str | None
     selection_count: int
 
 
@@ -161,7 +166,7 @@ class SearchMatch(BaseModel):
     filename: str
     thumbnail_url: str
     score: float
-    quality_score: float
+    quality_score: float | None
     auto_reject: bool
     similarity_group: str | None
 
@@ -365,6 +370,8 @@ class PeopleIndexResponse(BaseModel):
 class PrepareJobRequest(BaseModel):
     folder: str = Field(min_length=1)
     name: str | None = Field(default=None, max_length=200)
+    include_quality: bool = True
+    include_embeddings: bool = True
     include_people: bool = True
 
 

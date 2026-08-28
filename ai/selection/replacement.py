@@ -77,11 +77,24 @@ class ReplacementService:
                        auto_reject, similarity_group, embedding_path,
                        embedding_provider, file_size, source_mtime_ns,
                        embedding_source_size, embedding_source_mtime_ns,
-                       width, height, blur_score, metadata_json
+                       width, height, blur_score, phash, dhash, metadata_json
                 FROM photos WHERE album_id = ? ORDER BY id
                 """,
                 (original.album_id,),
             ).fetchall()
+        if any(
+            value is None
+            for row in rows
+            for value in (
+                row["quality_score"],
+                row["blur_score"],
+                row["phash"],
+                row["dhash"],
+            )
+        ):
+            raise ValueError(
+                "album quality analysis is incomplete; run quality analysis first"
+            )
 
         eligible: list[tuple[object, object]] = []
         for row in rows:

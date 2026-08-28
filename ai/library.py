@@ -133,8 +133,17 @@ class AlbumCatalogService:
 _ALBUM_SUMMARY_SQL = """
 SELECT a.id, a.name, a.source_path, a.created_at, a.indexed_at,
        (SELECT COUNT(*) FROM photos p WHERE p.album_id = a.id) AS photo_count,
+       (SELECT COUNT(*) FROM photos p
+        WHERE p.album_id = a.id
+          AND p.quality_score IS NOT NULL
+          AND p.blur_score IS NOT NULL
+          AND p.phash IS NOT NULL
+          AND p.dhash IS NOT NULL) AS quality_count,
        (SELECT COUNT(*) FROM photos p WHERE p.album_id = a.id AND p.auto_reject = 1)
            AS rejected_count,
+       (SELECT COUNT(DISTINCT p.similarity_group) FROM photos p
+        WHERE p.album_id = a.id AND p.similarity_group IS NOT NULL)
+           AS similar_group_count,
        (SELECT COUNT(*) FROM photos p
         WHERE p.album_id = a.id AND p.embedding_path IS NOT NULL
           AND p.embedding_source_size = p.file_size
@@ -147,6 +156,19 @@ SELECT a.id, a.name, a.source_path, a.created_at, a.indexed_at,
            AS embedding_provider,
        (SELECT COUNT(*) FROM faces f JOIN photos p ON p.id = f.photo_id
         WHERE p.album_id = a.id) AS face_count,
+       (SELECT COUNT(*) FROM photos p
+        WHERE p.album_id = a.id AND p.face_processed = 1
+          AND p.face_source_size = p.file_size
+          AND p.face_source_mtime_ns = p.source_mtime_ns)
+           AS people_processed_count,
+       (SELECT CASE WHEN COUNT(DISTINCT p.face_provider) = 1
+                    THEN MAX(p.face_provider) ELSE NULL END
+        FROM photos p
+        WHERE p.album_id = a.id AND p.face_processed = 1
+          AND p.face_provider IS NOT NULL
+          AND p.face_source_size = p.file_size
+          AND p.face_source_mtime_ns = p.source_mtime_ns)
+           AS people_provider,
        (SELECT COUNT(*) FROM selections s WHERE s.album_id = a.id) AS selection_count
 FROM albums a
 """
@@ -160,10 +182,14 @@ def _album_summary(row: object) -> AlbumSummary:
         created_at=row["created_at"],
         indexed_at=row["indexed_at"],
         photo_count=int(row["photo_count"]),
+        quality_count=int(row["quality_count"]),
         rejected_count=int(row["rejected_count"]),
+        similar_group_count=int(row["similar_group_count"]),
         embedded_count=int(row["embedded_count"]),
         embedding_provider=row["embedding_provider"],
         face_count=int(row["face_count"]),
+        people_processed_count=int(row["people_processed_count"]),
+        people_provider=row["people_provider"],
         selection_count=int(row["selection_count"]),
     )
 
@@ -181,8 +207,12 @@ def _photo_summary(album_id: str, row: object) -> PhotoSummary:
         height=int(row["height"]),
         file_size=int(row["file_size"]),
         capture_time=row["capture_time"],
-        quality_score=float(row["quality_score"]),
-        blur_score=float(row["blur_score"]),
+        quality_score=(
+            float(row["quality_score"]) if row["quality_score"] is not None else None
+        ),
+        blur_score=(
+            float(row["blur_score"]) if row["blur_score"] is not None else None
+        ),
         similarity_group=row["similarity_group"],
         auto_reject=bool(row["auto_reject"]),
         reject_reason=row["reject_reason"],

@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 import logging
 import threading
+import time
 import uuid
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 
-from ai.index import AlbumIndexer
+from ai.index import AlbumIndexer, IndexingCancelledError
 from ai.index.embedding import create_embedding_provider
 from ai.people import PeopleCancelledError, PeopleIndexer, create_face_provider
 from ai.retrieval import EmbeddingCancelledError, RetrievalService
@@ -17,6 +18,10 @@ from ai.storage import Database
 
 logger = logging.getLogger("norma.ai.jobs")
 TERMINAL_STATUSES = {"completed", "failed", "cancelled"}
+PROGRESS_MIN_FRACTION = 0.01
+PROGRESS_LARGE_FRACTION = 0.05
+PROGRESS_MIN_INTERVAL_SECONDS = 0.05
+PROGRESS_HEARTBEAT_SECONDS = 0.25
 
 
 class PrepareJobManager:
@@ -44,6 +49,8 @@ class PrepareJobManager:
         )
         self.futures: dict[str, Future[None]] = {}
         self.lock = threading.Lock()
+        self.progress_lock = threading.Lock()
+        self.progress_checkpoints: dict[tuple[str, str], tuple[float, float]] = {}
 
     def start(self) -> None:
         self.database.initialize()
@@ -74,6 +81,8 @@ class PrepareJobManager:
         payload = {
             "folder": str(folder),
             "name": request.name,
+            "include_quality": request.include_quality,
+            "include_embeddings": request.include_embeddings,
             "include_people": request.include_people,
         }
         self.database.initialize()
@@ -140,11 +149,39 @@ class PrepareJobManager:
             if job.cancel_requested:
                 self._mark_cancelled(job_id)
                 return
-            self._set_stage(job_id, status="running", stage="indexing", progress=0.05)
             request = PrepareJobRequest.model_validate(job.payload)
-            indexed = AlbumIndexer(self.database, self.data_dir).index(
-                Path(request.folder), request.name
+            ranges = _progress_ranges(request)
+            index_start, index_span = ranges["indexing"]
+            self._begin_progress(job_id, "indexing")
+            self._set_stage(
+                job_id,
+                status="running",
+                stage="indexing",
+                progress=index_start,
             )
+            index_kwargs: dict[str, object] = {
+                "on_progress": lambda completed, total: self._indexing_progress(
+                    job_id,
+                    completed,
+                    total,
+                    start=index_start,
+                    span=index_span,
+                ),
+                "should_cancel": lambda: self._is_cancel_requested(job_id),
+            }
+            # Omitting the keyword for the historical default keeps third-party
+            # wrappers around AlbumIndexer.index compatible with the old signature.
+            if not request.include_quality:
+                index_kwargs["analyze_quality"] = False
+            try:
+                indexed = AlbumIndexer(self.database, self.data_dir).index(
+                    Path(request.folder),
+                    request.name,
+                    **index_kwargs,
+                )
+            except IndexingCancelledError:
+                self._mark_cancelled(job_id)
+                return
             result: dict[str, object] = {
                 "album": {
                     "album_id": indexed.album_id,
@@ -158,48 +195,91 @@ class PrepareJobManager:
                     "duration_ms": indexed.duration_ms,
                     "provider": indexed.provider,
                     "errors": indexed.errors,
-                }
+                },
+                "embedding": None,
+                "people": None,
             }
-            self._set_stage(job_id, stage="embedding", progress=0.55, result=result)
+            self._set_stage(
+                job_id,
+                stage="indexing",
+                progress=index_start + index_span,
+                result=result,
+            )
             if self._cancel_if_requested(job_id):
                 return
-            try:
-                embedded = RetrievalService(
-                    self.database,
-                    self.data_dir,
-                    create_embedding_provider(
-                        self.embedding_provider,
-                        cache_dir=self.model_cache_dir,
-                        device=self.embedding_device,
-                        batch_size=self.embedding_batch_size,
-                    ),
-                ).embed_album(
-                    indexed.album_id,
-                    on_progress=lambda completed, total: self._embedding_progress(
-                        job_id, result, completed, total
-                    ),
-                    should_cancel=lambda: self.get(job_id).cancel_requested,
+
+            if request.include_embeddings:
+                embedding_start, embedding_span = ranges["embedding"]
+                self._begin_progress(job_id, "embedding")
+                self._set_stage(
+                    job_id,
+                    stage="embedding",
+                    progress=embedding_start,
+                    result=result,
                 )
-            except EmbeddingCancelledError:
-                self._mark_cancelled(job_id)
-                return
-            result.pop("embedding_progress", None)
-            result["embedding"] = embedded.model_dump()
-            self._set_stage(job_id, stage="people", progress=0.82, result=result)
-            if self._cancel_if_requested(job_id):
-                return
+                try:
+                    embedded = RetrievalService(
+                        self.database,
+                        self.data_dir,
+                        create_embedding_provider(
+                            self.embedding_provider,
+                            cache_dir=self.model_cache_dir,
+                            device=self.embedding_device,
+                            batch_size=self.embedding_batch_size,
+                        ),
+                    ).embed_album(
+                        indexed.album_id,
+                        on_progress=lambda completed, total: self._embedding_progress(
+                            job_id,
+                            result,
+                            completed,
+                            total,
+                            start=embedding_start,
+                            span=embedding_span,
+                        ),
+                        should_cancel=lambda: self._is_cancel_requested(job_id),
+                    )
+                except EmbeddingCancelledError:
+                    self._mark_cancelled(job_id)
+                    return
+                result.pop("embedding_progress", None)
+                result["embedding"] = embedded.model_dump()
+                self._set_stage(
+                    job_id,
+                    stage="embedding",
+                    progress=embedding_start + embedding_span,
+                    result=result,
+                )
+                if self._cancel_if_requested(job_id):
+                    return
+
             if request.include_people:
+                people_start, people_span = ranges["people"]
+                self._begin_progress(job_id, "people")
+                self._set_stage(
+                    job_id,
+                    stage="people",
+                    progress=people_start,
+                    result=result,
+                )
                 try:
                     people = PeopleIndexer(
                         self.database,
                         self.data_dir,
-                        create_face_provider(self.face_provider),
+                        create_face_provider(
+                            self.face_provider, cache_dir=self.model_cache_dir
+                        ),
                     ).index(
                         indexed.album_id,
                         on_progress=lambda completed, total: self._people_progress(
-                            job_id, result, completed, total
+                            job_id,
+                            result,
+                            completed,
+                            total,
+                            start=people_start,
+                            span=people_span,
                         ),
-                        should_cancel=lambda: self.get(job_id).cancel_requested,
+                        should_cancel=lambda: self._is_cancel_requested(job_id),
                     )
                 except PeopleCancelledError:
                     self._mark_cancelled(job_id)
@@ -214,8 +294,12 @@ class PrepareJobManager:
                     "provider": people.provider,
                     "duration_ms": people.duration_ms,
                 }
-            else:
-                result["people"] = None
+                self._set_stage(
+                    job_id,
+                    stage="people",
+                    progress=people_start + people_span,
+                    result=result,
+                )
             if self._cancel_if_requested(job_id):
                 return
             self._complete(job_id, result)
@@ -231,6 +315,7 @@ class PrepareJobManager:
                     (str(error), job_id),
                 )
         finally:
+            self._clear_progress(job_id)
             with self.lock:
                 self.futures.pop(job_id, None)
 
@@ -260,10 +345,61 @@ class PrepareJobManager:
             )
 
     def _cancel_if_requested(self, job_id: str) -> bool:
-        if self.get(job_id).cancel_requested:
+        if self._is_cancel_requested(job_id):
             self._mark_cancelled(job_id)
             return True
         return False
+
+    def _is_cancel_requested(self, job_id: str) -> bool:
+        """Read only the cancellation bit on hot per-item callback paths."""
+
+        with self.database.connect() as connection:
+            row = connection.execute(
+                "SELECT cancel_requested FROM jobs WHERE id = ?", (job_id,)
+            ).fetchone()
+        return row is None or bool(row["cancel_requested"])
+
+    def _begin_progress(self, job_id: str, stage: str) -> None:
+        with self.progress_lock:
+            self.progress_checkpoints[(job_id, stage)] = (0.0, time.monotonic())
+
+    def _clear_progress(self, job_id: str) -> None:
+        with self.progress_lock:
+            stale = [key for key in self.progress_checkpoints if key[0] == job_id]
+            for key in stale:
+                self.progress_checkpoints.pop(key, None)
+
+    def _should_persist_progress(
+        self,
+        job_id: str,
+        stage: str,
+        fraction: float,
+        *,
+        completed: int,
+        total: int,
+    ) -> bool:
+        now = time.monotonic()
+        key = (job_id, stage)
+        with self.progress_lock:
+            previous_fraction, previous_time = self.progress_checkpoints.get(
+                key, (0.0, now)
+            )
+            elapsed = now - previous_time
+            advanced = max(0.0, fraction - previous_fraction)
+            persist = (
+                completed >= total
+                or advanced >= PROGRESS_LARGE_FRACTION
+                or elapsed >= PROGRESS_HEARTBEAT_SECONDS
+                or (
+                    advanced >= PROGRESS_MIN_FRACTION
+                    and elapsed >= PROGRESS_MIN_INTERVAL_SECONDS
+                )
+            )
+            if persist:
+                self.progress_checkpoints[key] = (fraction, now)
+            elif key not in self.progress_checkpoints:
+                self.progress_checkpoints[key] = (previous_fraction, previous_time)
+        return persist
 
     def _embedding_progress(
         self,
@@ -271,14 +407,55 @@ class PrepareJobManager:
         result: dict[str, object],
         completed: int,
         total: int,
+        *,
+        start: float,
+        span: float,
     ) -> None:
         result["embedding_progress"] = {"completed": completed, "total": total}
-        fraction = completed / max(total, 1)
+        fraction = min(max(completed / max(total, 1), 0.0), 1.0)
+        if not self._should_persist_progress(
+            job_id,
+            "embedding",
+            fraction,
+            completed=completed,
+            total=total,
+        ):
+            return
         self._set_stage(
             job_id,
             stage="embedding",
-            progress=0.55 + 0.25 * fraction,
+            progress=start + span * fraction,
             result=result,
+        )
+
+    def _indexing_progress(
+        self,
+        job_id: str,
+        completed: int,
+        total: int,
+        *,
+        start: float,
+        span: float,
+    ) -> None:
+        fraction = min(max(completed / max(total, 1), 0.0), 1.0)
+        if not self._should_persist_progress(
+            job_id,
+            "indexing",
+            fraction,
+            completed=completed,
+            total=total,
+        ):
+            return
+        self._set_stage(
+            job_id,
+            stage="indexing",
+            progress=start + span * fraction,
+            result={
+                "indexing_progress": {
+                    "completed": completed,
+                    "total": total,
+                }
+            },
         )
 
     def _people_progress(
@@ -287,13 +464,24 @@ class PrepareJobManager:
         result: dict[str, object],
         completed: int,
         total: int,
+        *,
+        start: float,
+        span: float,
     ) -> None:
         result["people_progress"] = {"completed": completed, "total": total}
-        fraction = completed / max(total, 1)
+        fraction = min(max(completed / max(total, 1), 0.0), 1.0)
+        if not self._should_persist_progress(
+            job_id,
+            "people",
+            fraction,
+            completed=completed,
+            total=total,
+        ):
+            return
         self._set_stage(
             job_id,
             stage="people",
-            progress=0.82 + 0.16 * fraction,
+            progress=start + span * fraction,
             result=result,
         )
 
@@ -321,6 +509,43 @@ class PrepareJobManager:
             )
         if cursor.rowcount == 0:
             self._mark_cancelled(job_id)
+
+
+def _progress_ranges(request: PrepareJobRequest) -> dict[str, tuple[float, float]]:
+    """Allocate monotonic whole-job progress to only the requested stages."""
+
+    if request.include_quality and request.include_embeddings:
+        ranges = {"indexing": (0.05, 0.50)}
+        if request.include_people:
+            ranges["embedding"] = (0.55, 0.27)
+            ranges["people"] = (0.82, 0.18)
+        else:
+            ranges["embedding"] = (0.55, 0.45)
+        return ranges
+
+    if request.include_embeddings and request.include_people:
+        return {
+            "indexing": (0.0, 0.10),
+            "embedding": (0.10, 0.45),
+            "people": (0.55, 0.45),
+        }
+
+    if request.include_embeddings:
+        index_span = 0.50 if request.include_quality else 0.15
+        return {
+            "indexing": (0.0, index_span),
+            "embedding": (index_span, 1.0 - index_span),
+        }
+
+    if request.include_people:
+        index_span = 0.55 if request.include_quality else 0.15
+        return {
+            "indexing": (0.0, index_span),
+            "people": (index_span, 1.0 - index_span),
+        }
+
+    # Base import and quality-only analysis both finish entirely in AlbumIndexer.
+    return {"indexing": (0.0, 1.0)}
 
 
 def _job_response(row: object) -> JobResponse:

@@ -390,7 +390,9 @@ def _dispatch(
             people = PeopleIndexer(
                 database,
                 settings.data_dir,
-                create_face_provider(settings.face_provider),
+                create_face_provider(
+                    settings.face_provider, cache_dir=settings.model_cache_dir
+                ),
             ).index(indexed.album_id)
         return {
             "album": _compact_index(indexed),
@@ -428,7 +430,9 @@ def _dispatch(
             PeopleIndexer(
                 database,
                 settings.data_dir,
-                create_face_provider(settings.face_provider),
+                create_face_provider(
+                    settings.face_provider, cache_dir=settings.model_cache_dir
+                ),
             )
             .index(args.album_id)
             .model_dump()

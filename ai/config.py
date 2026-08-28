@@ -12,7 +12,7 @@ class Settings:
     data_dir: Path
     log_level: str
     embedding_provider: str = "lightweight"
-    face_provider: str = "opencv-haar"
+    face_provider: str = "opencv-yunet-sface"
     embedding_device: str = "auto"
     embedding_batch_size: int = 8
     model_cache_root: Path | None = None
@@ -43,7 +43,7 @@ def load_settings() -> Settings:
         data_dir=Path(os.getenv("NORMA_DATA_DIR", ".norma/data")).resolve(),
         log_level=os.getenv("NORMA_LOG_LEVEL", "INFO").upper(),
         embedding_provider=os.getenv("NORMA_EMBEDDING_PROVIDER", "lightweight"),
-        face_provider=os.getenv("NORMA_FACE_PROVIDER", "opencv-haar"),
+        face_provider=os.getenv("NORMA_FACE_PROVIDER", "opencv-yunet-sface"),
         embedding_device=os.getenv("NORMA_EMBEDDING_DEVICE", "auto"),
         embedding_batch_size=int(os.getenv("NORMA_EMBEDDING_BATCH_SIZE", "8")),
         model_cache_root=Path(model_cache).resolve() if model_cache else None,

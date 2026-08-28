@@ -7,16 +7,16 @@ uploaded.
 
 The current MVP supports:
 
-- recursive album indexing, quality signals, suggested rejects, and similar-photo groups;
-- local semantic text/image retrieval and conservative people grouping;
+- fast recursive album cataloging with metadata and local thumbnails;
+- on-demand quality/similarity analysis, semantic retrieval indexes, and conservative people grouping;
 - bilingual natural-language selection with explicit hard constraints;
 - OR-Tools CP-SAT optimization, auditable reasons, locked replacement, and pairwise preference learning;
 - one local website and one SQLite database, with no desktop runtime required.
-- persistent album/history APIs and queued background preparation for large folders.
+- persistent album/history APIs and queued background analysis for large folders.
 - optional multilingual OpenCLIP retrieval with provider-versioned cache safety.
 - incremental indexing and resumable embedding that reuse unchanged photos.
 - persistent human relevance labels and auditable Precision/Recall/nDCG/MRR reports.
-- incremental people analysis that reuses unchanged face/no-face results.
+- local YuNet/SFace people analysis that reuses unchanged face/no-face results.
 - dry-run-first derived-cache cleanup and background embedding-model warmup.
 - persisted maintenance audits and conservative disk-budget enforcement.
 
@@ -32,9 +32,63 @@ python -m ai web
 ```
 
 Open [http://127.0.0.1:8765](http://127.0.0.1:8765). Enter an absolute local
-folder path such as `D:\Photos\Trip`, then let Norma prepare the album. The
-browser and API share the same local origin; the photo folder stays on the same
-machine.
+folder path such as `D:\Photos\Trip`, then select **Open local folder**. Opening
+an album only catalogs its JPG/JPEG files, reads basic metadata, and creates
+local thumbnails; it does not automatically run quality, embedding, or face
+analysis. The browser and API share the same local origin, and the photo folder
+stays on the same machine.
+
+After the album opens, start only the modules you need from the three buttons:
+
+- **质量与相似** computes quality signals, suggested exclusions, and perceptual-hash groups in one combined image pass;
+- **语义索引** creates the image embeddings required for semantic text/image retrieval;
+- **人脸分组** uses OpenCV YuNet and SFace to detect, align, describe,
+  and conservatively group faces on this computer.
+
+Each module runs as a persistent background job with a real percentage and
+processed-photo count. It can be cancelled cooperatively, and the active job is
+restored after a browser refresh. Previews are paged 300 at a time.
+
+### Local face models
+
+The default face provider is OpenCV YuNet 2023mar plus SFace. On the first
+**人脸分组** run, Norma downloads the two pinned ONNX files (about 37 MB
+combined), verifies their fixed SHA-256 digests, and atomically places them in
+`.norma/data/models/opencv/` by default. Later runs use only that local cache.
+The download contains model weights only: source photos, face crops, and
+descriptors are never uploaded.
+
+YuNet detects on a preview whose longest side is at most 1600 pixels with a
+score threshold of 0.8. SFace then uses YuNet's five landmarks with
+`alignCrop`, produces a 128-dimensional descriptor, and Norma L2-normalizes it
+before clustering. Grouping first forms strict high-confidence seeds, then
+rejoins pose-fragmented seeds only when they are mutual best prototype matches
+and pass centroid, mean, and strongest-pair gates. Faces from one photo remain
+a hard cannot-link throughout both passes. This is the versioned experimental
+default for a personal organizer, not a production biometric guarantee. The
+provider fingerprint includes
+both model SHA prefixes, the alignment revision, and the clustering-policy
+revision. Consequently, an
+album produced by the old Haar/DCT provider or another model revision is shown
+as needing a new people run instead of being treated as complete.
+
+The OpenCV Zoo [YuNet model and files are MIT-licensed](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE),
+while the [SFace model and files are Apache-2.0-licensed](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/LICENSE).
+If false merges are more costly than split groups, keep YuNet/SFace but disable
+the experimental prototype pass with:
+
+```powershell
+$env:NORMA_FACE_PROVIDER = "opencv-yunet-sface-strict"
+python -m ai web
+```
+
+If the model download is unavailable, the legacy Haar/DCT implementation can
+be selected explicitly as a lower-quality fallback requiring no extra download:
+
+```powershell
+$env:NORMA_FACE_PROVIDER = "opencv-haar"
+python -m ai web
+```
 
 After the frontend has been built once, normal use only needs:
 
@@ -43,7 +97,7 @@ python -m ai web
 ```
 
 To enable real multilingual image/text embeddings, install the optional model
-stack and select it before preparing an album:
+stack and select it before clicking **语义索引**:
 
 ```powershell
 python -m pip install -e ".[dev,selection,multimodal]"
@@ -124,7 +178,7 @@ Architecture and evidence:
 
 - [Architecture](docs/architecture.md)
 - [Retrieval benchmark](docs/benchmarks/retrieval-e2e.md)
-- [People benchmark](docs/benchmarks/people-e2e.md)
+- [Legacy Haar/DCT people lifecycle smoke](docs/benchmarks/people-e2e.md)
 - [Selection benchmark](docs/benchmarks/selection-e2e.md)
 - [Preference/replacement benchmark](docs/benchmarks/preference-replacement-e2e.md)
 - [Direct Python benchmark](docs/benchmarks/python-cli-e2e.md)
@@ -141,7 +195,8 @@ Architecture and evidence:
 - [Maintenance audit benchmark](docs/benchmarks/maintenance-audit-e2e.md)
 - [Third-party attribution](THIRD_PARTY_NOTICES.md)
 
-The default semantic and face providers are deterministic CPU integration
-baselines. The optional OpenCLIP provider supplies real open-vocabulary
-image/text retrieval; the face provider remains pipeline scaffolding rather
-than biometric identity.
+The default semantic provider remains a deterministic CPU integration
+baseline; optional OpenCLIP supplies real open-vocabulary image/text retrieval.
+The default face pipeline now uses the local YuNet/SFace models and two-stage,
+constrained deterministic grouping. Its groups are organizational suggestions,
+not claims of biometric identity.

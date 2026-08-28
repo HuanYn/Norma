@@ -7,11 +7,14 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
+import pytest
 
 from ai import app as app_module
 from ai.config import Settings
 from ai.index import AlbumIndexer
 from ai.jobs import PrepareJobManager
+from ai.people import PeopleIndexer
+from ai.retrieval import RetrievalService
 from ai.storage import Database
 
 
@@ -34,7 +37,13 @@ def _configure(tmp_path: Path, monkeypatch) -> tuple[Path, Path]:
     monkeypatch.setattr(
         app_module,
         "settings",
-        Settings(host="127.0.0.1", port=8765, data_dir=data_dir, log_level="INFO"),
+        Settings(
+            host="127.0.0.1",
+            port=8765,
+            data_dir=data_dir,
+            log_level="INFO",
+            face_provider="opencv-haar",
+        ),
     )
     return folder, data_dir
 
@@ -93,6 +102,240 @@ def test_prepare_job_persists_progress_result_and_catalog(
     assert repeated_job["result"]["embedding"]["reused_count"] == 3
 
 
+def test_prepare_flags_run_base_quality_embeddings_and_people_on_demand(
+    tmp_path: Path, monkeypatch
+) -> None:
+    folder, _ = _configure(tmp_path, monkeypatch)
+
+    with TestClient(app_module.app) as client:
+        imported = client.post(
+            "/jobs/prepare",
+            json={
+                "folder": str(folder),
+                "include_quality": False,
+                "include_embeddings": False,
+                "include_people": False,
+            },
+        )
+        import_job = _wait_for_terminal(client, imported.json()["id"])
+        album_id = import_job["result"]["album"]["album_id"]
+        after_import = client.get(f"/albums/{album_id}").json()
+
+        embedding = client.post(
+            "/jobs/prepare",
+            json={
+                "folder": str(folder),
+                "include_quality": False,
+                "include_embeddings": True,
+                "include_people": False,
+            },
+        )
+        embedding_job = _wait_for_terminal(client, embedding.json()["id"])
+        after_embedding = client.get(f"/albums/{album_id}").json()
+        semantic_without_quality = client.post(
+            "/albums/search",
+            json={"album_id": album_id, "query": "night", "limit": 3},
+        )
+
+        people = client.post(
+            "/jobs/prepare",
+            json={
+                "folder": str(folder),
+                "include_quality": False,
+                "include_embeddings": False,
+                "include_people": True,
+            },
+        )
+        people_job = _wait_for_terminal(client, people.json()["id"])
+        after_people = client.get(f"/albums/{album_id}").json()
+
+        quality = client.post(
+            "/jobs/prepare",
+            json={
+                "folder": str(folder),
+                "include_quality": True,
+                "include_embeddings": False,
+                "include_people": False,
+            },
+        )
+        quality_job = _wait_for_terminal(client, quality.json()["id"])
+        after_quality = client.get(f"/albums/{album_id}").json()
+
+    assert import_job["status"] == "completed"
+    assert import_job["progress"] == 1
+    assert import_job["payload"]["include_quality"] is False
+    assert import_job["payload"]["include_embeddings"] is False
+    assert import_job["result"]["embedding"] is None
+    assert import_job["result"]["people"] is None
+    assert after_import["photo_count"] == 3
+    assert after_import["quality_count"] == 0
+    assert after_import["similar_group_count"] == 0
+    assert after_import["embedded_count"] == 0
+    assert after_import["people_processed_count"] == 0
+
+    assert embedding_job["status"] == "completed"
+    assert embedding_job["result"]["embedding"]["count"] == 3
+    assert embedding_job["result"]["people"] is None
+    assert after_embedding["quality_count"] == 0
+    assert after_embedding["embedded_count"] == 3
+    assert semantic_without_quality.status_code == 200
+    assert all(
+        match["quality_score"] is None
+        for match in semantic_without_quality.json()["matches"]
+    )
+
+    assert people_job["status"] == "completed"
+    assert people_job["result"]["embedding"] is None
+    assert people_job["result"]["people"]["album_id"] == album_id
+    assert after_people["quality_count"] == 0
+    assert after_people["embedded_count"] == 3
+    assert after_people["people_processed_count"] == 3
+
+    assert quality_job["status"] == "completed"
+    assert quality_job["result"]["embedding"] is None
+    assert quality_job["result"]["people"] is None
+    assert quality_job["result"]["album"]["computed_count"] == 3
+    assert after_quality["quality_count"] == 3
+    assert after_quality["embedded_count"] == 3
+    assert after_quality["people_processed_count"] == 3
+
+
+def test_cancel_after_index_commit_keeps_album_result_for_recovery(
+    tmp_path: Path, monkeypatch
+) -> None:
+    folder, _ = _configure(tmp_path, monkeypatch)
+    committed = threading.Event()
+    release = threading.Event()
+    original_index = AlbumIndexer.index
+
+    def index_then_pause(
+        self,
+        folder_path,
+        album_name=None,
+        *,
+        analyze_quality=True,
+        on_progress=None,
+        should_cancel=None,
+    ):
+        result = original_index(
+            self,
+            folder_path,
+            album_name,
+            analyze_quality=analyze_quality,
+            on_progress=on_progress,
+            should_cancel=should_cancel,
+        )
+        committed.set()
+        if not release.wait(timeout=5):
+            raise TimeoutError("test did not release committed index")
+        return result
+
+    monkeypatch.setattr(AlbumIndexer, "index", index_then_pause)
+    try:
+        with TestClient(app_module.app) as client:
+            created = client.post(
+                "/jobs/prepare",
+                json={
+                    "folder": str(folder),
+                    "include_quality": False,
+                    "include_embeddings": False,
+                    "include_people": False,
+                },
+            )
+            job_id = created.json()["id"]
+            assert committed.wait(timeout=3)
+            cancelled = client.post(f"/jobs/{job_id}/cancel")
+            release.set()
+            terminal = _wait_for_terminal(client, job_id)
+    finally:
+        release.set()
+
+    assert cancelled.status_code == 200
+    assert terminal["status"] == "cancelled"
+    assert terminal["result"]["album"]["total"] == 3
+    assert terminal["result"]["album"]["album_id"]
+
+
+@pytest.mark.parametrize("stage", ["embedding", "people"])
+def test_cancel_after_analysis_commit_keeps_final_stage_result(
+    tmp_path: Path,
+    monkeypatch,
+    stage: str,
+) -> None:
+    folder, _ = _configure(tmp_path, monkeypatch)
+    committed = threading.Event()
+    release = threading.Event()
+    target = RetrievalService if stage == "embedding" else PeopleIndexer
+    original = target.embed_album if stage == "embedding" else target.index
+
+    def analyze_then_pause(self, *args, **kwargs):
+        result = original(self, *args, **kwargs)
+        committed.set()
+        if not release.wait(timeout=5):
+            raise TimeoutError(f"test did not release committed {stage}")
+        return result
+
+    method = "embed_album" if stage == "embedding" else "index"
+    monkeypatch.setattr(target, method, analyze_then_pause)
+    payload = {
+        "folder": str(folder),
+        "include_quality": False,
+        "include_embeddings": stage == "embedding",
+        "include_people": stage == "people",
+    }
+    try:
+        with TestClient(app_module.app) as client:
+            created = client.post("/jobs/prepare", json=payload)
+            job_id = created.json()["id"]
+            assert committed.wait(timeout=5)
+            client.post(f"/jobs/{job_id}/cancel")
+            release.set()
+            terminal = _wait_for_terminal(client, job_id)
+    finally:
+        release.set()
+
+    assert terminal["status"] == "cancelled"
+    assert terminal["result"]["album"]["total"] == 3
+    assert terminal["result"][stage] is not None
+
+
+def test_job_progress_writes_are_throttled_monotonic_and_finish_at_one(
+    tmp_path: Path, monkeypatch
+) -> None:
+    manager = PrepareJobManager(
+        Database(tmp_path / "data" / "norma.db"),
+        tmp_path / "data",
+        "lightweight",
+        "opencv-haar",
+    )
+    writes: list[dict[str, object]] = []
+
+    def record_stage(_job_id: str, **values) -> None:
+        writes.append(values)
+
+    monkeypatch.setattr(manager, "_set_stage", record_stage)
+    try:
+        manager._begin_progress("job", "indexing")
+        for completed in range(1, 201):
+            manager._indexing_progress(
+                "job",
+                completed,
+                200,
+                start=0.0,
+                span=1.0,
+            )
+    finally:
+        manager.shutdown()
+
+    progresses = [float(write["progress"]) for write in writes]
+    assert len(writes) < 40
+    assert progresses == sorted(progresses)
+    assert progresses[-1] == 1.0
+    assert writes[-1]["result"] == {
+        "indexing_progress": {"completed": 200, "total": 200}
+    }
+
+
 def test_prepare_job_rejects_duplicate_and_cancels_between_stages(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -101,11 +344,26 @@ def test_prepare_job_rejects_duplicate_and_cancels_between_stages(
     release = threading.Event()
     original_index = AlbumIndexer.index
 
-    def slow_index(self, folder_path, album_name=None):
+    def slow_index(
+        self,
+        folder_path,
+        album_name=None,
+        *,
+        on_progress=None,
+        should_cancel=None,
+    ):
+        if on_progress is not None:
+            on_progress(1, 2)
         started.set()
         if not release.wait(timeout=5):
             raise TimeoutError("test did not release index stage")
-        return original_index(self, folder_path, album_name)
+        return original_index(
+            self,
+            folder_path,
+            album_name,
+            on_progress=on_progress,
+            should_cancel=should_cancel,
+        )
 
     monkeypatch.setattr(AlbumIndexer, "index", slow_index)
 
@@ -126,6 +384,12 @@ def test_prepare_job_rejects_duplicate_and_cancels_between_stages(
     assert duplicate.status_code == 409
     assert cancel.status_code == 200
     assert cancel.json()["cancel_requested"] is True
+    assert cancel.json()["stage"] == "indexing"
+    assert cancel.json()["progress"] == 0.3
+    assert cancel.json()["result"]["indexing_progress"] == {
+        "completed": 1,
+        "total": 2,
+    }
     assert terminal["status"] == "cancelled"
     assert terminal["progress"] < 1
 

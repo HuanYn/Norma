@@ -25,6 +25,11 @@ development server and proxies API/media routes to `python -m ai serve`.
 ## Data ownership
 
 - Source JPG/JPEG files are read-only inputs.
+- Source photos and derived thumbnails, face crops, and descriptors are never
+  uploaded. A first face run may download only the public model files described
+  below.
+- The initial folder open records file inventory/basic metadata and creates
+  thumbnails; quality, embeddings, and faces are opt-in follow-up work.
 - Thumbnails, embeddings, face crops, and SQLite live under `.norma/` by default.
 - Generated caches are disposable; source paths are revalidated during indexing.
 - No vector database is needed for album-sized data. Normalized NumPy embeddings
@@ -33,7 +38,7 @@ development server and proxies API/media routes to `python -m ai serve`.
 ## Delivered milestones
 
 1. **M0:** local Python service, SQLite schema, health/capability contract, web shell.
-2. **M1:** JPG scan, thumbnails, quality signals, similarity groups, reject fold.
+2. **M1:** fast JPG catalog/thumbnails plus on-demand quality signals, similarity groups, and reject fold.
 3. **M2:** semantic embeddings, people clusters, text/image retrieval.
 4. **M3:** structured constraints, auditable scoring, CP-SAT optimization.
 5. **M4:** grounded reasons, locked replacement, pairwise preference learning.
@@ -51,13 +56,17 @@ development server and proxies API/media routes to `python -m ai serve`.
 selection history. Clients reconstruct their workspace after refresh from
 SQLite instead of relying on one indexing response remaining in memory.
 
-`ai/jobs.py` orchestrates index, embedding, and optional people stages through a
-single-worker executor. Job state and compact intermediate results are persisted
-in SQLite. Duplicate active folders are rejected atomically. Running
-work is marked interrupted after an unclean restart, queued work is scheduled
-again, and cancellation is honored between read-safe stages and embedding
-chunks. Embedding progress advances from 55% to 80% using persisted completed
-and total photo counts.
+`ai/jobs.py` orchestrates the base import and opt-in quality, embedding, and
+people stages through a single-worker executor. The website uses the historical
+`/jobs/prepare` route with explicit `include_quality`, `include_embeddings`, and
+`include_people` flags; all three default to `true` for older API clients. Job
+state and compact intermediate results are persisted in SQLite. Duplicate
+active folders are rejected atomically. Running work is marked interrupted
+after an unclean restart, queued work is scheduled again, and cancellation is
+honored at base/quality photo boundaries, embedding chunks, people-photo
+boundaries, and between stages. Progress is allocated across only the requested
+stages and persists both a whole-job percentage and current-stage completed and
+total counts, allowing the browser to recover the active button after refresh.
 
 Video and world generation remain deferred until the personalized selection
 loop has stronger model providers and product evidence.
@@ -88,8 +97,16 @@ budget is impossible under that safety boundary.
 `ai/index/` provides the active `pillow-opencv-fallback-v1` implementation. It:
 
 - recursively discovers JPG/JPEG files without a hard album-size limit;
+- scans with at most four bounded workers while keeping database writes and
+  progress callbacks on the orchestration thread;
 - verifies source size and modification time before and after reads;
+- supports a base mode that creates metadata/thumbnails without quality or hash
+  analysis, keeping the first folder-open path independent of optional models;
+- combines quality signals, suggested rejects, and both perceptual hashes in one
+  decoded-image pass when **质量与相似** is requested;
 - reuses stored analysis and thumbnails when both source values are unchanged;
+- uses album-scoped IDs for new photos, so overlapping parent/child albums can
+  reference the same source path independently; schema v9 preserves legacy IDs;
 - writes thumbnails only under the Norma data directory;
 - computes conservative quality suggestions and never deletes a source;
 - assigns similarity groups from perceptual hashes.
@@ -139,10 +156,49 @@ the macro average.
 ## People provider
 
 `ai/people/` separates face detection/description from persistence and
-clustering. `opencv-haar-dct-v1` stores a 79-dimensional DCT/color descriptor
-and uses a conservative `0.985` similarity threshold. Single-face clusters stay
-visible instead of being forced into an identity group. This is pipeline
-scaffolding, not biometric identification.
+clustering. The default `opencv-yunet-sface` path runs the OpenCV Zoo YuNet
+2023mar detector on a preview capped at 1600 pixels on its longest side, using
+a 0.8 detection-score threshold. Detection coordinates and five landmarks are
+mapped back to the original orientation-corrected image. OpenCV SFace then
+applies five-point `alignCrop`, emits a 128-dimensional descriptor, and the
+provider validates and L2-normalizes it.
+
+The YuNet and SFace ONNX files are not bundled. The first people-analysis click
+downloads about 37 MB of pinned public weights into the local model cache. A
+file is streamed to a unique temporary path, checked against its fixed SHA-256,
+flushed, and atomically renamed; an invalid or interrupted download is never
+accepted as a model. Future runs reuse the cache. The model request contains no
+photo data. OpenCV Zoo distributes the
+[YuNet files under MIT](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE)
+and the
+[SFace files under Apache-2.0](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/LICENSE).
+
+Clustering is deterministic and two-stage rather than single-link union. The
+first pass builds strict seeds: candidate pairs are ordered by similarity with
+stable IDs as tie breakers, and a merge must pass cross-cluster minimum, mean,
+and centroid gates. The second pass repairs pose fragmentation only for mutual
+best cluster candidates. Multi-member seeds and singleton attachments use
+separate centroid, cross-pair mean, and strongest-pair thresholds; all evidence
+is recomputed after every accepted join. Both passes reject any merge that would
+place two faces from the same photo in one cluster (a hard cannot-link). This
+blocks weak bridges while allowing a stable cluster prototype to recover some
+low-pose-similarity faces. Uncertain single-face clusters remain visible instead
+of being forced into a larger group; all groups are organizational suggestions
+rather than biometric identity claims. Prototype attachment is a versioned
+experimental default; `opencv-yunet-sface-strict` keeps the same detector and
+recognizer but disables the second pass when false merges are especially costly.
+
+The provider fingerprint records the YuNet and SFace model SHA prefixes, the
+alignment revision, and the clustering-policy revision. SQLite and generated
+paths are provider-scoped. The album catalog returns the unique provider only
+for source-fingerprint-current face results, while `/health` reports the active
+worker provider. The browser loads a saved people snapshot only when every
+photo is current and those fingerprints match. A previous Haar/DCT result or a
+result from any older model, alignment, or clustering revision therefore
+requires a new people run.
+
+`opencv-haar` remains available only as an explicit lower-quality fallback via
+`NORMA_FACE_PROVIDER=opencv-haar`; it is no longer the default.
 
 Re-indexing preserves semantic and face descriptor records for unchanged photos
 and invalidates only changed or removed photos. A source-fingerprint-current

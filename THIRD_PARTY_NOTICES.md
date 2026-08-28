@@ -8,6 +8,17 @@ through `open-clip-torch`. The model card lists the model license as MIT. Model
 weights and the PyTorch/OpenCLIP runtime are optional downloads and are not
 bundled in this repository.
 
+## Optional OpenCV Zoo face models
+
+Norma's default people-analysis provider can download the pinned OpenCV Zoo
+[YuNet 2023mar face detector](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet)
+and
+[SFace 2021dec face recognizer](https://github.com/opencv/opencv_zoo/tree/main/models/face_recognition_sface).
+The YuNet model files are distributed under the MIT License, and the SFace
+model files are distributed under the Apache License 2.0. Their weights are
+downloaded on demand, verified against fixed SHA-256 values, and are not
+bundled in this repository.
+
 ## pianke-desktop / pianke-core
 
 Norma vendors and adapts portions of

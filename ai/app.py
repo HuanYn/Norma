@@ -21,7 +21,12 @@ from ai.index.embedding import (
 from ai.jobs import PrepareJobManager
 from ai.library import AlbumCatalogService
 from ai.maintenance import CacheMaintenanceService
-from ai.people import PeopleIndexer, create_face_provider
+from ai.people import (
+    FaceProviderUnavailableError,
+    PeopleIndexer,
+    canonical_face_provider_name,
+    create_face_provider,
+)
 from ai.preferences import PreferenceService
 from ai.preferences.model import load_preference_model
 from ai.provider_runtime import EmbeddingWarmupManager
@@ -121,7 +126,11 @@ app.mount(
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
-    return HealthResponse(status="ok", schema_version=database.current_version())
+    return HealthResponse(
+        status="ok",
+        schema_version=database.current_version(),
+        face_provider=canonical_face_provider_name(settings.face_provider),
+    )
 
 
 @app.get("/capabilities", response_model=CapabilitiesResponse)
@@ -131,7 +140,7 @@ def capabilities() -> CapabilitiesResponse:
         milestones={
             "library": "cpu-fallback-indexer",
             "multimodal_index": embedding_provider().name,
-            "people": "opencv-haar-dct-v1-incremental",
+            "people": "opencv-yunet-sface-constrained-prototype-clustering-v2",
             "selection": "structured-cp-sat-or-greedy",
             "preference": "online-pairwise-logistic-v1",
             "library_lifecycle": "persistent-catalog-and-jobs-v1",
@@ -363,7 +372,9 @@ def people_indexer() -> PeopleIndexer:
     return PeopleIndexer(
         database,
         settings.data_dir,
-        create_face_provider(settings.face_provider),
+        create_face_provider(
+            settings.face_provider, cache_dir=settings.model_cache_dir
+        ),
     )
 
 
@@ -500,6 +511,16 @@ def get_retrieval_evaluation(run_id: str) -> EvaluationRunResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
 
+@app.get("/albums/{album_id}/people", response_model=PeopleIndexResponse)
+def get_people(album_id: str) -> PeopleIndexResponse:
+    try:
+        return people_indexer().get(album_id)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
 @app.post("/albums/{album_id}/people/index", response_model=PeopleIndexResponse)
 def index_people(album_id: str) -> PeopleIndexResponse:
     try:
@@ -508,6 +529,8 @@ def index_people(album_id: str) -> PeopleIndexResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except FaceProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
 
 @app.post("/selections", response_model=SelectionResponse)

@@ -27,3 +27,8 @@ Thumbs.db
 
 # Local product brief used to drive Codex sessions
 Norma 项目 Codex 总提示词.md
+.opencode
+
+# Local experiment and audit artifacts
+profile_output/
+.aris/

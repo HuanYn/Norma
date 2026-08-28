@@ -164,6 +164,24 @@ def test_unknown_requested_concept_is_not_silently_ignored(tmp_path: Path) -> No
         raise AssertionError("unknown semantic request should fail explicitly")
 
 
+def test_selection_requires_complete_quality_analysis(tmp_path: Path) -> None:
+    folder = tmp_path / "deferred-quality"
+    folder.mkdir()
+    _photo(folder / "photo.jpg", 0)
+    data_dir = tmp_path / "data"
+    database = Database(data_dir / "norma.db")
+    indexed = AlbumIndexer(database, data_dir).index(folder, analyze_quality=False)
+
+    try:
+        SelectionService(database, FakeSelectionProvider()).select(
+            SelectionRequest(album_id=indexed.album_id, prompt="选 1 张 night")
+        )
+    except ValueError as error:
+        assert "run quality analysis first" in str(error)
+    else:
+        raise AssertionError("selection should reject an incomplete quality index")
+
+
 def test_pairwise_feedback_updates_and_persists_local_model(tmp_path: Path) -> None:
     database, album_id, ids = _album(tmp_path)
     selection = SelectionService(database, FakeSelectionProvider()).select(
