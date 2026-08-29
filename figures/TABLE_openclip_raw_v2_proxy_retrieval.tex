@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\caption{Macro retrieval results under one production-equivalent ranking run. Each row averages the same three query families over 81 candidates (72 Wikimedia search-term proxy labels; nine unjudged synthetic derivatives count as non-relevant). These deterministic pilot values have no confidence intervals and support no significance claim. Legacy bridge reuses the raw-v2 image vectors and changes only the Chinese text preparation.}
+\label{tab:openclip-raw-v2-proxy}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccccc}
+\toprule
+Language & Provider / query path & MRR & P@10 & R@20 & nDCG@10 & nDCG@20 \\
+\midrule
+English & Lightweight & 1.000 & 0.667 & 0.384 & 0.709 & 0.539 \\
+English & Raw-v2 & 1.000 & 0.800 & 0.608 & 0.822 & 0.746 \\
+\midrule
+Chinese & Lightweight & 1.000 & 0.667 & 0.384 & 0.709 & 0.539 \\
+Chinese & Legacy bridge & 1.000 & 0.667 & 0.576 & 0.733 & 0.710 \\
+Chinese & Raw-v2 & 1.000 & 0.733 & 0.605 & 0.801 & 0.753 \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,14 @@
+\begin{table*}[t]
+\centering
+\caption{Reconstruction audit for the mutable Wikimedia thumbnail URLs used by the historical preference-study fixture. Percentages describe one sequential full pass on 2026-08-29; they are not availability guarantees.}
+\label{tab:wikimedia-fixture-drift}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Scope & Raw exact & Raw drift / RGB exact & RGB drift & Archive recovery \\
+\midrule
+All manifest images ($n=72$) & 58 (80.56\%) & 10 (13.89\%) & 4 (5.56\%) & raw 0 / 14; pixels 0 / 4 \\
+Experiment-used images ($n=70$) & 58 (82.86\%) & 8 (11.43\%) & 4 (5.71\%) & raw 0 / 12; pixels 0 / 4 \\
+\bottomrule
+\end{tabular}
+\end{table*}

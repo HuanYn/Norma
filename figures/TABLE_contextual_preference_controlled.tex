@@ -1,0 +1,15 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Controlled semi-synthetic preference results after 60 feedback comparisons. Values are means and 95\% percentile-bootstrap intervals across 10 split/choice seeds after averaging three fixed simulated profiles within each seed. This is not human-preference evidence.}
+\label{tab:controlled-contextual-preference}
+\begin{tabular}{lccc}
+\toprule
+Method & Pair log loss $\downarrow$ & Pair accuracy $\uparrow$ & Set regret/photo $\downarrow$ \\
+\midrule
+Cosine (0 feedback) & 0.694 [0.693, 0.694] & 0.606 [0.596, 0.616] & 0.381 [0.371, 0.388] \\
+Contextual, random pairs & 0.630 [0.623, 0.636] & 0.694 [0.677, 0.710] & 0.058 [0.040, 0.079] \\
+Contextual, predictive entropy & 0.628 [0.619, 0.636] & 0.698 [0.681, 0.716] & 0.052 [0.038, 0.069] \\
+\bottomrule
+\end{tabular}
+\end{table}

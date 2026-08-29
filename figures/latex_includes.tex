@@ -1,0 +1,35 @@
+% === Fig. 1: OpenCLIP raw-v2 CPU runtime smoke test ===
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/fig1_openclip_raw_v2_runtime.pdf}
+\caption{CPU wall-clock observations for distinct OpenCLIP raw-v2 execution regimes on an Intel Core Ultra 7 255HX. Points are raw observations and horizontal ticks are medians; no confidence intervals are estimated because each regime has only $n=1$--$4$. The 276.544-s recovery warmup completed a prior partial cache and includes download, validation, model load, and warmup, so it is not a clean cold-download measurement. Offline cached-load trials use fresh Python processes. The smoke test verified finite, unit-normalized 512-D vectors and preserved raw Unicode Chinese input; it does not measure retrieval accuracy.}
+\label{fig:openclip-runtime}
+\end{figure}
+
+\input{figures/TABLE_embedding_provider_taxonomy.tex}
+
+% === Fig. 2: Production-equivalent multilingual retrieval proxy pilot ===
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig2_openclip_raw_v2_proxy_retrieval.pdf}
+\caption{Retrieval comparison on a fixed 81-candidate proxy fixture using three Chinese query families. Panel (a) reports macro means as bars and overlays the three query-family observations as open circles; panel (b) exposes per-family nDCG@20 so the aggregate does not hide the weaker raw-v2 architecture result. The legacy bridge reuses raw-v2 image vectors and changes only Chinese text preparation. Rankings follow the production contract: cosine scores rounded to six decimals, then quality score and stable photo UUID. The 72 labels are inherited from Wikimedia download search terms rather than blind human judgments, and nine unjudged synthetic derivatives count as non-relevant. With only three query families, no confidence interval, statistical-significance conclusion, or general multilingual-retrieval claim is reported.}
+\label{fig:openclip-raw-v2-proxy}
+\end{figure*}
+
+\input{figures/TABLE_openclip_raw_v2_proxy_retrieval.tex}
+
+% === Fig. S1: Windows NumPy/Torch native-runtime compatibility ===
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/figS1_windows_numeric_runtime.pdf}
+\caption{Windows native-runtime compatibility and representative small-matrix timing. Panel (a) records one reproduction of OpenMP Error \#15 before the runtime contract and a successful process after selecting sequential MKL; the unsafe \texttt{KMP\_DUPLICATE\_LIB\_OK} workaround was not used. Panel (b) shows all five wall-clock observations and median ticks for two fixed NumPy workloads. Default MKL was measured without Torch because the mixed default process aborts; the safe condition includes Torch and sequential MKL. This is a single-machine engineering compatibility profile, not a general BLAS or end-to-end model-speed claim.}
+\label{fig:windows-numeric-runtime}
+\end{figure*}
+
+\input{figures/TABLE_windows_numeric_runtime.tex}
+
+% === Fig. 5: Real learned-model runtime and timing integrity ===
+\input{figures/model_backed_runtime_integrity_latex_include.tex}
+
+% === Fig. 6: Mutable public-fixture reconstruction audit ===
+\input{figures/wikimedia_fixture_drift_latex_include.tex}

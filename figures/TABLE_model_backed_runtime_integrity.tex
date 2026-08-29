@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\caption{Single-machine learned-model functional smokes on an Intel Core Ultra 7 255HX (20 cores, 32 GB class RAM), Windows 11 build 26200, CPU inference. Values are raw observations without confidence intervals. OpenCLIP first text includes model load, manifest verification, and encode; Qwen run 0 excludes Python/Torch import and the pre-timing weight hash. RSS is sampled every 50 ms.}
+\label{tab:model-backed-runtime-integrity}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrl}
+\toprule
+Model & Observation & Time (s) & Peak RSS (GiB) & Scope \\
+\midrule
+OpenCLIP & First text (load + verify + encode) & 24.017 & 3.582 & $n=1$ functional smoke \\
+OpenCLIP & Repeat Chinese text / image encode & 0.073 / 0.251 & -- & same process \\
+Qwen3-VL & Grounded generation run 0 & 48.054 & 4.944 & referential validation only \\
+Qwen3-VL & Grounded generation run 1 & 25.865 & -- & same canonical output \\
+\bottomrule
+\end{tabular}
+\end{table*}

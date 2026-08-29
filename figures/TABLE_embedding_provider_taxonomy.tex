@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\caption{Embedding-provider capability taxonomy. This table describes implementation roles, not retrieval quality.}
+\label{tab:embedding-provider-taxonomy}
+\begin{tabular}{lcccl}
+\toprule
+Provider & Dim. & Joint image--text model & Language path & Project role \\
+\midrule
+Lightweight semantic v1 & 16 & No & Bounded dictionary & Handcrafted baseline \\
+OpenCLIP raw v2 & 512 & Yes & Raw multilingual XLM-R & Learned default; runtime measured \\
+OpenCLIP bridge v1 & 512 & Yes & Chinese keyword bridge & Legacy ablation \\
+\bottomrule
+\end{tabular}
+\end{table}

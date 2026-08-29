@@ -1,0 +1,14 @@
+\begin{table*}[t]
+\centering
+\caption{Windows numeric-runtime compatibility profile. Times are five-repeat medians for fixed workloads on one machine. The default arm uses NumPy without Torch because default MKL plus Torch aborts; the safe arm uses sequential MKL with Torch loaded.}
+\label{tab:windows-numeric-runtime}
+\small
+\begin{tabular}{lrrr}
+\toprule
+Workload & Default MKL & Sequential + Torch & Change \\
+\midrule
+32$\times$512 matvec ($20{,}000$ calls) & 2.678 s & 0.1346 s & 19.89$\times$ speedup \\
+67$\times$67 solve ($300$ calls) & 0.02986 s & 0.02741 s & 8.22\% lower \\
+\bottomrule
+\end{tabular}
+\end{table*}

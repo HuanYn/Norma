@@ -1,0 +1,16 @@
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "fontFamily": "Arial, Microsoft YaHei, sans-serif", "fontSize": "21px", "primaryTextColor": "#111827", "lineColor": "#374151"}, "flowchart": {"curve": "linear", "htmlLabels": true, "nodeSpacing": 40, "rankSpacing": 58}}}%%
+flowchart LR
+    before["修复前<br/>同一建议 ID<br/>双击或并发重试"] --> duplicated["2 个不可变事件<br/>后验训练 2 次<br/>比较数 +2"]
+    duplicated -.->|"一次性消费修复"| guard{"SQLite partial UNIQUE<br/>约束建议 ID"}
+    concurrent["修复后<br/>两个独立 SQLite 连接<br/>同时写入"] --> guard
+    guard -->|"首个请求"| accepted["成功<br/>1 event · 1 active model<br/>比较数 +1"]
+    guard -->|"重复请求"| conflict["HTTP 409<br/>0 新事件 · 0 次训练"]
+
+    classDef problem fill:#FEE2E2,stroke:#B91C1C,color:#7F1D1D,stroke-width:2px;
+    classDef input fill:#DCFCE7,stroke:#15803D,color:#14532D,stroke-width:2px;
+    classDef guard fill:#DBEAFE,stroke:#1D4ED8,color:#1E3A8A,stroke-width:2px;
+    classDef output fill:#FFEDD5,stroke:#C2410C,color:#7C2D12,stroke-width:2px;
+    class before,duplicated problem;
+    class concurrent input;
+    class guard guard;
+    class accepted,conflict output;

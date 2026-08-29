@@ -1,0 +1,25 @@
+# Grounded Multimodal RAG Evidence Integrity
+
+图片证据改为内容寻址快照，同时阻断本地路径泄露并拒绝任意层级的重复 JSON key。
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"background": "#ffffff", "fontFamily": "Arial, Microsoft YaHei, sans-serif", "fontSize": "20px", "primaryTextColor": "#111827", "lineColor": "#374151"}, "flowchart": {"curve": "linear", "htmlLabels": true, "nodeSpacing": 38, "rankSpacing": 54}}}%%
+flowchart LR
+    path["修复前<br/>证据只绑定路径"] --> stale["文件内容可被替换<br/>路径摘要仍不变"] --> wrong["VLM 读取新内容<br/>沿用旧证据身份"]
+    path --> leak["绝对路径进入 prompt<br/>可能被回答复述"]
+    duplicate["重复 JSON key"] --> overwrite["标准 json.loads<br/>静默保留后值"]
+
+    wrong -.->|"内容寻址"| snapshot["修复后<br/>不可变图片 bytes snapshot<br/>size · SHA-256 · media type"]
+    leak -.->|"隐私边界"| provider["Provider 只接收图片字节<br/>本地路径先脱敏"]
+    overwrite -.->|"严格解析"| strict["递归检查任意层级<br/>重复 key → fail"]
+    snapshot --> provider
+    snapshot --> validator["evidence digest<br/>引用 allow-list<br/>provenance / 路径泄露<br/>fail-closed"]
+    provider --> strict --> validator
+
+    classDef problem fill:#FEE2E2,stroke:#B91C1C,color:#7F1D1D,stroke-width:2px;
+    classDef guard fill:#DBEAFE,stroke:#1D4ED8,color:#1E3A8A,stroke-width:2px;
+    classDef output fill:#FFEDD5,stroke:#C2410C,color:#7C2D12,stroke-width:2px;
+    class path,stale,wrong,leak,duplicate,overwrite problem;
+    class snapshot,provider,strict guard;
+    class validator output;
+```
