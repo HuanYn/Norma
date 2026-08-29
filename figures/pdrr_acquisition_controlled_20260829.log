@@ -1,0 +1,20 @@
+# Norma CAPU-PDRR controlled full replay
+
+date: 2026-08-29
+command: python figures/benchmark_pdrr_acquisition_controlled.py --source figures/contextual_preference_controlled_20260828.json --output figures/pdrr_acquisition_controlled_20260829.json --run-kind full --workers 1 --bootstrap-resamples 10000 --pilot-result figures/pdrr_acquisition_controlled_pilot_20260829.json
+exit_code: 0
+result_sha256: 41aae2883c9f2381b9254e79da3bde61666b4250a25453f0e831b89bdd719f78
+pilot_result_sha256: e0915a469cbd14525754c292f975a240b1fdbba1be7b9c28d3b9806e7e0b92e0
+source_sha256: 16bfdde5c61fc6dca02d19676a441fd37b265effb9bd0631dc4947ad5bb2cdbc
+attribution_json_sha256: ad06ababdf5fb9f1827d38736a26186e832bbbc2653c6dc5c99c95cc598e03ac
+production_acquisition_sha256: decd6ee792d337fba0ff7d30f7917b52dc06044f60e26f9448efe9f1495db2d4
+benchmark_script_sha256: 12773a0d63b3397138c3e907264ea2cce41f1d09abc12899e15021d20c2a3a92
+simulation_wall_seconds: 67.88451120001264
+pdrr_query_opportunities: 1800
+pdrr_successful_feedback: 1800
+pdrr_b128_retry_steps: 0
+pdrr_abstentions_after_b128: 0
+pdrr_laplace_fallback_outcomes: 0
+pdrr_selection_runtime_seconds: 58.19680410006549
+
+The machine-readable JSON is the authoritative record. This log preserves the exact replay command and a compact completion receipt.

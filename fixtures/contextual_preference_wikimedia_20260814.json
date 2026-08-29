@@ -1,0 +1,1456 @@
+{
+  "schema_version": 1,
+  "claim_boundary": "historical content-pin manifest and fail-closed verifier for the 2026-08-28 controlled preference experiments; mutable Wikimedia thumbnail URLs are not guaranteed to reconstruct the old bytes or pixels, and labels remain search-term proxies",
+  "attribution": {
+    "dataset": "Norma Wikimedia Commons demo album",
+    "generated_at": "2026-08-14T06:02:45Z",
+    "notice": "Verify each source page before external redistribution; license terms vary per file.",
+    "serialization": "utf-8-json-indent2-ensure-ascii-false-crlf-no-final-newline",
+    "sha256": "ad06ababdf5fb9f1827d38736a26186e832bbbc2653c6dc5c99c95cc598e03ac"
+  },
+  "image_count": 72,
+  "experiment_image_count": 70,
+  "total_expected_bytes": 40446246,
+  "images": [
+    {
+      "file": "001_302770d7dacd.jpg",
+      "title": "File:Free Travel Shirt Gießen Die drei Schwätzer.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Free_Travel_Shirt_Gie%C3%9Fen_Die_drei_Schw%C3%A4tzer.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Free_Travel_Shirt_Gie%C3%9Fen_Die_drei_Schw%C3%A4tzer.jpg/1920px-Free_Travel_Shirt_Gie%C3%9Fen_Die_drei_Schw%C3%A4tzer.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Stefan Flöper",
+        "Credit": "Own work.(→ weitere 2,793 Bilder von mir in der Galerie)",
+        "Attribution": "Stefan Flöper / Wikimedia Commons",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Free Travel-Shirt visiting Die drei Schwätzer, Gießen, Germany"
+      },
+      "expected_byte_size": 781041,
+      "expected_sha256": "3abcd12681c2a2c705f98bbbb742cb55199446208b4befc7088b291feee021fe",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "002_6c3a6da04446.jpg",
+      "title": "File:Gothic-architecture-banner.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Gothic-architecture-banner.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Gothic-architecture-banner.jpg/1920px-Gothic-architecture-banner.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "Artist": "Traveler100",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "Roof of Milan cathedral"
+      },
+      "expected_byte_size": 152147,
+      "expected_sha256": "5cd90ed5f970f80c7f39fdb5eca41c72bf21fd8dcdaf24ea287b4dc6b2405e9a",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "003_97b4ada6b34a.jpg",
+      "title": "File:Architecture Antiquity Old Travel Arch Monastery.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Architecture_Antiquity_Old_Travel_Arch_Monastery.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Architecture_Antiquity_Old_Travel_Arch_Monastery.jpg/1920px-Architecture_Antiquity_Old_Travel_Arch_Monastery.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "fietzfotos",
+        "Credit": "https://pixabay.com/en/architecture-antiquity-old-travel-3105798/ archive copy at the Wayback Machine",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "Architecture Antiquity Old Travel Arch Monastery"
+      },
+      "expected_byte_size": 1056825,
+      "expected_sha256": "c1e25976d967ad847b93de564ab8de8947c49063acf4309d934d6bc1774eb0b1",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "004_9a3b0cbbe3ff.jpg",
+      "title": "File:Piazza Del Duomo Lecce Italy Travel Photography (171395721).jpeg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Piazza_Del_Duomo_Lecce_Italy_Travel_Photography_%28171395721%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Piazza_Del_Duomo_Lecce_Italy_Travel_Photography_%28171395721%29.jpeg/1920px-Piazza_Del_Duomo_Lecce_Italy_Travel_Photography_%28171395721%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/pictures thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#yellow ,#sky ,#city ,#travel ,#church ,#blue ,#clouds ,#europe ,#italy ,#urban ,#architecture ,#cityscape ,#orange ,#square ,#colors ,#photo ,#lecce ,#italia ,#photograph ,#piazza ,#photography ,#horizontal ,#print ,#duomo ,#fine art ,#prints ,#depth ,#european ,#baroque ,#geotagged ,#wall art]"
+      },
+      "expected_byte_size": 425718,
+      "expected_sha256": "b31caab7aa7ad9ba5ff9c81376c0ac7a64fd273389eb8c0802055b0c6c9c999d",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "005_1839d30785cb.jpg",
+      "title": "File:Architecture Travel City Street Tourism Cuba.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Architecture_Travel_City_Street_Tourism_Cuba.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Architecture_Travel_City_Street_Tourism_Cuba.jpg/1920px-Architecture_Travel_City_Street_Tourism_Cuba.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "SweetMellowChill",
+        "Credit": "https://pixabay.com/en/architecture-travel-city-street-3335045/ archive copy at the Wayback Machine",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "Architecture Travel City Street Tourism Cuba"
+      },
+      "expected_byte_size": 841032,
+      "expected_sha256": "09a40b4d4eed427842199bdf3a1316a080f60808c847d9f4c6be99bc562f6df3",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "006_9c8d9e57757e.jpg",
+      "title": "File:BART travel time map, 1967.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:BART_travel_time_map%2C_1967.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/BART_travel_time_map%2C_1967.jpg/1920px-BART_travel_time_map%2C_1967.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "San Francisco Bay Area Rapid Transit District",
+        "Credit": "San Francisco Bay Area Rapid Transit: An Investment in the FutureScanned version from flickr",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "1967 map of planned travel times of the BART system, then beginning construction. The travel times shown were rather optimistic."
+      },
+      "expected_byte_size": 330881,
+      "expected_sha256": "92e04005f6d0c785a2d6f59dc7e51f3b65c09b3f3a8912ee5e560f7f68ab5133",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "007_452a6cc76f01.jpg",
+      "title": "File:BART travel time map, 1972.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:BART_travel_time_map%2C_1972.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/7/74/BART_travel_time_map%2C_1972.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "San Francisco Bay Area Rapid Transit District",
+        "Credit": "1971-1972 BART annual report",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "1972 map of planned travel times on BART"
+      },
+      "expected_byte_size": 716116,
+      "expected_sha256": "ec83688d1a774f1dd81ad539e00583a9299d0af6c2c293d10237ee49a296f298",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "008_5cb3ae6de6fc.jpg",
+      "title": "File:Travel agency Chios Greece.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Travel_agency_Chios_Greece.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Travel_agency_Chios_Greece.jpg/1920px-Travel_agency_Chios_Greece.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Art Grafix",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Commercial premises."
+      },
+      "expected_byte_size": 891524,
+      "expected_sha256": "8fbcbf3f48556b679cbec502998e813a7a07bdab9433a1dabf43540a2775bb52",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "009_490655e9e2e7.jpg",
+      "title": "File:Sydney (AU), Darling Harbour -- 2019 -- 3193-5.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sydney_%28AU%29%2C_Darling_Harbour_--_2019_--_3193-5.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Sydney_%28AU%29%2C_Darling_Harbour_--_2019_--_3193-5.jpg/1920px-Sydney_%28AU%29%2C_Darling_Harbour_--_2019_--_3193-5.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Dietmar Rabich",
+        "Credit": "Own work",
+        "Attribution": "Dietmar Rabich",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Night in Darling Harbour, Sydney, New South Wales, AustraliaDarling Harbour in Sydney is located on the eastern edge of the city center and has a long and varied history. Originally, the area was a natural bay and river connection used by the Gadigal and Eora communities. In the 19th century, the harbour developed into an important hub for goods, shipping, and naval activities, with customs facilities, shipyards, and warehouses dominating the landscape. Through land reclamation and redevelopment, Darling Harbour gradually transformed from a working port to a leisure, recreation, and exhibition district.In the 1980s, a strategic shift took place: urban redevelopment, new infrastructure, and major events led to increased use as an urban leisure and MICE location. With the Bicentennial in 1988, the area was redesigned, and museums, convention centers, restaurants, and green spaces were created. Today, Darling Harbour combines history with science, culture, and leisure and remains a vibrant attraction in the heart of Sydney."
+      },
+      "expected_byte_size": 519127,
+      "expected_sha256": "90fe00b12101c23cb11867e8786518c5d6afd24eeecde645ac3025923d307e82",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "010_714cb2e0d764.jpg",
+      "title": "File:Architecture Bangalore Palace Building Travel (48186394957).jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Architecture_Bangalore_Palace_Building_Travel_%2848186394957%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Architecture_Bangalore_Palace_Building_Travel_%2848186394957%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "Abhiman Singh",
+        "Credit": "Architecture Bangalore Palace Building Travel",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "Architecture Bangalore Palace Building Travel. https://indiavisitonline.in/shimla-kullu-manali-honeymoon-bangalore\" rel=\"noreferrer nofollow\">indiavisitonline.in/shimla-kullu-manali-honeymoon-bangalore"
+      },
+      "expected_byte_size": 297516,
+      "expected_sha256": "03378bc5923b128e6af9c6420f8f07a4ab6552147eed3ba20afd3c4f8c857810",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "011_5cf58c0406f2.jpg",
+      "title": "File:Vidhan Architecture Travel Sky Ancient Outdoors (48186333511).jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Vidhan_Architecture_Travel_Sky_Ancient_Outdoors_%2848186333511%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/5/54/Vidhan_Architecture_Travel_Sky_Ancient_Outdoors_%2848186333511%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "Abhiman Singh",
+        "Credit": "Vidhan Architecture Travel Sky Ancient Outdoors",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "Vidhan Architecture Travel Sky Ancient Outdoors. https://indiavisitonline.in/shimla-kullu-manali-honeymoon-bangalore\" rel=\"noreferrer nofollow\">indiavisitonline.in/shimla-kullu-manali-honeymoon-bangalore"
+      },
+      "expected_byte_size": 111200,
+      "expected_sha256": "307cabe260b6696d77d4553eac32db4420e115b5c84ccd5ec73e87f32f782065",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "012_0b8c21f5458c.jpg",
+      "title": "File:Kewick Yucatan Incidents of Travel - Long Building.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Kewick_Yucatan_Incidents_of_Travel_-_Long_Building.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Kewick_Yucatan_Incidents_of_Travel_-_Long_Building.jpg/1920px-Kewick_Yucatan_Incidents_of_Travel_-_Long_Building.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Frederick Catherwood (d. 1854)",
+        "Credit": "Engraving from 19th century book \"Incidents of Travel in Yucatan\" Vol II Via [1]",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "Maya site of Kiuik or Kiuic, rendered \"Kewick\" by early explorer John Lloyd Stephens, as drawn by Frederick Catherwood."
+      },
+      "expected_byte_size": 1398986,
+      "expected_sha256": "f44186aedd3da9393cbec2ecc1beada2623565af72dc1dd9c5e11e4efbae2e22",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "013_da1ccc50a5ef.jpg",
+      "title": "File:Kewick Yucatan Incidents of Travel - Diamantes.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Kewick_Yucatan_Incidents_of_Travel_-_Diamantes.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Kewick_Yucatan_Incidents_of_Travel_-_Diamantes.jpg/1920px-Kewick_Yucatan_Incidents_of_Travel_-_Diamantes.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Frederick Catherwood (d. 1854)",
+        "Credit": "Engraving from 19th century book \"Incidents of Travel in Yucatan\" Vol II Via [1]",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "Maya site of Kiuik or Kiuic, rendered \"Kewick\" by early explorer John Lloyd Stephens, as drawn by Frederick Catherwood. Structure known as \"Diamantes\" building."
+      },
+      "expected_byte_size": 1387880,
+      "expected_sha256": "283f0f22986ce8609b8f07831de32166e293a1d90a8a9a93b1efde327cf66afa",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "014_80a6bb329d74.jpg",
+      "title": "File:-vienna -austria -travel -architecture -buildings (9127600466).jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:-vienna_-austria_-travel_-architecture_-buildings_%289127600466%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a0/-vienna_-austria_-travel_-architecture_-buildings_%289127600466%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "Artist": "Sarah Stierch from Sonoma, CA, USA",
+        "Credit": "#vienna #austria #travel #architecture #buildings",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.0",
+        "ImageDescription": "vienna #austria #travel #architecture #buildings"
+      },
+      "expected_byte_size": 79499,
+      "expected_sha256": "ad90a9f3a55f119f7e322ffe49b1197feaae094234b8ef981bc2e0341d9d310d",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "015_d58c4cf46e4f.jpg",
+      "title": "File:Off to Santa Fe. -abq -newmexico -architecture -travel -nofilter (8664797803).jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Off_to_Santa_Fe._-abq_-newmexico_-architecture_-travel_-nofilter_%288664797803%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/4/49/Off_to_Santa_Fe._-abq_-newmexico_-architecture_-travel_-nofilter_%288664797803%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "Artist": "Sarah Stierch from Sonoma, CA, USA",
+        "Credit": "Off to Santa Fe. #abq #newmexico #architecture #travel #nofilter",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.0",
+        "ImageDescription": "train station"
+      },
+      "expected_byte_size": 99360,
+      "expected_sha256": "9a9e3bd1916f82db00b699894dfa8b85fb26c07699eff42966fac675ab680686",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "016_825407755eb2.jpg",
+      "title": "File:-london -architecture -travel (8631014169).jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:-london_-architecture_-travel_%288631014169%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/0/04/-london_-architecture_-travel_%288631014169%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "Artist": "Sarah Stierch from Sonoma, CA, USA",
+        "Credit": "#london #architecture #travel",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.0",
+        "ImageDescription": "london #architecture #travel"
+      },
+      "expected_byte_size": 129276,
+      "expected_sha256": "52515c8ca7f3f27c939246b3db48949db3fd2db69392acd6ed45429d2a9ee669",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "017_edd30ff0db3e.jpg",
+      "title": "File:Hays Travel, High Street, Omagh - geograph.org.uk - 6341923.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Hays_Travel%2C_High_Street%2C_Omagh_-_geograph.org.uk_-_6341923.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Hays_Travel%2C_High_Street%2C_Omagh_-_geograph.org.uk_-_6341923.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY-SA 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "Artist": "Kenneth Allen",
+        "Credit": "Geograph Britain and Ireland",
+        "Attribution": "Hays Travel, High Street, Omagh by Kenneth Allen",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 2.0",
+        "ImageDescription": "Hays Travel, High Street, Omagh"
+      },
+      "expected_byte_size": 730981,
+      "expected_sha256": "701431c7b6df9623c2dc60f878d9c923b84fcf178e2e1741adf96b2984409ac6",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "018_054c7f980b54.jpg",
+      "title": "File:Dworkin Travel 1917.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Dworkin_Travel_1917.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Dworkin_Travel_1917.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Unknown authorUnknown author",
+        "Credit": "accession 2006-1-2. https://oja50.org/wp-content/uploads/2023/02/11_1928_Dworkin_Clipping_2006-1-2_007-scaled.jpg",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "E. & H. Dworkin Steamships and Bankers, later Dworkin Travel, at 525 Dundas Street W., Toronto, Canada, 1917."
+      },
+      "expected_byte_size": 498106,
+      "expected_sha256": "36e8bd3d513085a2861e6b695ffd6dc6ebce2d3feb3ab28bd0b4bc9251de4d0f",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "019_f8ccc773d483.jpg",
+      "title": "File:Hays Travel, High Street, Omagh - geograph.org.uk - 6467494.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Hays_Travel%2C_High_Street%2C_Omagh_-_geograph.org.uk_-_6467494.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Hays_Travel%2C_High_Street%2C_Omagh_-_geograph.org.uk_-_6467494.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY-SA 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "Artist": "Kenneth Allen",
+        "Credit": "Geograph Britain and Ireland",
+        "Attribution": "Hays Travel, High Street, Omagh by Kenneth Allen",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 2.0",
+        "ImageDescription": "Hays Travel, High Street, Omagh"
+      },
+      "expected_byte_size": 215202,
+      "expected_sha256": "5c0f8d82c1459495342e01a6b6fbce167e2cdc7170f8bef159858d03edb774f3",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "020_408965518a0f.jpg",
+      "title": "File:Architecture-structure-building-palace-travel-plaza-125452.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Architecture-structure-building-palace-travel-plaza-125452.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Architecture-structure-building-palace-travel-plaza-125452.jpg/1920px-Architecture-structure-building-palace-travel-plaza-125452.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "Unknown authorUnknown author",
+        "Credit": "https://pxhere.com/es/photo/125452",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "Plaza de España, Sevilla"
+      },
+      "expected_byte_size": 1426190,
+      "expected_sha256": "7bf4bc56af1c07d97bfa4aa6895bf6900c31c3a729a48e655e74c96e6ff2cd8b",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "021_077dd084a1e2.jpg",
+      "title": "File:Southland Travel, Essex, Ontario, 2025-08-30.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Southland_Travel%2C_Essex%2C_Ontario%2C_2025-08-30.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Southland_Travel%2C_Essex%2C_Ontario%2C_2025-08-30.jpg/1920px-Southland_Travel%2C_Essex%2C_Ontario%2C_2025-08-30.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Chris Woodrich",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Southland Travel, Essex, Ontario, 2025-08-30"
+      },
+      "expected_byte_size": 773007,
+      "expected_sha256": "d1cc45666f5d1471ff8f5f18b692f14adae3423f0e3cf635aff24191f76ebda2",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "022_538c46a08497.jpg",
+      "title": "File:Buffalo Architecture banner.jpg",
+      "search_term": "travel architecture",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Buffalo_Architecture_banner.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Buffalo_Architecture_banner.jpg/1920px-Buffalo_Architecture_banner.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "Artist": "w_lemay",
+        "Credit": "https://www.flickr.com/photos/59081381@N03/52685635176/",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 2.0",
+        "ImageDescription": "Built in 1929-1931, this Art Deco-style 25-story skyscraper was designed by the firm of Dietel, Wade and Jones to serve as the city hall for the city of Buffalo. Prior to the construction of city hall, the city government of Buffalo was housed in the County and City Hall, built 60 years prior. The city more than quadrupled in population from 125,000 to over 500,000 in the half-century between the 1870s and 1920s, which prompted the city government to start planning the construction of a dedicated, separate city hall building to house city offices and the city council. The west side of Niagara Square was chosen as the site for the building, necessitating the first major alteration to the city’s original street grid with the closure of the block of Court Street running west from the square. The site was previously home to the Greek Revival-style mansion of former Buffalo mayor Samuel Wilkeson, which had been demolished and replaced by a gas station in 1915, which itself was replaced by City Hall. By the time that City Hall was being constructed, Niagara Square had transitioned from a fashionable residential enclave lined with the mansions of the city’s elite to a major civic center and an extension of the city’s central business district, with the high-rise Statler Hotel and substantial Buffalo Athletic Club sitting on the north and south sides of the square. Shortly after the completion of city hall, two Stripped Classical-style federal office buildings were built on the east side of the square along Court Street, solidifying the area’s status as a major cultural and governmental center for the city. At the time of its construction, the 32-story 398-foot-tall city hall was one of the city’s tallest buildings, though the earlier Rand Tower at Lafayette square exceeded it in height. The building was finished at a transition point, as the Great Depression caused the city’s double-digit growth rate to slow to less than one percent in the 1930s, and then begin a long decline in the 1950s from nearly 600,000 people that would continue through the 2010s, when the city neared a population of 250,000. In the same time period, the metropolitan area around the city, following the trends of other struggling postindustrial cities in the Great Lakes and Rust Belt region, grew from under 1 million residents in the 1930s, to over 1.3 million in the 1970s, before declining to 1.1 million by the 2010s. Given when it was built, the building, like Buffalo Central Terminal, represents the city when it was nearing its peak, right before it began a cycle of decline that only ended in the past decade. The building features an octagonal base three stories tall, with multiple places where the building’s tower features setbacks, giving it a distinctive Art Deco silhouette and meaning that, by the time the building reaches the top floor, the footprint of the floor is about 1/6 of that at ground level. The building is clad in Minnesota limestone and Amherst (Ohio) sandstone, with several courses of gray granite at the base. The building’s floors shrink as it rises, first setting back from South Elmwood Avenue to the rear, the chamfered corners at the diagonal radial avenues, and above the front portico at the third floor, before setting back further at the thirteenth floor, where the north and south wings terminate, and at the fifteenth floor, where the two wings immediately north and south of the portico that extend eastward towards Niagara Square terminate. The tops of each setback feature a low-slope roof enclosed by a sandstone parapet. Above this, the tower slowly transitions from a square footprint to an octagonal footprint, before ending in an octagonal roof with polychromatic decorative masonry, Iroquois busts at the corners, and ribs atop the roof. The building features many historic metal casement windows that open inward, making them easy to clean without the need for exterior window washers. Most window bays, except those on the fourth and thirteenth floors and outer bays of the taller setbacks and tower, feature decorative recessed spandrel panels in copper or stone, flanked by pilasters, which emphasize the building’s verticality. The front portico also emphasizes its verticality, featuring a cluster of fluted sandstone columns with decorative capitals supporting an architrave with a decorative carved relief that represents the city’s history and industrial prowess. The ceiling of the portico features recessed square and triangular patterns set at a 45-degree angle to the rest of the building, with decorative colorful circular trim pieces inside these recesses. Additionally, the entrance doors are on a recessed walls flanked by two concavely curved walls covered with flutes, and features decorative carved friezes on the stone spandrel panels over the doors. The rear facade, facing Court Street to the west at the exterior of the main Council Chamber, features a colonnade with engaged fluted columns flanking recessed windows and copper spandrel panels, with a large relief depicting the city’s history above. At the chamfered corners of the building, along the radial side streets, are two small plazas with statues of Grover Cleveland and Millard Fillmore, two former US Presidents whom lived in Buffalo. The interior of the building is richly decorated with murals, bronze doors, decorative bronze panels, stone cladding, stone floors with brass inlays, fluted columns and pilasters, vaulted ceilings, decorative grilles, carved figurines, decorative tile ceilings, carved wooden doors, and a notable semi-circular stained glass skylight in the main council meeting chamber that depicts the sun. Many of the building’s murals were created by William de Leftwich Dodge, with sculptor Albert Stewart creating many of the friezes, and statues by Rene Paul Chambellan. A bronze tablet dedicated in honor of Mayor Roesch and installed in 1937 was created by William Ehrich. The building’s interior is cooled in the summer utilizing a system that catches breezes blowing in from the west off Lake Erie, channeling them into the basement for passive geothermal cooling, and then directed into the building’s air ventilation system. The top of the building features an open-air observation deck, which can be accessed via elevator, with a total of eight elevators serving the building on the lower floors, reducing in number for the smaller upper floors. The building was listed on the National Register of Historic Places in 1999. It is one of the best examples of municipal Art Deco architecture in the world, and stands as a prominent symbol of the city of Buffalo, being one of the largest and tallest municipal buildings in the United States, and being prominently sited west of most of the skyscrapers in the city. The building helps create a major focal point on Niagara Square, and a sense of enclosure for the visual axis running west Court Street from Lafayette Square, located a few blocks to the east."
+      },
+      "expected_byte_size": 168760,
+      "expected_sha256": "477c6478496b1fad4bf92d2922fc4fb26f0dd897e9c3c012d5c65a833e57f259",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "023_53eabe29deee.jpg",
+      "title": "File:Wellington City Night.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Wellington_City_Night.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Wellington_City_Night.jpg/1920px-Wellington_City_Night.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "Artist": "Donovan Govan.",
+        "Credit": "Image was created by me using a Canon PowerShot G3 (reference, Panorama 0800-0810 C; shutter 15 s, aperture F8.0, and ISO 50).",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "This is a panorama of central Wellington, in New Zealand. It was taken from the summit of Mount Victoria at night."
+      },
+      "expected_byte_size": 159440,
+      "expected_sha256": "5005bd9026bf2907cde38cda6bdf9c06325268dec0ad3f9c1b6d6f7dcfef2e25",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "024_3fd5f118eb04.jpg",
+      "title": "File:Montreal City Hall Jan 2006.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Montreal_City_Hall_Jan_2006.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Montreal_City_Hall_Jan_2006.jpg/1920px-Montreal_City_Hall_Jan_2006.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 2.5",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.5",
+        "Artist": "David Iliff (Diliff)",
+        "Credit": "By Uploader",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.5",
+        "ImageDescription": "Montreal City Hall"
+      },
+      "expected_byte_size": 734003,
+      "expected_sha256": "80ef17c0da0826eb9d19aa662e67c3f843698cfe369c54645a02921a5980595b",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "025_e5acabdb111b.jpg",
+      "title": "File:New York City at night HDR.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:New_York_City_at_night_HDR.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/New_York_City_at_night_HDR.jpg/1920px-New_York_City_at_night_HDR.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "Artist": "Paulo Barcellos Jr.",
+        "Credit": "https://www.flickr.com/photos/paulobar/230134559/",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 2.0",
+        "ImageDescription": "New York City at night, photographed using the HDR technique. Looking east along West 45th St. The yellow sign in the center is Milford Plaza Hotel."
+      },
+      "expected_byte_size": 527359,
+      "expected_sha256": "5a42c305326a1a82bd103ed3fb07c81f1fe6b5da85ddf2abc6dca644490d6f94",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "026_4c41b5c4a56e.jpg",
+      "title": "File:Image-Grand central Station Outside Night 2.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Image-Grand_central_Station_Outside_Night_2.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Image-Grand_central_Station_Outside_Night_2.jpg/1920px-Image-Grand_central_Station_Outside_Night_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+        "Artist": "Fcb981 ; Eric Baetscher (attribution required)",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "Grand Central terminal in New York, NY"
+      },
+      "expected_byte_size": 864474,
+      "expected_sha256": "0dff3f801b4e47dc2f17f5bd08c3f0b8e707af431da39a01c15700f45c992bf8",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "027_0fe667ea27f9.jpg",
+      "title": "File:Pont de Brooklyn de nuit - Octobre 2008 edit.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Pont_de_Brooklyn_de_nuit_-_Octobre_2008_edit.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Pont_de_Brooklyn_de_nuit_-_Octobre_2008_edit.jpg/1920px-Pont_de_Brooklyn_de_nuit_-_Octobre_2008_edit.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Martin St-Amant (S23678)",
+        "Credit": "travail personnel (own work) This is a retouched picture, which means that it has been digitally altered from its original version. Modifications: Noise reduction and general clearing of artefacts from the sky. The original can be viewed here: Pont de Brooklyn de nuit - Octobre 2008.jpg: . Modifications made by Lycaon.",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "Night Panorama of Brooklyn Bridge and Financial sector of Manhattan. Three panoramas at different exposures have been assembled with Enfuse"
+      },
+      "expected_byte_size": 212604,
+      "expected_sha256": "6e8a23a0cae05c14ddf0d71c828bc9e4548ac6477bc898e982dfda705f9a72b0",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "028_c814e49a5937.jpg",
+      "title": "File:Moscow International Business Centre, Marc 2008.JPG",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Moscow_International_Business_Centre%2C_Marc_2008.JPG",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Moscow_International_Business_Centre%2C_Marc_2008.JPG/1920px-Moscow_International_Business_Centre%2C_Marc_2008.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "Artist": "Dmitry A. Mottl",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "The development of Moscow International Business Centre (Moscow-City), March 2008."
+      },
+      "expected_byte_size": 384543,
+      "expected_sha256": "6b0eb92ebb0d15377b38192d52914527b0c3eb5d3851195fc58c81575c02714b",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "029_75311d39815f.jpg",
+      "title": "File:Church of the virgin of the burgh Rhodes 14th century night.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Church_of_the_virgin_of_the_burgh_Rhodes_14th_century_night.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Church_of_the_virgin_of_the_burgh_Rhodes_14th_century_night.jpg/1920px-Church_of_the_virgin_of_the_burgh_Rhodes_14th_century_night.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "Jebulon",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "By night, the ruins of the choir of the church of the Virgin of the Burgh in the medieval city of Rhodes, Island of Rhodes, Greece. 14th century."
+      },
+      "expected_byte_size": 559062,
+      "expected_sha256": "9755ccbadb92a86af7d5e5f84ac30420978a1d6d80c07e37ad411e36ba78ecaa",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "030_790fd23570e0.jpg",
+      "title": "File:Manhattan from Weehawken, NJ.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Manhattan_from_Weehawken%2C_NJ.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Manhattan_from_Weehawken%2C_NJ.jpg/1920px-Manhattan_from_Weehawken%2C_NJ.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "Artist": "Dmitry Avdeev",
+        "Credit": "Provided by email",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "Midtown Manhattan as seen from Weehawken, NJ"
+      },
+      "expected_byte_size": 276794,
+      "expected_sha256": "2b1acbe668b59103e27a7f1b9b861f3b001c60282f698c1f3b431ad7f0e39f40",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "031_652aa3111696.jpg",
+      "title": "File:Széchenyi Chain Bridge in Budapest at night.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg/1920px-Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC0",
+        "LicenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+        "Artist": "Wilfredor",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Creative Commons Zero, Public Domain Dedication",
+        "ImageDescription": "Night view of The Széchenyi Chain Bridge from Buda Castle in Budapest, Hungary"
+      },
+      "expected_byte_size": 565359,
+      "expected_sha256": "3103720dada9d8d55f488ece5e799406341a9f2029335ff183cb05b12728ed88",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "032_8ecf08dcd954.jpg",
+      "title": "File:1 rocinha night 2014 panorama.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:1_rocinha_night_2014_panorama.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/1_rocinha_night_2014_panorama.jpg/1920px-1_rocinha_night_2014_panorama.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "Artist": "Chensiyuan",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "Panorama at night of Rocinha, the largest favela in Brazil, in Rio de Janeiro city, with the Morro Dois Irmãos (Two Brothers Hill) in the background, in June 2014."
+      },
+      "expected_byte_size": 415615,
+      "expected_sha256": "bafdd073eebb44b3d8b24b7f6cd6d3aaa8e8926664210bf5aa56ba710361f261",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "033_1bcb794cd740.jpg",
+      "title": "File:Night Photography City.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Night_Photography_City.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Night_Photography_City.jpg/1920px-Night_Photography_City.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Vaibhav Madhav Naikare",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Can you see the color of the sky ? Can you see the city light"
+      },
+      "expected_byte_size": 189797,
+      "expected_sha256": "a2b45a053489e859792900c0a78274ea2419765fb485ee3865e5436301c6a17c",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "034_78209f5ec935.jpg",
+      "title": "File:San Francisco City Hall, nighttime, September 2016.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:San_Francisco_City_Hall%2C_nighttime%2C_September_2016.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/San_Francisco_City_Hall%2C_nighttime%2C_September_2016.jpg/1920px-San_Francisco_City_Hall%2C_nighttime%2C_September_2016.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Dllu",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "The San Francisco City Hall is the seat of the government of San Francisco. Completed in 1915, it is a Beaux-Arts monument to the City Beautiful movement that epitomized the high-minded American Renaissance of the 1880s to 1917. The structure's dome is taller than that of the United States Capitol by 42 feet."
+      },
+      "expected_byte_size": 423715,
+      "expected_sha256": "b29fb2d2e937c154b71aa4c421054005a9d8494e806cab2b3e748094d64be97c",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "035_bd0b8eaa1e38.jpg",
+      "title": "File:Gothenburg City Theatre at night.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Gothenburg_City_Theatre_at_night.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Gothenburg_City_Theatre_at_night.jpg/1920px-Gothenburg_City_Theatre_at_night.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "W.carter",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Gothenburg City Theatre on Götaplatsen, Gothenburg, Sweden, at night."
+      },
+      "expected_byte_size": 233293,
+      "expected_sha256": "e71ac27575921d442045c4deaa3dddc3da0a3ec13a04b0538c50ba4fb6ef3af6",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "036_c8469d226791.jpg",
+      "title": "File:City Traffic Illuminated City Life Night City Street Night Photography Nightlife Motion (32861900291).jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:City_Traffic_Illuminated_City_Life_Night_City_Street_Night_Photography_Nightlife_Motion_%2832861900291%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/City_Traffic_Illuminated_City_Life_Night_City_Street_Night_Photography_Nightlife_Motion_%2832861900291%29.jpg/1920px-City_Traffic_Illuminated_City_Life_Night_City_Street_Night_Photography_Nightlife_Motion_%2832861900291%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "Artist": "OiMax from Tokyo, Japan",
+        "Credit": "City Traffic Illuminated City Life Night City Street Night Photography Nightlife Motion",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.0",
+        "ImageDescription": "City Traffic Illuminated City Life Night City Street Night Photography Nightlife Motion"
+      },
+      "expected_byte_size": 545372,
+      "expected_sha256": "41b2b3fb3b9a515749676b6d07a83ba69c71c5d1d305d30509769102a24213dd",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "037_2eeac5cb0583.jpg",
+      "title": "File:Champlain Quebec city.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Champlain_Quebec_city.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Champlain_Quebec_city.jpg/1920px-Champlain_Quebec_city.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Wilfredor",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Champlain Quebec city, Canada"
+      },
+      "expected_byte_size": 1242849,
+      "expected_sha256": "c94cfdd91c849abfe1d41ba680f146a61c9b797e98d58c240b9df3f9ab786386",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "038_acc5b352a05c.jpg",
+      "title": "File:Street furniture (Night Photography, Qom City, Iran Country) عکاسی در شب از مبلمان های شهری کلانشهر قم 01.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_01.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_01.jpg/1920px-Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Mostafameraji",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Night photography refers to photographs taken outdoors between dusk and dawn."
+      },
+      "expected_byte_size": 416070,
+      "expected_sha256": "1e857ed5d66493a66bbe478e3c33e73436d0569342c911d8c0cdf57cf936d558",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "039_ed59405b1b1f.jpg",
+      "title": "File:Street furniture (Night Photography, Qom City, Iran Country) عکاسی در شب از مبلمان های شهری کلانشهر قم 02.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_02.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_02.jpg/1920px-Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Mostafameraji",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Night photography refers to photographs taken outdoors between dusk and dawn."
+      },
+      "expected_byte_size": 454244,
+      "expected_sha256": "2d152821f96e654b83cd84fadf4a4428227185c0ef5c7a240213e5b133756f94",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "040_b8eaa39d6720.jpg",
+      "title": "File:Street furniture (Night Photography, Qom City, Iran Country) عکاسی در شب از مبلمان های شهری کلانشهر قم 03.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_03.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_03.jpg/1920px-Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_03.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Mostafameraji",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Night photography refers to photographs taken outdoors between dusk and dawn."
+      },
+      "expected_byte_size": 865899,
+      "expected_sha256": "ee882422816ab6648117a71f2a23d4696a7e59c066bd046cffcce81be88ca251",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "041_00aa49cb3758.jpg",
+      "title": "File:Street furniture (Night Photography, Qom City, Iran Country) عکاسی در شب از مبلمان های شهری کلانشهر قم 05.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_05.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_05.jpg/1920px-Street_furniture_%28Night_Photography%2C_Qom_City%2C_Iran_Country%29_%D8%B9%DA%A9%D8%A7%D8%B3%DB%8C_%D8%AF%D8%B1_%D8%B4%D8%A8_%D8%A7%D8%B2_%D9%85%D8%A8%D9%84%D9%85%D8%A7%D9%86_%D9%87%D8%A7%DB%8C_%D8%B4%D9%87%D8%B1%DB%8C_%DA%A9%D9%84%D8%A7%D9%86%D8%B4%D9%87%D8%B1_%D9%82%D9%85_05.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Mostafameraji",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Night photography refers to photographs taken outdoors between dusk and dawn."
+      },
+      "expected_byte_size": 417954,
+      "expected_sha256": "7410573654e89c0c829e96187b43f1d0e8a4a7ca88aa21166588309f4b9076b2",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "042_22a8dc3da4ac.jpg",
+      "title": "File:UB City at night .jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:UB_City_at_night_.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/UB_City_at_night_.jpg/1920px-UB_City_at_night_.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "KshitizBathwal / Skyscape Photography",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Aerial view of UB City at night."
+      },
+      "expected_byte_size": 1289998,
+      "expected_sha256": "24bd5edf16ba3e855d72184a7a52b365ed50319eddc97f98ad1c081ac2b27f84",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "043_27eac2979c6a.jpg",
+      "title": "File:Tikkurila Old railway station or city museum in night illumination in Tikkurila, Vantaa, Finland, 2022 October.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Tikkurila_Old_railway_station_or_city_museum_in_night_illumination_in_Tikkurila%2C_Vantaa%2C_Finland%2C_2022_October.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Tikkurila_Old_railway_station_or_city_museum_in_night_illumination_in_Tikkurila%2C_Vantaa%2C_Finland%2C_2022_October.jpg/1920px-Tikkurila_Old_railway_station_or_city_museum_in_night_illumination_in_Tikkurila%2C_Vantaa%2C_Finland%2C_2022_October.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/4.0",
+        "Artist": "Ximonic (Simo Räsänen)",
+        "Credit": "Own work",
+        "Attribution": "Simo Räsänen",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 4.0",
+        "ImageDescription": "Tikkurila Old railway station in night illumination in Tikkurila, Vantaa, Finland in 2022 October. The building is being used by Vantaa City Museum."
+      },
+      "expected_byte_size": 1045582,
+      "expected_sha256": "652afd198ec8590e5fde6471c773fa99f11816c03fa5149fdb228fb4015167fd",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "044_952d8cd6c02d.jpg",
+      "title": "File:Three-quarter view of the temple Haw Pha Bang at night in Luang Prabang Laos.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Three-quarter_view_of_the_temple_Haw_Pha_Bang_at_night_in_Luang_Prabang_Laos.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Three-quarter_view_of_the_temple_Haw_Pha_Bang_at_night_in_Luang_Prabang_Laos.jpg/1920px-Three-quarter_view_of_the_temple_Haw_Pha_Bang_at_night_in_Luang_Prabang_Laos.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Basile Morin",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Three-quarter view of the temple Haw Pha Bang at night, in the city-center of Luang Prabang, Laos."
+      },
+      "expected_byte_size": 735053,
+      "expected_sha256": "59052b07e3867d8af5da1548646d3f659e58f7af9cdf05b7330a2148c399d51d",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "045_97237c6cfc32.jpg",
+      "title": "File:Night photography - geograph.org.uk - 5580963.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Night_photography_-_geograph.org.uk_-_5580963.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Night_photography_-_geograph.org.uk_-_5580963.jpg/1920px-Night_photography_-_geograph.org.uk_-_5580963.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+        "Artist": "Bob Harvey",
+        "Credit": "Geograph Britain and Ireland",
+        "Attribution": "Night photography by Bob Harvey",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 2.0",
+        "ImageDescription": "Night photography"
+      },
+      "expected_byte_size": 473731,
+      "expected_sha256": "0bdb8230be3ed895be4572901ee4916c3909c6e547309a5789a42737891ece94",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "046_920056957b00.jpg",
+      "title": "File:Brooklyn Diner, New York City (2024)-L1006207.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Brooklyn_Diner%2C_New_York_City_%282024%29-L1006207.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Brooklyn_Diner%2C_New_York_City_%282024%29-L1006207.jpg/1920px-Brooklyn_Diner%2C_New_York_City_%282024%29-L1006207.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Frank Schulenburg",
+        "Credit": "Own work",
+        "Attribution": "© Frank Schulenburg",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "The Brooklyn Diner near Times Square on West 43rd Street in New York City, at night on September 23, 2024"
+      },
+      "expected_byte_size": 561962,
+      "expected_sha256": "aa0e7d5992c01d2796e61c8f57244a2993a3fac451ad3e11802daed1901ccf7f",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "047_f36674032a5c.jpg",
+      "title": "File:Radio City Music Hall at night (2024)-L1006228.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Radio_City_Music_Hall_at_night_%282024%29-L1006228.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Radio_City_Music_Hall_at_night_%282024%29-L1006228.jpg/1920px-Radio_City_Music_Hall_at_night_%282024%29-L1006228.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Frank Schulenburg",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Radio City Music Hall, an entertainment venue and theater on 6th Avenue in Midtown Manhattan, New York City, on September 25, 2024"
+      },
+      "expected_byte_size": 1109005,
+      "expected_sha256": "de23a22c887afec076ba3a4af0ca937f56353a92f307f5fbdabec910edeb00d5",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "048_3939a99c73c6.jpg",
+      "title": "File:Tours - Night - 06.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Tours_-_Night_-_06.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Tours_-_Night_-_06.jpg/1920px-Tours_-_Night_-_06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Benjamin Smith",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "Tours (Indre-et-Loire, France) - City hall at night"
+      },
+      "expected_byte_size": 631375,
+      "expected_sha256": "bc3aed7c39befaa3b2d3c666b249ccde3e6e59e0a10f624a5f81baed02fe4b03",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "049_49ff5ee1da69.jpg",
+      "title": "File:Night time in a city.jpg",
+      "search_term": "city night photography",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Night_time_in_a_city.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Night_time_in_a_city.jpg/1920px-Night_time_in_a_city.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "JoshuaSylvanus",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "The night time representation of a city."
+      },
+      "expected_byte_size": 208735,
+      "expected_sha256": "71941b571bee47318b5f891e789dd17d1294b48439c2afeb1f71998c8ca910dc",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "050_30f4e9935e6f.jpg",
+      "title": "File:Dai Jin-Traveling in Snowy Mountains.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Dai_Jin-Traveling_in_Snowy_Mountains.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Dai_Jin-Traveling_in_Snowy_Mountains.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Dai Jin",
+        "Credit": "Zhongguo gu dai shu hua jian ding zu (中国古代书画鑑定组). 2000. Zhongguo hui hua quan ji (中国绘画全集). Zhongguo mei shu fen lei quan ji. Beijing: Wen wu chu ban she. Volume 10.",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "Traveling in Snowy Mountains, hanging scroll, color on paper, 244.2 x 92.9 cm. Located at the Lüshun Museum in Dalian China."
+      },
+      "expected_byte_size": 671648,
+      "expected_sha256": "55687208fb6a550c05ef6cd8a08e4582cb14175433bb6189ee26f1c691d3d7c9",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "051_eacb43057bf3.jpg",
+      "title": "File:Mountain Landscape by Eduard Hildebrandt.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Mountain_Landscape_by_Eduard_Hildebrandt.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Mountain_Landscape_by_Eduard_Hildebrandt.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Eduard Hildebrandt",
+        "Credit": "Christie's, LotFinder: entry 1657151",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "Mountain landscape at Madeira Island (possibly the mouth of Curral das Freiras, from Estreito or Jardim da Serra?)"
+      },
+      "expected_byte_size": 46589,
+      "expected_sha256": "abae299d0194ae7db6bbeb4557d78dfd67ab8e81d0de71dc7dc7ac3394c48138",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "052_174b34677ba1.jpg",
+      "title": "File:Three essays - On picturesque beauty; On picturesque travel; and On sketching landscape - with a poem, on landscape painting. To these are now added two essays, giving an account of the principles and (14596184089).jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Three_essays_-_On_picturesque_beauty%3B_On_picturesque_travel%3B_and_On_sketching_landscape_-_with_a_poem%2C_on_landscape_painting._To_these_are_now_added_two_essays%2C_giving_an_account_of_the_principles_and_%2814596184089%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Three_essays_-_On_picturesque_beauty%3B_On_picturesque_travel%3B_and_On_sketching_landscape_-_with_a_poem%2C_on_landscape_painting._To_these_are_now_added_two_essays%2C_giving_an_account_of_the_principles_and_%2814596184089%29.jpg/1920px-thumbnail.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "No restrictions",
+        "LicenseUrl": "https://www.flickr.com/commons/usage/",
+        "Artist": "Gilpin, William, 1724-1804; Loewy, Benno, 1854-1919. fmo; Wordsworth Collection",
+        "Credit": "https://www.flickr.com/photos/internetarchivebookimages/14596184089/ Source book page: https://archive.org/stream/cu31924059053607/cu31924059053607#page/n137/mode/1up",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "No known copyright restrictions",
+        "ImageDescription": "Identifier: cu31924059053607 (find matches) Title: Three essays : On picturesque beauty; On picturesque travel; and On sketching landscape : with a poem, on landscape painting. To these are now added two essays, giving an account of the principles and mode in which the author executed his own drawings. Year: 1808 (1800s) Authors: Gilpin, William, 1724-1804 Loewy, Benno, 1854-1919. fmo Wordsworth Collection Subjects: Landscape painting Landscape drawing Publisher: London : Printed for T. Cadell and W. Davies ... Contributing Library: Cornell University Library Digitizing Sponsor: MSN View Book Page: Book Viewer About This Book: Catalog Entry View All Images: All Images From Book Click here to view book online to see this illustration in context in a browseable online version of this book. Text Appearing Before Image: learn its laws, 140 Examine Nature, when combined with art, Or Ample; mark how various are her forms, Mountains enormous, rugged rocks, clear lakes, Caftles, and bridges, aquedu&s and fanes. • Of these obferve, how fome, united pleafe; 145 While others, ill-combined, difguft the eye. That principle, which rules thefe various parts, And harmonizing all, produces one, Is Difpofition. By its plaftic powr Thofe rough materials, which Defign felects, Are nicely balanced. Thus with friendly aid 150 Thefe principles unite: Defign prefents The general fubjecl:; Difpofition culls, And recombines, the various forms anew. Rarely to more than three diflinguifhed parts Extend thy landfcape: nearefl to the eye 155 Prefent thy foreground ; then the midway fpace; Eer the blue diftance melt in liquid air. But tho full oft thefe parts with blending tints Are foftened fo, as wakes a frequent doubt Where each begins, where ends; yet ftill preferve 160 A general balance. So when Europes fons Sound 4 Text Appearing After Image: ( io6 ) Who paints a landfcape, is confined by rules,.As fixed and rigid as the tragic bard,To unity offubjed. Is the fceneA forefl, nothing there, fave woods and lawns 195Mufl rife confpicuous. Epifodes of hillsAnd lakes be far removed \\ all that obtrudesOn the chief theme, how beautiful foeerSeen as a part, disgufls us in the whole. . Thus in the realms of landfcape, to preferve 200Proportion jufl is Di/po/iiions tafk.And tho a glance of diflance it allow,Even when the foreground fwells upon the fight;Yet if the diflant fcenery wide extend,The foreground mufl be ample : Take free fcope: 205Art mufl have fpace to fland on, like the Sage,Who boafled power to fhake the folid globe.This thou mufl claim ; and if thy diftance fpreadProfufe, mufl claim it amply: UncombinedWith foreground, diflance lofes power to pleafe. 210 Where rifing from the folid rock, appearThofe ancient battlements, their lived a knight,Who oft furveying from his caflle wallThe wide expanfe before him ; diflance vaf Note About Images Please note that these images are extracted from scanned page images that may have been digitally enhanced for readability - coloration and appearance of these illustrations may not perfectly resemble the original work."
+      },
+      "expected_byte_size": 948697,
+      "expected_sha256": "b5ddb1b8c56a85fe56a5aace0a7de2ba0ad81f7b0dbe1ed87a070f915bbb1f64",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "053_d25036d4bf2a.jpg",
+      "title": "File:Three essays - On picturesque beauty; On picturesque travel; and On sketching landscape - with a poem, on landscape painting. To these are now added two essays, giving an account of the principles and (14596208838).jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Three_essays_-_On_picturesque_beauty%3B_On_picturesque_travel%3B_and_On_sketching_landscape_-_with_a_poem%2C_on_landscape_painting._To_these_are_now_added_two_essays%2C_giving_an_account_of_the_principles_and_%2814596208838%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Three_essays_-_On_picturesque_beauty%3B_On_picturesque_travel%3B_and_On_sketching_landscape_-_with_a_poem%2C_on_landscape_painting._To_these_are_now_added_two_essays%2C_giving_an_account_of_the_principles_and_%2814596208838%29.jpg/1920px-thumbnail.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "No restrictions",
+        "LicenseUrl": "https://www.flickr.com/commons/usage/",
+        "Artist": "Gilpin, William, 1724-1804; Loewy, Benno, 1854-1919. fmo; Wordsworth Collection",
+        "Credit": "https://www.flickr.com/photos/internetarchivebookimages/14596208838/ Source book page: https://archive.org/stream/cu31924059053607/cu31924059053607#page/n135/mode/1up",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "No known copyright restrictions",
+        "ImageDescription": "Identifier: cu31924059053607 (find matches) Title: Three essays : On picturesque beauty; On picturesque travel; and On sketching landscape : with a poem, on landscape painting. To these are now added two essays, giving an account of the principles and mode in which the author executed his own drawings. Year: 1808 (1800s) Authors: Gilpin, William, 1724-1804 Loewy, Benno, 1854-1919. fmo Wordsworth Collection Subjects: Landscape painting Landscape drawing Publisher: London : Printed for T. Cadell and W. Davies ... Contributing Library: Cornell University Library Digitizing Sponsor: MSN View Book Page: Book Viewer About This Book: Catalog Entry View All Images: All Images From Book Click here to view book online to see this illustration in context in a browseable online version of this book. Text Appearing Before Image: at awes a fenate with its force,Once lifped in fyllables, or eer it pouredIts glowing periods, warm with patriot-fire. At length matured, ftand forth for honefl Fame 85A candidate. Some nobler theme felectFrom Natures choicer! fcenes ; and fketch that themeWith firm, but eafy line; then if my fongAffift thy power, it afks no higher meed. Yet if, when Natures fovereign glories meet 90Thy fudden glance, no correfponding fparkOf vivid flame be kindled in thy bread;If calmly thou canft view them ; know for theeMy numbers flow not: feek fome fitter guideTo lead thee, where the low mechanic toils 95 With patient labour for his daily hire. But if the true genius fire thee, if thy heartGlow, palpitate with tranfport, at the fight;If emulation feize thee, to transfufeThefe fplendid virions on thy vivid chart; ioq If the big thought feem more than Art can paint;Hafte, fnatch thy pencil, bounteous Nature yieldsTo thee her choiceft flores; and the glad MufeSits by afliftant, aiming but to fan The Text Appearing After Image: ( m ) Thy humbler fubject lefs demands the aid *35 Of juft Defign, than Raphaels ; tho his art Give all but motion to fome group divine, While thine inglorious picture woods, and ftreams. With equal rigour Disposition claims Thy clofe attention. Wouldft thou learn its laws, 140 Examine Nature, when combined with art, Or Ample; mark how various are her forms, Mountains enormous, rugged rocks, clear lakes, Caftles, and bridges, aquedu&s and fanes. • Of these obferve, how fome, united pleafe; 145 While others, ill-combined, difguft the eye. That principle, which rules thefe various parts, And harmonizing all, produces one, Is Difpofition. By its plaftic powr Thofe rough materials, which Defign felects, Are nicely balanced. Thus with friendly aid 150 Thefe principles unite: Defign prefents The general fubjecl:; Difpofition culls, And recombines, the various forms anew. Rarely to more than three diflinguifhed parts Extend thy landfcape: nearefl to the eye 155 Prefent thy foreground ; Note About Images Please note that these images are extracted from scanned page images that may have been digitally enhanced for readability - coloration and appearance of these illustrations may not perfectly resemble the original work."
+      },
+      "expected_byte_size": 974258,
+      "expected_sha256": "a1d3b441053048cd4605fefcc0680bf8c2f32812d4bb43444c42411088de753b",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "054_c5ff34db3fb5.jpg",
+      "title": "File:Landscape, mountain, man, women, automobile, travelling, rock, woods, american brand Fortepan 28233.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Landscape%2C_mountain%2C_man%2C_women%2C_automobile%2C_travelling%2C_rock%2C_woods%2C_american_brand_Fortepan_28233.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Landscape%2C_mountain%2C_man%2C_women%2C_automobile%2C_travelling%2C_rock%2C_woods%2C_american_brand_Fortepan_28233.jpg/1920px-Landscape%2C_mountain%2C_man%2C_women%2C_automobile%2C_travelling%2C_rock%2C_woods%2C_american_brand_Fortepan_28233.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "Artist": "FOTO:Fortepan — ID 28233: Adományozó/Donor: Konok Tamás id.",
+        "Credit": "http://www.fortepan.hu/_photo/download/fortepan_43710.jpg",
+        "Attribution": "FOTO:FORTEPAN / Konok Tamás id",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 3.0",
+        "ImageDescription": "Tags: landscape, mountain, man, women, automobile, travelling, rock, woods, american brand"
+      },
+      "expected_byte_size": 437208,
+      "expected_sha256": "92f726234e2b6f7f48b78aa06b03e61e4f3c96ae1da77f076576b15a49f5571a",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "055_c3251c45e2aa.jpg",
+      "title": "File:Travel in the south.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Travel_in_the_south.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Travel_in_the_south.jpg/1920px-Travel_in_the_south.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Fatimahabouz",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": "To better soak up the culture of a region, nothing better than to dress up local clothes and watch the city from above."
+      },
+      "expected_byte_size": 1076836,
+      "expected_sha256": "f24682f5fe678c58571ded3c58c557cda4df79ffb4e84320bb2f158b73256541",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "056_eb029c859755.jpg",
+      "title": "File:Untersberg Mountain Salzburg Austria Landscape Photography (256594075).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Untersberg_Mountain_Salzburg_Austria_Landscape_Photography_%28256594075%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Untersberg_Mountain_Salzburg_Austria_Landscape_Photography_%28256594075%29.jpeg/1920px-Untersberg_Mountain_Salzburg_Austria_Landscape_Photography_%28256594075%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: Check out my gallery at www.pixael.com/en/pictures if you want to see more pictures. You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#trees ,#sky ,#landscape ,#forest ,#mountains ,#reflection ,#nature ,#travel ,#clouds ,#europe ,#house ,#outdoor ,#photo ,#austria ,#photography ,#geotagged ,#salzburg. river]"
+      },
+      "expected_byte_size": 588225,
+      "expected_sha256": "809cc2d2c0bce662448a72cc95a30fe8e83eb687dd59bbae4671f49ca7f70a4c",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "057_bcb5c3f99d47.jpg",
+      "title": "File:Kirkjufell Mountain Iceland Travel Photography (227214943).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Kirkjufell_Mountain_Iceland_Travel_Photography_%28227214943%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/4/41/Kirkjufell_Mountain_Iceland_Travel_Photography_%28227214943%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: Check out my gallery at www.pixael.com/en/pictures if you want to see more pictures. You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#landscape ,#water ,#reflection ,#nature ,#river ,#beach ,#travel ,#clouds ,#sand ,#mountain ,#long exposure ,#iceland ,#kirkjufell]"
+      },
+      "expected_byte_size": 1140914,
+      "expected_sha256": "8b8651fc8c44413613d7e43619fb44b0c71ab6bf1ef0faf6d822aa701a89c1d0",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "058_8f397f811d13.jpg",
+      "title": "File:Sligachan Scotland Landscape Travel Photography (121036503).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sligachan_Scotland_Landscape_Travel_Photography_%28121036503%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/1/12/Sligachan_Scotland_Landscape_Travel_Photography_%28121036503%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#landscape ,#reflections ,#water ,#nature ,#river ,#travel ,#contrast ,#light ,#clouds ,#cloudy ,#europe ,#outdoor ,#bridge ,#snow ,#photo ,#uk ,#sony ,#scotland ,#mountain ,#weather ,#photography ,#skye ,#isle ,#united kingdom ,#full frame ,#fullframe ,#geotagged ,#a7 ,#sony a7 ,#sonya7 ,#konica minolta 17-35]"
+      },
+      "expected_byte_size": 326881,
+      "expected_sha256": "70f66103570a4d85758cbbe98b960233a730206f4f7fa19fcb252a2be714e367",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "059_8ac9419f4801.jpg",
+      "title": "File:The Highlands Scotland Travel Landscape Photography (123275593).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:The_Highlands_Scotland_Travel_Landscape_Photography_%28123275593%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/1/15/The_Highlands_Scotland_Travel_Landscape_Photography_%28123275593%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#landscape ,#lake ,#mountains ,#nature ,#travel ,#contrast ,#clouds ,#europe ,#white ,#snow ,#photo ,#uk ,#sony ,#scotland ,#photography ,#loch ,#united kingdom ,#full frame ,#fullframe ,#geotagged ,#a7 ,#sony a7 ,#sonya7 ,#sony fe 24 70 ,#sony 24 70]"
+      },
+      "expected_byte_size": 284104,
+      "expected_sha256": "3ef2f0ec9765907dc05b13225bc1a70a0ba81c0c03f7239d4ac6b5158ae5beeb",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "060_6f6d80358091.jpg",
+      "title": "File:The House Alta Badia Italy Travel Landscape Photography (122696751).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:The_House_Alta_Badia_Italy_Travel_Landscape_Photography_%28122696751%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/The_House_Alta_Badia_Italy_Travel_Landscape_Photography_%28122696751%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#trees ,#sky ,#landscape ,#travel ,#light ,#clouds ,#europe ,#house ,#italy ,#photo ,#green ,#sony ,#mountain ,#italia ,#photography ,#dolomites ,#dolomiti ,#full frame ,#trentino ,#trentino alto adige ,#fullframe ,#geotagged ,#a7 ,#sella ,#alta badia ,#badia ,#sony a7 ,#sonya7 ,#sony fe 24 70]"
+      },
+      "expected_byte_size": 463726,
+      "expected_sha256": "f39a89d8d0eb6b01a33b3e03c73b083a85f0b39efc8d20bb172dc71ccfab9111",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "061_34bf86f3afc9.jpg",
+      "title": "File:Lysefjord Norway Landscape Travel Photography (122226717).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Lysefjord_Norway_Landscape_Travel_Photography_%28122226717%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Lysefjord_Norway_Landscape_Travel_Photography_%28122226717%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#landscape ,#sea ,#mountains ,#people ,#nature ,#travel ,#light ,#clouds ,#europe ,#outdoor ,#rocks ,#photo ,#sony ,#panorama ,#norway ,#weather ,#cliff ,#photography ,#hiking ,#fjord ,#full frame ,#fullframe ,#geotagged ,#a7 ,#by the sea ,#preikestolen ,#pulpit rock ,#lysefjord ,#sony a7 ,#sonya7 ,#sony fe 16 35 ,#sonyfe1635]"
+      },
+      "expected_byte_size": 172653,
+      "expected_sha256": "ccbd130e321aba6f1190610eb20db4f81d4f770042e893679920b1854ae60634",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "062_9d19a272280c.jpg",
+      "title": "File:Myrkdalsvatnet Myrkdalen Norway Landscape Travel Photography (120472613).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Myrkdalsvatnet_Myrkdalen_Norway_Landscape_Travel_Photography_%28120472613%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/6/63/Myrkdalsvatnet_Myrkdalen_Norway_Landscape_Travel_Photography_%28120472613%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#landscape ,#reflections ,#water ,#reflection ,#travel ,#clouds ,#europe ,#rain ,#rocks ,#photo ,#sony ,#norway ,#mountain ,#weather ,#cliff ,#photography ,#myrkdalen ,#full frame ,#fullframe ,#geotagged ,#a7 ,#ultra wide ,#sony a7 ,#sonya7 ,#sony fe 16 35 ,#sonyfe1635 ,#myrkdal ,#myrkdalsvatnet]"
+      },
+      "expected_byte_size": 252764,
+      "expected_sha256": "ea5ef467089a88437143cc74341f5ffe2129d133c188bf9fe6c4f0133397a3d3",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "063_8707c5776037.jpg",
+      "title": "File:San Cassiano Alta Badia Italy Travel Landscape Photography (131834241).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:San_Cassiano_Alta_Badia_Italy_Travel_Landscape_Photography_%28131834241%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/San_Cassiano_Alta_Badia_Italy_Travel_Landscape_Photography_%28131834241%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#trees ,#sky ,#landscape ,#nature ,#travel ,#clouds ,#europe ,#italy ,#typical ,#outdoor ,#bridge ,#photo ,#green ,#sony ,#mountain ,#italia ,#photography ,#dolomites ,#blu ,#houses ,#italian ,#dolomiti ,#full frame ,#trentino ,#fullframe ,#geotagged ,#a7 ,#alta badia ,#badia ,#sony a7 ,#sonya7 ,#sony fe 24 70 ,#sony2470]"
+      },
+      "expected_byte_size": 533850,
+      "expected_sha256": "b40fd4cfdaf16fc382f8cf56fd39be0735fe87e2174047466543d09705b38c04",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "064_3e1b77588ac2.jpg",
+      "title": "File:Svoragrova Stryn Norway Travel Landscape Photography (129997955).jpeg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Svoragrova_Stryn_Norway_Travel_Landscape_Photography_%28129997955%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/6/6c/Svoragrova_Stryn_Norway_Travel_Landscape_Photography_%28129997955%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: If you like my pictures please support me buying a print from my shop www.pixael.com/en/shop thanks! You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#landscape ,#reflections ,#sea ,#water ,#nature ,#travel ,#clouds ,#europe ,#outdoor ,#photo ,#green ,#sony ,#norway ,#mountain ,#photography ,#blu ,#fjord ,#sognefjord ,#full frame ,#fullframe ,#geotagged ,#a7 ,#ultra wide ,#stryn ,#sony a7 ,#sonya7 ,#onsale ,#sony fe 16 35 ,#sonyfe1635 ,#svoragrova]"
+      },
+      "expected_byte_size": 508111,
+      "expected_sha256": "5f3e23c5a754a83bd30841ac8c222d68e8b28372cc15f7f91cb61720e8e0b385",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "065_9e782b6fd4c7.jpg",
+      "title": "File:Sognefjord - Balestrand, Norway - Travel, landscape photography - Flickr - Giuseppe Milo (www.pixael.com).jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sognefjord_-_Balestrand%2C_Norway_-_Travel%2C_landscape_photography_-_Flickr_-_Giuseppe_Milo_%28www.pixael.com%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Sognefjord_-_Balestrand%2C_Norway_-_Travel%2C_landscape_photography_-_Flickr_-_Giuseppe_Milo_%28www.pixael.com%29.jpg/1920px-Sognefjord_-_Balestrand%2C_Norway_-_Travel%2C_landscape_photography_-_Flickr_-_Giuseppe_Milo_%28www.pixael.com%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "Artist": "Giuseppe Milo from Dublin, Ireland",
+        "Credit": "Sognefjord - Balestrand, Norway - Travel, landscape photography",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.0",
+        "ImageDescription": ""
+      },
+      "expected_byte_size": 393136,
+      "expected_sha256": "d062ad755b5555ff55981bc8aa3296622374c1869d42969e05d0a3c369dfa8ca",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "066_e0ec462934e0.jpg",
+      "title": "File:Himalaya mountain - Kashmir (3531494596) (cropped).jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Himalaya_mountain_-_Kashmir_%283531494596%29_%28cropped%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Himalaya_mountain_-_Kashmir_%283531494596%29_%28cropped%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "G. Tait",
+        "Credit": "Boston Public Library, Vintage Travel Poster : 08_05_000103]",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "This image comes from the Boston Public Library in the Massachusetts Collections Online. The library has deemed that this work has no known copyright. If there is another known set of licenses for this work, it is the duty of the uploader to provide that information in a separate tag. This tag does not indicate the copyright status of the attached work. A normal copyright tag is still required. See Commons:Licensing."
+      },
+      "expected_byte_size": 134703,
+      "expected_sha256": "a1b87c4356df0deaeb0359c0a6ec178a0ba251e9c7b40df98ef016fbe6e61dea",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "067_f5f529c7572a.jpg",
+      "title": "File:Home is where mountain is.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Home_is_where_mountain_is.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Home_is_where_mountain_is.jpg/1920px-Home_is_where_mountain_is.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY-SA 4.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "Artist": "Ashokchhetri143",
+        "Credit": "Own work",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution-Share Alike 4.0",
+        "ImageDescription": ""
+      },
+      "expected_byte_size": 1308833,
+      "expected_sha256": "20d8d9b4febae53f1d435f0f6e01e562866c853e085aa69cbf5617d917ba78d6",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "068_fb53325bc956.jpg",
+      "title": "File:Joos II. de Momper (Mirou, Anton) (1564-1635) - Bergstraße mit Einsiedelei und Reiter (Berglandschaft mit Einsiedelei) - 1375 - Führermuseum.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Joos_II._de_Momper_%28Mirou%2C_Anton%29_%281564-1635%29_-_Bergstra%C3%9Fe_mit_Einsiedelei_und_Reiter_%28Berglandschaft_mit_Einsiedelei%29_-_1375_-_F%C3%BChrermuseum.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Joos_II._de_Momper_%28Mirou%2C_Anton%29_%281564-1635%29_-_Bergstra%C3%9Fe_mit_Einsiedelei_und_Reiter_%28Berglandschaft_mit_Einsiedelei%29_-_1375_-_F%C3%BChrermuseum.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Joos de Momper the Younger",
+        "Credit": "Deutsches Historisches Museum",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": ""
+      },
+      "expected_byte_size": 53519,
+      "expected_sha256": "0dd2b827b3b0fdb270ca78feefad33e2fbfe0a0223cfb9daec523aaff36b0422",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "069_541452427878.jpg",
+      "title": "File:Mountain landscape - DPLA - aecaee77175d14f36057d0a375efae9a.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Mountain_landscape_-_DPLA_-_aecaee77175d14f36057d0a375efae9a.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Mountain_landscape_-_DPLA_-_aecaee77175d14f36057d0a375efae9a.jpg/1920px-Mountain_landscape_-_DPLA_-_aecaee77175d14f36057d0a375efae9a.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Edmund F. Arras",
+        "Credit": "This file was contributed to Wikimedia Commons by Columbus Metropolitan Library as part of a cooperation project. The donation was facilitated by the Digital Public Library of America, via its partner Ohio Digital Network. Record in source catalog DPLA identifier: aecaee77175d14f36057d0a375efae9a Columbus Metropolitan Library identifier: HA3_B10_0322",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "Power lines dominate this view of the mountainous landscape along the rail journey from Zurich to Munich. The Arrases visited Munich during their 1913 tour of Europe. Edmund F. Arras (7/7/1875-10/19/1951), a prominent Columbus businessman and entrepreneur, founded one of the city’s first property rental agencies in 1892. Trained as a lawyer, he graduated from OSU law school in 1896 and went on to hold positions in numerous civic groups around the city. He was particularly active within Kiwanis International and was involved with several local religious organizations. In 1913, he and his wife Elizabeth traveled to the World Sunday School Association Convention in Zurich, Switzerland. They continued on to travel extensively throughout Europe documenting their journey through photographs. Due to the timing of their trip, these photos comprise a valuable collection of images of European cities later devastated by war. The Arras family’s lantern slides and negatives include images from their 1913 travels through US east coast cities, Atlantic islands of the Azores, Madeira, Gibraltar and the countries of Algeria, Italy, Switzerland, Germany, the Netherlands, Belgium, France, England, and Ireland. Also included are images from their 1920 train journey from Chicago to the western US for the Kiwanis Convention in Portland. These photographs include images of Chicago, Denver and western National Parks."
+      },
+      "expected_byte_size": 368200,
+      "expected_sha256": "369bdd6af6c3e72a2a531cf7a397b1363d580efd1bc13a3e3320afc2bf2a202e",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "070_da8a0b6d619d.jpg",
+      "title": "File:Rocky Mountain Landscape, by Albert Bierstadt.jpg",
+      "search_term": "mountain travel landscape",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Rocky_Mountain_Landscape%2C_by_Albert_Bierstadt.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/6/60/Rocky_Mountain_Landscape%2C_by_Albert_Bierstadt.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "license": {
+        "LicenseShortName": "Public domain",
+        "LicenseUrl": "",
+        "Artist": "Albert Bierstadt",
+        "Credit": "https://library.whitehousehistory.org/fotoweb/archives/5039-Fine-Decorative-Arts/Main%20Index/Artwork/66.tif.info#c=%2Ffotoweb%2Farchives%2F5039-Fine-Decorative-Arts%2F",
+        "Attribution": "",
+        "AttributionRequired": "false",
+        "UsageTerms": "Public domain",
+        "ImageDescription": "This oil painting of the Rocky Mountains was done by Albert Bierstadt. Bierstadt painted this scene soon after returning from a two year tour of Europe and seven years after traveling west to the Rockies. This painting took elements from various sketches of different landscapes; some of the mountains resemble Alpine peaks more than they do the Rocky Mountains. Bierstadt was among the Hudson River School artists of the 19th century. Bierstadt was renowned for his depictions of the American West and documenting Westward Expansion in the late 19th century. There are six pieces by Bierstadt in the White House Collection."
+      },
+      "expected_byte_size": 184264,
+      "expected_sha256": "1bf90f33715459b56bbe55e815e7c1973773dab683f4450fb56830763648b4e9",
+      "used_by_contextual_experiment": true
+    },
+    {
+      "file": "071_0d9df8caf9ed.jpg",
+      "title": "File:St. Patrick Cathedral - Dublin, Ireland - Travel photography (40128098514).jpg",
+      "search_term": "street photography travel",
+      "source_page": "https://commons.wikimedia.org/wiki/File:St._Patrick_Cathedral_-_Dublin%2C_Ireland_-_Travel_photography_%2840128098514%29.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/St._Patrick_Cathedral_-_Dublin%2C_Ireland_-_Travel_photography_%2840128098514%29.jpg/1920px-St._Patrick_Cathedral_-_Dublin%2C_Ireland_-_Travel_photography_%2840128098514%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 2.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/2.0",
+        "Artist": "Giuseppe Milo from Dublin, Ireland",
+        "Credit": "St. Patrick Cathedral - Dublin, Ireland - Travel photography",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 2.0",
+        "ImageDescription": "Check out my gallery at http://www.pixael.com/en/pictures\" rel=\"nofollow\">www.pixael.com/en/pictures if you want to see more pictures. You can follow me on https://www.facebook.com/giuseppemilophoto\" rel=\"nofollow\">www.facebook.com/giuseppemilophoto https://twitter.com/pixael_com\" rel=\"nofollow\">twitter.com/pixael_com https://instagram.com/pixael/\" rel=\"nofollow\">instagram.com/pixael/"
+      },
+      "expected_byte_size": 485246,
+      "expected_sha256": "b27f12898e10da80c36ecb92b93173d84213822248b2db4ae8a8ad4cef9584fe",
+      "used_by_contextual_experiment": false
+    },
+    {
+      "file": "072_7532e20b3a82.jpg",
+      "title": "File:Christ Church Cathedral Dublin Ireland Travel Photography (249581505).jpeg",
+      "search_term": "street photography travel",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Christ_Church_Cathedral_Dublin_Ireland_Travel_Photography_%28249581505%29.jpeg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Christ_Church_Cathedral_Dublin_Ireland_Travel_Photography_%28249581505%29.jpeg/1920px-Christ_Church_Cathedral_Dublin_Ireland_Travel_Photography_%28249581505%29.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": {
+        "LicenseShortName": "CC BY 3.0",
+        "LicenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "Artist": "Giuseppe Milo",
+        "Credit": "Imported from 500px (archived version) by the Archive Team. (detail page)",
+        "Attribution": "",
+        "AttributionRequired": "true",
+        "UsageTerms": "Creative Commons Attribution 3.0",
+        "ImageDescription": "500px provided description: Check out my gallery at www.pixael.com/en/pictures if you want to see more pictures. You can follow me on www.facebook.com/giuseppemilophoto twitter.com/pixael_com instagram.com/pixael/ [#sky ,#city ,#travel ,#church ,#night ,#light ,#clouds ,#europe ,#urban ,#photo ,#green ,#long exposure ,#cathedral ,#photography ,#ireland ,#trails ,#dublin ,#patrick ,#christchurch ,#geotagged ,#st patrick]"
+      },
+      "expected_byte_size": 517620,
+      "expected_sha256": "53d96bde2f63a20703103b4f73ed443ba75145921565ffc72407d6ca570d7630",
+      "used_by_contextual_experiment": false
+    }
+  ]
+}
