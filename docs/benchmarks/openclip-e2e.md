@@ -1,13 +1,15 @@
 # Multilingual OpenCLIP end-to-end check
 
-This check used 81 public Wikimedia Commons images in an ignored local fixture,
-with attribution retained in `ATTRIBUTION.json`. It validates the optional
-provider integration and gives directional retrieval evidence; it is not a
-curated relevance benchmark.
+This historical check used 81 public Wikimedia Commons images in an ignored
+local fixture, with attribution retained in `ATTRIBUTION.json`. It validated
+the original OpenCLIP integration and gives directional retrieval evidence; it
+is not a curated relevance benchmark and is not a measurement of the current
+raw multilingual-query provider.
 
 ## Environment and pipeline
 
-- provider: `openclip-xlm-roberta-base-vit-b-32-laion5b-v1`
+- provider: `openclip-xlm-roberta-base-vit-b-32-laion5b-v1` (now retained as
+  the explicit `openclip-legacy-bridge` ablation)
 - device: PyTorch CPU
 - vector dimension: 512
 - indexed: 81 images
@@ -36,8 +38,11 @@ so they are noisy and biased toward the download queries.
 | city night photography | 0.90 | 0.80 |
 | mountain travel landscape | 0.50 | 1.00 |
 
-Using the bounded Chinese concept bridge, OpenCLIP scored 0.50 for `旅行建筑`,
-0.60 for `城市夜景摄影`, and 0.90 for `山地旅行风景`.
+Using the bounded Chinese concept bridge, this legacy provider scored 0.50 for
+`旅行建筑`, 0.60 for `城市夜景摄影`, and 0.90 for `山地旅行风景`. Those Chinese
+figures must not be attributed to the current
+`openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2` provider, which sends the
+original multilingual query directly to XLM-R and requires a fresh benchmark.
 
 Qualitative open-vocabulary checks placed St. Patrick's Cathedral first for
 `church cathedral`, both transit maps at ranks 1 and 3 for `map diagram`, and
@@ -50,4 +55,7 @@ OpenCLIP is not uniformly better on this small fixture: the lightweight color
 and luminance descriptor was stronger for the biased night query. OpenCLIP's
 clear gains were mountain/landscape retrieval and concepts outside the bounded
 lightweight vocabulary. A larger hand-labelled multilingual benchmark is still
-needed before claiming general quality superiority.
+needed before claiming general quality superiority. Treat the timing and cache
+figures above as engineering baselines for the same model family, and rerun the
+retrieval metrics before comparing the current raw-v2 query path with either
+the handcrafted or legacy-bridge ablation.

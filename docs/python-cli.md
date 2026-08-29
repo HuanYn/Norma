@@ -7,13 +7,16 @@ remain read-only.
 ## Install
 
 ```powershell
-python -m pip install -e ".[dev,selection]"
+python -m pip install -e ".[dev,selection,multimodal]"
 ```
 
 `selection` installs OR-Tools CP-SAT. Omitting it keeps the deterministic exact
 fallback for the currently supported cardinality and similarity-group limits.
-`multimodal` installs the optional multilingual OpenCLIP runtime. It is only
-loaded when `NORMA_EMBEDDING_PROVIDER=openclip-multilingual` is selected.
+`multimodal` installs the multilingual OpenCLIP runtime used by the default
+learned image/text embedding backend. The model is still loaded lazily, only
+when semantic indexing or an explicit warmup starts. For a zero-download
+handcrafted comparison baseline, set
+`NORMA_EMBEDDING_PROVIDER=lightweight` before starting the command.
 
 By default state is stored in `.norma/data`. Override it for any command by
 placing `--data-dir` before the subcommand:
