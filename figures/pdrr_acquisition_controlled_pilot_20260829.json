@@ -1,0 +1,4557 @@
+{
+  "claim_boundary": {
+    "does_not_support": [
+      "real-user preference accuracy, satisfaction, or population generalization",
+      "identity-, photographer-, scene-, or near-duplicate-disjoint generalization",
+      "DPO, SFT, LoRA, or end-to-end foundation-model fine-tuning",
+      "an exact Bayesian PDRR computation; posterior integration uses Monte Carlo",
+      "universal superiority over entropy or random acquisition",
+      "iid-user statistical significance; the ten overlapping splits are sensitivity replicates"
+    ],
+    "evidence_type": "controlled semi-synthetic acquisition-policy comparison",
+    "supports": "a narrow comparison of production CAPU-PDRR-MC, predictive entropy, and random unseen-pair acquisition under the fixed simulator and exact-file splits"
+  },
+  "data_manifest": {
+    "categories": [
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "travel architecture",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "city night photography",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape",
+      "mountain travel landscape"
+    ],
+    "embeddings_and_features": "not duplicated; pinned by source SHA-256 and revalidated numerically",
+    "filenames": [
+      "001_302770d7dacd.jpg",
+      "002_6c3a6da04446.jpg",
+      "003_97b4ada6b34a.jpg",
+      "004_9a3b0cbbe3ff.jpg",
+      "005_1839d30785cb.jpg",
+      "006_9c8d9e57757e.jpg",
+      "007_452a6cc76f01.jpg",
+      "008_5cb3ae6de6fc.jpg",
+      "009_490655e9e2e7.jpg",
+      "010_714cb2e0d764.jpg",
+      "011_5cf58c0406f2.jpg",
+      "012_0b8c21f5458c.jpg",
+      "013_da1ccc50a5ef.jpg",
+      "014_80a6bb329d74.jpg",
+      "015_d58c4cf46e4f.jpg",
+      "016_825407755eb2.jpg",
+      "017_edd30ff0db3e.jpg",
+      "018_054c7f980b54.jpg",
+      "019_f8ccc773d483.jpg",
+      "020_408965518a0f.jpg",
+      "021_077dd084a1e2.jpg",
+      "022_538c46a08497.jpg",
+      "023_53eabe29deee.jpg",
+      "024_3fd5f118eb04.jpg",
+      "025_e5acabdb111b.jpg",
+      "026_4c41b5c4a56e.jpg",
+      "027_0fe667ea27f9.jpg",
+      "028_c814e49a5937.jpg",
+      "029_75311d39815f.jpg",
+      "030_790fd23570e0.jpg",
+      "031_652aa3111696.jpg",
+      "032_8ecf08dcd954.jpg",
+      "033_1bcb794cd740.jpg",
+      "034_78209f5ec935.jpg",
+      "035_bd0b8eaa1e38.jpg",
+      "036_c8469d226791.jpg",
+      "037_2eeac5cb0583.jpg",
+      "038_acc5b352a05c.jpg",
+      "039_ed59405b1b1f.jpg",
+      "040_b8eaa39d6720.jpg",
+      "041_00aa49cb3758.jpg",
+      "042_22a8dc3da4ac.jpg",
+      "043_27eac2979c6a.jpg",
+      "044_952d8cd6c02d.jpg",
+      "045_97237c6cfc32.jpg",
+      "046_920056957b00.jpg",
+      "047_f36674032a5c.jpg",
+      "048_3939a99c73c6.jpg",
+      "049_49ff5ee1da69.jpg",
+      "050_30f4e9935e6f.jpg",
+      "051_eacb43057bf3.jpg",
+      "052_174b34677ba1.jpg",
+      "053_d25036d4bf2a.jpg",
+      "054_c5ff34db3fb5.jpg",
+      "055_c3251c45e2aa.jpg",
+      "056_eb029c859755.jpg",
+      "057_bcb5c3f99d47.jpg",
+      "058_8f397f811d13.jpg",
+      "059_8ac9419f4801.jpg",
+      "060_6f6d80358091.jpg",
+      "061_34bf86f3afc9.jpg",
+      "062_9d19a272280c.jpg",
+      "063_8707c5776037.jpg",
+      "064_3e1b77588ac2.jpg",
+      "065_9e782b6fd4c7.jpg",
+      "066_e0ec462934e0.jpg",
+      "067_f5f529c7572a.jpg",
+      "068_fb53325bc956.jpg",
+      "069_541452427878.jpg",
+      "070_da8a0b6d619d.jpg"
+    ],
+    "query_cosines": [
+      0.09550242430929012,
+      0.10500274677112001,
+      0.12911818027819572,
+      0.113352716313287,
+      0.12383341940428844,
+      0.09494872904782639,
+      0.08560252573883706,
+      0.07894273264803302,
+      0.10717937470394928,
+      0.09093062305763887,
+      0.13873091629511236,
+      0.09599336444916107,
+      0.08706785862855893,
+      0.10383749582564822,
+      0.09469140979739521,
+      0.17186966994739733,
+      0.024868293023906415,
+      0.06426038663570285,
+      0.06932477745826596,
+      0.11915635132336563,
+      0.08258804490130675,
+      0.11724555870754291,
+      0.11521927156312042,
+      0.11276651140024052,
+      0.15209537881612142,
+      0.13316585291293767,
+      0.12953317915066476,
+      0.10416167740905734,
+      0.13208241694263875,
+      0.12588402744967428,
+      0.13760311532092961,
+      0.13659487259268885,
+      0.13420310388389572,
+      0.1500875991679957,
+      0.13771542969856165,
+      0.14976532195714357,
+      0.13118800281996676,
+      0.14936013266513343,
+      0.11345411329351901,
+      0.11492023462136358,
+      0.0955340042159158,
+      0.13666005732472902,
+      0.1077304905903747,
+      0.14155776693525118,
+      0.11963989487065978,
+      0.1216118957663514,
+      0.09433168302060194,
+      0.11582352251231412,
+      0.14619841111521975,
+      0.1146947490438308,
+      0.06727677129643696,
+      0.047875354831046796,
+      0.058023598272124284,
+      0.14633091336791343,
+      0.13469189517445124,
+      0.16287176385189953,
+      0.1547186589249108,
+      0.18280078401059624,
+      0.13294732664719025,
+      0.1736207122886339,
+      0.147758556988003,
+      0.16061588421602196,
+      0.113307654541649,
+      0.08893143780256829,
+      0.1514154356642596,
+      0.1361311019792456,
+      0.17934497010901213,
+      0.08681757667711079,
+      0.11752984928447581,
+      0.10754279708403464
+    ],
+    "splits": {
+      "0": {
+        "test_filenames": [
+          "003_97b4ada6b34a.jpg",
+          "004_9a3b0cbbe3ff.jpg",
+          "005_1839d30785cb.jpg",
+          "007_452a6cc76f01.jpg",
+          "011_5cf58c0406f2.jpg",
+          "013_da1ccc50a5ef.jpg",
+          "017_edd30ff0db3e.jpg",
+          "020_408965518a0f.jpg",
+          "021_077dd084a1e2.jpg",
+          "024_3fd5f118eb04.jpg",
+          "025_e5acabdb111b.jpg",
+          "027_0fe667ea27f9.jpg",
+          "030_790fd23570e0.jpg",
+          "034_78209f5ec935.jpg",
+          "037_2eeac5cb0583.jpg",
+          "041_00aa49cb3758.jpg",
+          "042_22a8dc3da4ac.jpg",
+          "043_27eac2979c6a.jpg",
+          "044_952d8cd6c02d.jpg",
+          "046_920056957b00.jpg",
+          "050_30f4e9935e6f.jpg",
+          "051_eacb43057bf3.jpg",
+          "054_c5ff34db3fb5.jpg",
+          "055_c3251c45e2aa.jpg",
+          "057_bcb5c3f99d47.jpg",
+          "058_8f397f811d13.jpg",
+          "066_e0ec462934e0.jpg",
+          "069_541452427878.jpg"
+        ],
+        "train_filenames": [
+          "001_302770d7dacd.jpg",
+          "002_6c3a6da04446.jpg",
+          "006_9c8d9e57757e.jpg",
+          "008_5cb3ae6de6fc.jpg",
+          "009_490655e9e2e7.jpg",
+          "010_714cb2e0d764.jpg",
+          "012_0b8c21f5458c.jpg",
+          "014_80a6bb329d74.jpg",
+          "015_d58c4cf46e4f.jpg",
+          "016_825407755eb2.jpg",
+          "018_054c7f980b54.jpg",
+          "019_f8ccc773d483.jpg",
+          "022_538c46a08497.jpg",
+          "023_53eabe29deee.jpg",
+          "026_4c41b5c4a56e.jpg",
+          "028_c814e49a5937.jpg",
+          "029_75311d39815f.jpg",
+          "031_652aa3111696.jpg",
+          "032_8ecf08dcd954.jpg",
+          "033_1bcb794cd740.jpg",
+          "035_bd0b8eaa1e38.jpg",
+          "036_c8469d226791.jpg",
+          "038_acc5b352a05c.jpg",
+          "039_ed59405b1b1f.jpg",
+          "040_b8eaa39d6720.jpg",
+          "045_97237c6cfc32.jpg",
+          "047_f36674032a5c.jpg",
+          "048_3939a99c73c6.jpg",
+          "049_49ff5ee1da69.jpg",
+          "052_174b34677ba1.jpg",
+          "053_d25036d4bf2a.jpg",
+          "056_eb029c859755.jpg",
+          "059_8ac9419f4801.jpg",
+          "060_6f6d80358091.jpg",
+          "061_34bf86f3afc9.jpg",
+          "062_9d19a272280c.jpg",
+          "063_8707c5776037.jpg",
+          "064_3e1b77588ac2.jpg",
+          "065_9e782b6fd4c7.jpg",
+          "067_f5f529c7572a.jpg",
+          "068_fb53325bc956.jpg",
+          "070_da8a0b6d619d.jpg"
+        ]
+      }
+    }
+  },
+  "experiment_id": "capu-pdrr-controlled-wikimedia-v1-20260829",
+  "limitations": [
+    "All preferences are generated by three declared category-bonus simulators, not people.",
+    "Proxy categories are Wikimedia search terms and may be noisy.",
+    "Train/test separation is by exact filename only; semantic and source overlap may remain.",
+    "Ten overlapping splits and three fixed profiles are sensitivity replicates, not an iid population sample.",
+    "PDRR uses B=64 Monte Carlo posterior draws and a 16-pair heuristic shortlist; exact re-solve refers only to the constrained action, not exact posterior integration or exhaustive pair search.",
+    "The learner is a small 67D Bayesian adapter over frozen OpenCLIP features, not a multimodal foundation model fine-tune."
+  ],
+  "paired_budget_comparisons": {
+    "10": {
+      "entropy_vs_random": {
+        "budget": 10,
+        "challenger": "predictive_entropy_contextual",
+        "metrics": {
+          "constrained_set_regret_per_photo": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.01436236790220084,
+              0.01436236790220084
+            ],
+            "paired_mean_improvement": 0.01436236790220084,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.01436236790220084
+            ],
+            "relative_improvement_percent": 47.66563195812075,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          },
+          "heldout_pair_expected_log_loss": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              -0.003091086154209721,
+              -0.003091086154209721
+            ],
+            "paired_mean_improvement": -0.003091086154209721,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              -0.003091086154209721
+            ],
+            "relative_improvement_percent": -0.464371359864306,
+            "supports_challenger_better": false,
+            "supports_challenger_worse": true
+          },
+          "heldout_pair_order_accuracy": {
+            "better_direction": "higher",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.023809523809523836,
+              0.023809523809523836
+            ],
+            "paired_mean_improvement": 0.023809523809523836,
+            "percentage_point_improvement": 2.3809523809523836,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.023809523809523836
+            ],
+            "relative_improvement_percent": null,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          }
+        },
+        "reference": "random_pair_contextual"
+      },
+      "pdrr_vs_entropy": {
+        "budget": 10,
+        "challenger": "pdrr_mc_contextual",
+        "metrics": {
+          "constrained_set_regret_per_photo": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              -0.009432303816395704,
+              -0.009432303816395704
+            ],
+            "paired_mean_improvement": -0.009432303816395704,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              -0.009432303816395704
+            ],
+            "relative_improvement_percent": -59.81499968866113,
+            "supports_challenger_better": false,
+            "supports_challenger_worse": true
+          },
+          "heldout_pair_expected_log_loss": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.005640460522739699,
+              0.005640460522739699
+            ],
+            "paired_mean_improvement": 0.005640460522739699,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.005640460522739699
+            ],
+            "relative_improvement_percent": 0.8434450811895806,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          },
+          "heldout_pair_order_accuracy": {
+            "better_direction": "higher",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              -0.005291005291005235,
+              -0.005291005291005235
+            ],
+            "paired_mean_improvement": -0.005291005291005235,
+            "percentage_point_improvement": -0.5291005291005235,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              -0.005291005291005235
+            ],
+            "relative_improvement_percent": null,
+            "supports_challenger_better": false,
+            "supports_challenger_worse": true
+          }
+        },
+        "reference": "predictive_entropy_contextual"
+      },
+      "pdrr_vs_random": {
+        "budget": 10,
+        "challenger": "pdrr_mc_contextual",
+        "metrics": {
+          "constrained_set_regret_per_photo": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.004930064085805135,
+              0.004930064085805135
+            ],
+            "paired_mean_improvement": 0.004930064085805135,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.004930064085805135
+            ],
+            "relative_improvement_percent": 16.36182987680791,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          },
+          "heldout_pair_expected_log_loss": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.0025493743685299775,
+              0.0025493743685299775
+            ],
+            "paired_mean_improvement": 0.0025493743685299775,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.0025493743685299775
+            ],
+            "relative_improvement_percent": 0.3829904387185032,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          },
+          "heldout_pair_order_accuracy": {
+            "better_direction": "higher",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.0185185185185186,
+              0.0185185185185186
+            ],
+            "paired_mean_improvement": 0.0185185185185186,
+            "percentage_point_improvement": 1.85185185185186,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.0185185185185186
+            ],
+            "relative_improvement_percent": null,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          }
+        },
+        "reference": "random_pair_contextual"
+      },
+      "pdrr_vs_zero": {
+        "budget": 10,
+        "challenger": "pdrr_mc_contextual",
+        "metrics": {
+          "constrained_set_regret_per_photo": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.7344372615423944,
+              0.7344372615423944
+            ],
+            "paired_mean_improvement": 0.7344372615423944,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.7344372615423944
+            ],
+            "relative_improvement_percent": 96.68244496237396,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          },
+          "heldout_pair_expected_log_loss": {
+            "better_direction": "lower",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.034894326514715024,
+              0.034894326514715024
+            ],
+            "paired_mean_improvement": 0.034894326514715024,
+            "percentage_point_improvement": null,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.034894326514715024
+            ],
+            "relative_improvement_percent": 4.99922611400282,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          },
+          "heldout_pair_order_accuracy": {
+            "better_direction": "higher",
+            "bootstrap_resamples": 0,
+            "interval_crosses_or_touches_zero": false,
+            "paired_bootstrap_95_percentile_ci": [
+              0.1428571428571429,
+              0.1428571428571429
+            ],
+            "paired_mean_improvement": 0.1428571428571429,
+            "percentage_point_improvement": 14.28571428571429,
+            "positive_means_challenger_is_better": true,
+            "raw_seed_improvements": [
+              0.1428571428571429
+            ],
+            "relative_improvement_percent": null,
+            "supports_challenger_better": true,
+            "supports_challenger_worse": false
+          }
+        },
+        "reference": "zero_feedback_cosine"
+      }
+    }
+  },
+  "paired_final_budget_comparisons": {
+    "entropy_vs_random": {
+      "budget": 10,
+      "challenger": "predictive_entropy_contextual",
+      "metrics": {
+        "constrained_set_regret_per_photo": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.01436236790220084,
+            0.01436236790220084
+          ],
+          "paired_mean_improvement": 0.01436236790220084,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.01436236790220084
+          ],
+          "relative_improvement_percent": 47.66563195812075,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        },
+        "heldout_pair_expected_log_loss": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            -0.003091086154209721,
+            -0.003091086154209721
+          ],
+          "paired_mean_improvement": -0.003091086154209721,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            -0.003091086154209721
+          ],
+          "relative_improvement_percent": -0.464371359864306,
+          "supports_challenger_better": false,
+          "supports_challenger_worse": true
+        },
+        "heldout_pair_order_accuracy": {
+          "better_direction": "higher",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.023809523809523836,
+            0.023809523809523836
+          ],
+          "paired_mean_improvement": 0.023809523809523836,
+          "percentage_point_improvement": 2.3809523809523836,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.023809523809523836
+          ],
+          "relative_improvement_percent": null,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        }
+      },
+      "reference": "random_pair_contextual"
+    },
+    "pdrr_vs_entropy": {
+      "budget": 10,
+      "challenger": "pdrr_mc_contextual",
+      "metrics": {
+        "constrained_set_regret_per_photo": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            -0.009432303816395704,
+            -0.009432303816395704
+          ],
+          "paired_mean_improvement": -0.009432303816395704,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            -0.009432303816395704
+          ],
+          "relative_improvement_percent": -59.81499968866113,
+          "supports_challenger_better": false,
+          "supports_challenger_worse": true
+        },
+        "heldout_pair_expected_log_loss": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.005640460522739699,
+            0.005640460522739699
+          ],
+          "paired_mean_improvement": 0.005640460522739699,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.005640460522739699
+          ],
+          "relative_improvement_percent": 0.8434450811895806,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        },
+        "heldout_pair_order_accuracy": {
+          "better_direction": "higher",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            -0.005291005291005235,
+            -0.005291005291005235
+          ],
+          "paired_mean_improvement": -0.005291005291005235,
+          "percentage_point_improvement": -0.5291005291005235,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            -0.005291005291005235
+          ],
+          "relative_improvement_percent": null,
+          "supports_challenger_better": false,
+          "supports_challenger_worse": true
+        }
+      },
+      "reference": "predictive_entropy_contextual"
+    },
+    "pdrr_vs_random": {
+      "budget": 10,
+      "challenger": "pdrr_mc_contextual",
+      "metrics": {
+        "constrained_set_regret_per_photo": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.004930064085805135,
+            0.004930064085805135
+          ],
+          "paired_mean_improvement": 0.004930064085805135,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.004930064085805135
+          ],
+          "relative_improvement_percent": 16.36182987680791,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        },
+        "heldout_pair_expected_log_loss": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.0025493743685299775,
+            0.0025493743685299775
+          ],
+          "paired_mean_improvement": 0.0025493743685299775,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.0025493743685299775
+          ],
+          "relative_improvement_percent": 0.3829904387185032,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        },
+        "heldout_pair_order_accuracy": {
+          "better_direction": "higher",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.0185185185185186,
+            0.0185185185185186
+          ],
+          "paired_mean_improvement": 0.0185185185185186,
+          "percentage_point_improvement": 1.85185185185186,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.0185185185185186
+          ],
+          "relative_improvement_percent": null,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        }
+      },
+      "reference": "random_pair_contextual"
+    },
+    "pdrr_vs_zero": {
+      "budget": 10,
+      "challenger": "pdrr_mc_contextual",
+      "metrics": {
+        "constrained_set_regret_per_photo": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.7344372615423944,
+            0.7344372615423944
+          ],
+          "paired_mean_improvement": 0.7344372615423944,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.7344372615423944
+          ],
+          "relative_improvement_percent": 96.68244496237396,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        },
+        "heldout_pair_expected_log_loss": {
+          "better_direction": "lower",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.034894326514715024,
+            0.034894326514715024
+          ],
+          "paired_mean_improvement": 0.034894326514715024,
+          "percentage_point_improvement": null,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.034894326514715024
+          ],
+          "relative_improvement_percent": 4.99922611400282,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        },
+        "heldout_pair_order_accuracy": {
+          "better_direction": "higher",
+          "bootstrap_resamples": 0,
+          "interval_crosses_or_touches_zero": false,
+          "paired_bootstrap_95_percentile_ci": [
+            0.1428571428571429,
+            0.1428571428571429
+          ],
+          "paired_mean_improvement": 0.1428571428571429,
+          "percentage_point_improvement": 14.28571428571429,
+          "positive_means_challenger_is_better": true,
+          "raw_seed_improvements": [
+            0.1428571428571429
+          ],
+          "relative_improvement_percent": null,
+          "supports_challenger_better": true,
+          "supports_challenger_worse": false
+        }
+      },
+      "reference": "zero_feedback_cosine"
+    }
+  },
+  "protocol": {
+    "acquisition_methods": {
+      "pdrr_mc_contextual": {
+        "constraint_solver": "exact-partition-matroid-v1",
+        "description": "PDRR Monte Carlo estimate with common random numbers and an exact partition-constrained re-solve for every hypothetical outcome",
+        "exhaustive": false,
+        "max_per_category": 3,
+        "numerical_policy": "on AcquisitionNumericalError retry once with B=128 using the same acquisition seed; on a second failure abstain",
+        "posterior_samples_default": 64,
+        "production_function": "ai.preferences.acquisition.suggest_pair",
+        "shortlist_size": 16,
+        "target_count": 6
+      },
+      "predictive_entropy_contextual": "maximum binary entropy over unseen train pairs using logistic-normal-sigmoid-moment-pi-over-8",
+      "random_pair_contextual": "uniform random unseen train pair",
+      "zero_feedback_cosine": "frozen OpenCLIP cosine; no feedback"
+    },
+    "budget_semantics": "pair-query opportunities; a PDRR B=128 numerical failure consumes one opportunity as an explicit abstention and contributes no fabricated feedback",
+    "choice_probability_formula": "sigmoid((utility_left - utility_right) / 0.55)",
+    "evaluation": {
+      "constrained_set_regret_per_photo": "held-out oracle utility minus predicted exact-K utility, divided by 6; select exactly 6 with at most 3 per proxy category",
+      "heldout_pair_expected_log_loss": "expected cross-entropy against simulator probabilities over all 378 unordered pairs among the 28 held-out images",
+      "heldout_pair_order_accuracy": "agreement with latent-utility order over all held-out pairs"
+    },
+    "feature_schema": "capu-contextual-openclip512-67d-v1",
+    "feedback_budgets": [
+      0,
+      10
+    ],
+    "feedback_noise": "one deterministic SHA-256-seeded Bernoulli draw per seed/profile/unordered pair, shared whenever methods select the same pair",
+    "frozen_encoder": true,
+    "latent_utility_formula": "OpenCLIP query cosine + declared profile category bonus",
+    "learner": {
+      "model": "67D Bayesian contextual residual utility",
+      "optimizer": "production deterministic damped Newton + Armijo MAP/Laplace",
+      "prior_lambda": 1.0
+    },
+    "profiles": {
+      "architecture_first": {
+        "city night photography": 0.1,
+        "mountain travel landscape": -0.65,
+        "travel architecture": 0.9
+      }
+    },
+    "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+    "projection_version": "capu-contextual-shp-v1",
+    "provider": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2",
+    "query_text": "精选旅行摄影作品集",
+    "seeds": [
+      0
+    ],
+    "source": "the fixed validated JSON is the only embedding/split source and remains read-only",
+    "split": {
+      "acquisition_pool": "train images only",
+      "heldout_images": 28,
+      "kind": "source-provided category-stratified exact-file-disjoint",
+      "train_images": 42
+    },
+    "uncertainty": {
+      "bootstrap_resamples": 10000,
+      "bootstrap_seed": 20260829,
+      "interval": "nonparametric paired percentile bootstrap of the seed mean",
+      "unit": "split/choice seed after averaging the fixed profiles within seed"
+    }
+  },
+  "provenance": {
+    "path_base": {
+      "anchor": ".",
+      "id": "norma-repository-root",
+      "path_style": "posix",
+      "resolver": "benchmark-script-parents-1"
+    },
+    "pilot": null,
+    "runtime": {
+      "numpy": "2.1.3",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "python": "3.13.5",
+      "scipy": "1.15.3",
+      "simulation_wall_seconds": 0.9366911000106484,
+      "thread_environment": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "workers": 1
+    },
+    "source_audit": {
+      "leakage_guard": {
+        "acquisition_candidate_count_per_seed": 42,
+        "acquisition_candidate_source": "train_filenames only",
+        "latent_utility_fields_supplied_to_acquisition": false,
+        "note": "The PDRR helper accepts only posterior, 42 train candidates, excluded train pairs, constraints, MC controls, and a seed. Simulator utility is consulted only after a pair is returned.",
+        "test_candidate_count_supplied_to_acquisition": 0
+      },
+      "numeric_recomputation": {
+        "feature_shape": [
+          70,
+          67
+        ],
+        "max_contextual_feature_abs_error": 0.0,
+        "max_image_embedding_l2_norm_error": 9.045052684619748e-08,
+        "max_query_cosine_abs_error": 5.551115123125783e-17,
+        "query_embedding_l2_norm": 0.9999999604616252
+      },
+      "public_data": {
+        "album_path": ".norma/demo-album-eval",
+        "all_file_sha256_match": true,
+        "attribution_json_path": ".norma/demo-album-eval/ATTRIBUTION.json",
+        "attribution_json_sha256": "ad06ababdf5fb9f1827d38736a26186e832bbbc2653c6dc5c99c95cc598e03ac",
+        "file_sha256_verification": [
+          {
+            "current_sha256": "3abcd12681c2a2c705f98bbbb742cb55199446208b4befc7088b291feee021fe",
+            "expected_sha256": "3abcd12681c2a2c705f98bbbb742cb55199446208b4befc7088b291feee021fe",
+            "filename": "001_302770d7dacd.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "5cd90ed5f970f80c7f39fdb5eca41c72bf21fd8dcdaf24ea287b4dc6b2405e9a",
+            "expected_sha256": "5cd90ed5f970f80c7f39fdb5eca41c72bf21fd8dcdaf24ea287b4dc6b2405e9a",
+            "filename": "002_6c3a6da04446.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "c1e25976d967ad847b93de564ab8de8947c49063acf4309d934d6bc1774eb0b1",
+            "expected_sha256": "c1e25976d967ad847b93de564ab8de8947c49063acf4309d934d6bc1774eb0b1",
+            "filename": "003_97b4ada6b34a.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "b31caab7aa7ad9ba5ff9c81376c0ac7a64fd273389eb8c0802055b0c6c9c999d",
+            "expected_sha256": "b31caab7aa7ad9ba5ff9c81376c0ac7a64fd273389eb8c0802055b0c6c9c999d",
+            "filename": "004_9a3b0cbbe3ff.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "09a40b4d4eed427842199bdf3a1316a080f60808c847d9f4c6be99bc562f6df3",
+            "expected_sha256": "09a40b4d4eed427842199bdf3a1316a080f60808c847d9f4c6be99bc562f6df3",
+            "filename": "005_1839d30785cb.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "92e04005f6d0c785a2d6f59dc7e51f3b65c09b3f3a8912ee5e560f7f68ab5133",
+            "expected_sha256": "92e04005f6d0c785a2d6f59dc7e51f3b65c09b3f3a8912ee5e560f7f68ab5133",
+            "filename": "006_9c8d9e57757e.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "ec83688d1a774f1dd81ad539e00583a9299d0af6c2c293d10237ee49a296f298",
+            "expected_sha256": "ec83688d1a774f1dd81ad539e00583a9299d0af6c2c293d10237ee49a296f298",
+            "filename": "007_452a6cc76f01.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "8fbcbf3f48556b679cbec502998e813a7a07bdab9433a1dabf43540a2775bb52",
+            "expected_sha256": "8fbcbf3f48556b679cbec502998e813a7a07bdab9433a1dabf43540a2775bb52",
+            "filename": "008_5cb3ae6de6fc.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "90fe00b12101c23cb11867e8786518c5d6afd24eeecde645ac3025923d307e82",
+            "expected_sha256": "90fe00b12101c23cb11867e8786518c5d6afd24eeecde645ac3025923d307e82",
+            "filename": "009_490655e9e2e7.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "03378bc5923b128e6af9c6420f8f07a4ab6552147eed3ba20afd3c4f8c857810",
+            "expected_sha256": "03378bc5923b128e6af9c6420f8f07a4ab6552147eed3ba20afd3c4f8c857810",
+            "filename": "010_714cb2e0d764.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "307cabe260b6696d77d4553eac32db4420e115b5c84ccd5ec73e87f32f782065",
+            "expected_sha256": "307cabe260b6696d77d4553eac32db4420e115b5c84ccd5ec73e87f32f782065",
+            "filename": "011_5cf58c0406f2.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "f44186aedd3da9393cbec2ecc1beada2623565af72dc1dd9c5e11e4efbae2e22",
+            "expected_sha256": "f44186aedd3da9393cbec2ecc1beada2623565af72dc1dd9c5e11e4efbae2e22",
+            "filename": "012_0b8c21f5458c.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "283f0f22986ce8609b8f07831de32166e293a1d90a8a9a93b1efde327cf66afa",
+            "expected_sha256": "283f0f22986ce8609b8f07831de32166e293a1d90a8a9a93b1efde327cf66afa",
+            "filename": "013_da1ccc50a5ef.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "ad90a9f3a55f119f7e322ffe49b1197feaae094234b8ef981bc2e0341d9d310d",
+            "expected_sha256": "ad90a9f3a55f119f7e322ffe49b1197feaae094234b8ef981bc2e0341d9d310d",
+            "filename": "014_80a6bb329d74.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "9a9e3bd1916f82db00b699894dfa8b85fb26c07699eff42966fac675ab680686",
+            "expected_sha256": "9a9e3bd1916f82db00b699894dfa8b85fb26c07699eff42966fac675ab680686",
+            "filename": "015_d58c4cf46e4f.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "52515c8ca7f3f27c939246b3db48949db3fd2db69392acd6ed45429d2a9ee669",
+            "expected_sha256": "52515c8ca7f3f27c939246b3db48949db3fd2db69392acd6ed45429d2a9ee669",
+            "filename": "016_825407755eb2.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "701431c7b6df9623c2dc60f878d9c923b84fcf178e2e1741adf96b2984409ac6",
+            "expected_sha256": "701431c7b6df9623c2dc60f878d9c923b84fcf178e2e1741adf96b2984409ac6",
+            "filename": "017_edd30ff0db3e.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "36e8bd3d513085a2861e6b695ffd6dc6ebce2d3feb3ab28bd0b4bc9251de4d0f",
+            "expected_sha256": "36e8bd3d513085a2861e6b695ffd6dc6ebce2d3feb3ab28bd0b4bc9251de4d0f",
+            "filename": "018_054c7f980b54.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "5c0f8d82c1459495342e01a6b6fbce167e2cdc7170f8bef159858d03edb774f3",
+            "expected_sha256": "5c0f8d82c1459495342e01a6b6fbce167e2cdc7170f8bef159858d03edb774f3",
+            "filename": "019_f8ccc773d483.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "7bf4bc56af1c07d97bfa4aa6895bf6900c31c3a729a48e655e74c96e6ff2cd8b",
+            "expected_sha256": "7bf4bc56af1c07d97bfa4aa6895bf6900c31c3a729a48e655e74c96e6ff2cd8b",
+            "filename": "020_408965518a0f.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "d1cc45666f5d1471ff8f5f18b692f14adae3423f0e3cf635aff24191f76ebda2",
+            "expected_sha256": "d1cc45666f5d1471ff8f5f18b692f14adae3423f0e3cf635aff24191f76ebda2",
+            "filename": "021_077dd084a1e2.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "477c6478496b1fad4bf92d2922fc4fb26f0dd897e9c3c012d5c65a833e57f259",
+            "expected_sha256": "477c6478496b1fad4bf92d2922fc4fb26f0dd897e9c3c012d5c65a833e57f259",
+            "filename": "022_538c46a08497.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "5005bd9026bf2907cde38cda6bdf9c06325268dec0ad3f9c1b6d6f7dcfef2e25",
+            "expected_sha256": "5005bd9026bf2907cde38cda6bdf9c06325268dec0ad3f9c1b6d6f7dcfef2e25",
+            "filename": "023_53eabe29deee.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "80ef17c0da0826eb9d19aa662e67c3f843698cfe369c54645a02921a5980595b",
+            "expected_sha256": "80ef17c0da0826eb9d19aa662e67c3f843698cfe369c54645a02921a5980595b",
+            "filename": "024_3fd5f118eb04.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "5a42c305326a1a82bd103ed3fb07c81f1fe6b5da85ddf2abc6dca644490d6f94",
+            "expected_sha256": "5a42c305326a1a82bd103ed3fb07c81f1fe6b5da85ddf2abc6dca644490d6f94",
+            "filename": "025_e5acabdb111b.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "0dff3f801b4e47dc2f17f5bd08c3f0b8e707af431da39a01c15700f45c992bf8",
+            "expected_sha256": "0dff3f801b4e47dc2f17f5bd08c3f0b8e707af431da39a01c15700f45c992bf8",
+            "filename": "026_4c41b5c4a56e.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "6e8a23a0cae05c14ddf0d71c828bc9e4548ac6477bc898e982dfda705f9a72b0",
+            "expected_sha256": "6e8a23a0cae05c14ddf0d71c828bc9e4548ac6477bc898e982dfda705f9a72b0",
+            "filename": "027_0fe667ea27f9.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "6b0eb92ebb0d15377b38192d52914527b0c3eb5d3851195fc58c81575c02714b",
+            "expected_sha256": "6b0eb92ebb0d15377b38192d52914527b0c3eb5d3851195fc58c81575c02714b",
+            "filename": "028_c814e49a5937.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "9755ccbadb92a86af7d5e5f84ac30420978a1d6d80c07e37ad411e36ba78ecaa",
+            "expected_sha256": "9755ccbadb92a86af7d5e5f84ac30420978a1d6d80c07e37ad411e36ba78ecaa",
+            "filename": "029_75311d39815f.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "2b1acbe668b59103e27a7f1b9b861f3b001c60282f698c1f3b431ad7f0e39f40",
+            "expected_sha256": "2b1acbe668b59103e27a7f1b9b861f3b001c60282f698c1f3b431ad7f0e39f40",
+            "filename": "030_790fd23570e0.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "3103720dada9d8d55f488ece5e799406341a9f2029335ff183cb05b12728ed88",
+            "expected_sha256": "3103720dada9d8d55f488ece5e799406341a9f2029335ff183cb05b12728ed88",
+            "filename": "031_652aa3111696.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "bafdd073eebb44b3d8b24b7f6cd6d3aaa8e8926664210bf5aa56ba710361f261",
+            "expected_sha256": "bafdd073eebb44b3d8b24b7f6cd6d3aaa8e8926664210bf5aa56ba710361f261",
+            "filename": "032_8ecf08dcd954.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "a2b45a053489e859792900c0a78274ea2419765fb485ee3865e5436301c6a17c",
+            "expected_sha256": "a2b45a053489e859792900c0a78274ea2419765fb485ee3865e5436301c6a17c",
+            "filename": "033_1bcb794cd740.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "b29fb2d2e937c154b71aa4c421054005a9d8494e806cab2b3e748094d64be97c",
+            "expected_sha256": "b29fb2d2e937c154b71aa4c421054005a9d8494e806cab2b3e748094d64be97c",
+            "filename": "034_78209f5ec935.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "e71ac27575921d442045c4deaa3dddc3da0a3ec13a04b0538c50ba4fb6ef3af6",
+            "expected_sha256": "e71ac27575921d442045c4deaa3dddc3da0a3ec13a04b0538c50ba4fb6ef3af6",
+            "filename": "035_bd0b8eaa1e38.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "41b2b3fb3b9a515749676b6d07a83ba69c71c5d1d305d30509769102a24213dd",
+            "expected_sha256": "41b2b3fb3b9a515749676b6d07a83ba69c71c5d1d305d30509769102a24213dd",
+            "filename": "036_c8469d226791.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "c94cfdd91c849abfe1d41ba680f146a61c9b797e98d58c240b9df3f9ab786386",
+            "expected_sha256": "c94cfdd91c849abfe1d41ba680f146a61c9b797e98d58c240b9df3f9ab786386",
+            "filename": "037_2eeac5cb0583.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "1e857ed5d66493a66bbe478e3c33e73436d0569342c911d8c0cdf57cf936d558",
+            "expected_sha256": "1e857ed5d66493a66bbe478e3c33e73436d0569342c911d8c0cdf57cf936d558",
+            "filename": "038_acc5b352a05c.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "2d152821f96e654b83cd84fadf4a4428227185c0ef5c7a240213e5b133756f94",
+            "expected_sha256": "2d152821f96e654b83cd84fadf4a4428227185c0ef5c7a240213e5b133756f94",
+            "filename": "039_ed59405b1b1f.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "ee882422816ab6648117a71f2a23d4696a7e59c066bd046cffcce81be88ca251",
+            "expected_sha256": "ee882422816ab6648117a71f2a23d4696a7e59c066bd046cffcce81be88ca251",
+            "filename": "040_b8eaa39d6720.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "7410573654e89c0c829e96187b43f1d0e8a4a7ca88aa21166588309f4b9076b2",
+            "expected_sha256": "7410573654e89c0c829e96187b43f1d0e8a4a7ca88aa21166588309f4b9076b2",
+            "filename": "041_00aa49cb3758.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "24bd5edf16ba3e855d72184a7a52b365ed50319eddc97f98ad1c081ac2b27f84",
+            "expected_sha256": "24bd5edf16ba3e855d72184a7a52b365ed50319eddc97f98ad1c081ac2b27f84",
+            "filename": "042_22a8dc3da4ac.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "652afd198ec8590e5fde6471c773fa99f11816c03fa5149fdb228fb4015167fd",
+            "expected_sha256": "652afd198ec8590e5fde6471c773fa99f11816c03fa5149fdb228fb4015167fd",
+            "filename": "043_27eac2979c6a.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "59052b07e3867d8af5da1548646d3f659e58f7af9cdf05b7330a2148c399d51d",
+            "expected_sha256": "59052b07e3867d8af5da1548646d3f659e58f7af9cdf05b7330a2148c399d51d",
+            "filename": "044_952d8cd6c02d.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "0bdb8230be3ed895be4572901ee4916c3909c6e547309a5789a42737891ece94",
+            "expected_sha256": "0bdb8230be3ed895be4572901ee4916c3909c6e547309a5789a42737891ece94",
+            "filename": "045_97237c6cfc32.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "aa0e7d5992c01d2796e61c8f57244a2993a3fac451ad3e11802daed1901ccf7f",
+            "expected_sha256": "aa0e7d5992c01d2796e61c8f57244a2993a3fac451ad3e11802daed1901ccf7f",
+            "filename": "046_920056957b00.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "de23a22c887afec076ba3a4af0ca937f56353a92f307f5fbdabec910edeb00d5",
+            "expected_sha256": "de23a22c887afec076ba3a4af0ca937f56353a92f307f5fbdabec910edeb00d5",
+            "filename": "047_f36674032a5c.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "bc3aed7c39befaa3b2d3c666b249ccde3e6e59e0a10f624a5f81baed02fe4b03",
+            "expected_sha256": "bc3aed7c39befaa3b2d3c666b249ccde3e6e59e0a10f624a5f81baed02fe4b03",
+            "filename": "048_3939a99c73c6.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "71941b571bee47318b5f891e789dd17d1294b48439c2afeb1f71998c8ca910dc",
+            "expected_sha256": "71941b571bee47318b5f891e789dd17d1294b48439c2afeb1f71998c8ca910dc",
+            "filename": "049_49ff5ee1da69.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "55687208fb6a550c05ef6cd8a08e4582cb14175433bb6189ee26f1c691d3d7c9",
+            "expected_sha256": "55687208fb6a550c05ef6cd8a08e4582cb14175433bb6189ee26f1c691d3d7c9",
+            "filename": "050_30f4e9935e6f.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "abae299d0194ae7db6bbeb4557d78dfd67ab8e81d0de71dc7dc7ac3394c48138",
+            "expected_sha256": "abae299d0194ae7db6bbeb4557d78dfd67ab8e81d0de71dc7dc7ac3394c48138",
+            "filename": "051_eacb43057bf3.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "b5ddb1b8c56a85fe56a5aace0a7de2ba0ad81f7b0dbe1ed87a070f915bbb1f64",
+            "expected_sha256": "b5ddb1b8c56a85fe56a5aace0a7de2ba0ad81f7b0dbe1ed87a070f915bbb1f64",
+            "filename": "052_174b34677ba1.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "a1d3b441053048cd4605fefcc0680bf8c2f32812d4bb43444c42411088de753b",
+            "expected_sha256": "a1d3b441053048cd4605fefcc0680bf8c2f32812d4bb43444c42411088de753b",
+            "filename": "053_d25036d4bf2a.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "92f726234e2b6f7f48b78aa06b03e61e4f3c96ae1da77f076576b15a49f5571a",
+            "expected_sha256": "92f726234e2b6f7f48b78aa06b03e61e4f3c96ae1da77f076576b15a49f5571a",
+            "filename": "054_c5ff34db3fb5.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "f24682f5fe678c58571ded3c58c557cda4df79ffb4e84320bb2f158b73256541",
+            "expected_sha256": "f24682f5fe678c58571ded3c58c557cda4df79ffb4e84320bb2f158b73256541",
+            "filename": "055_c3251c45e2aa.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "809cc2d2c0bce662448a72cc95a30fe8e83eb687dd59bbae4671f49ca7f70a4c",
+            "expected_sha256": "809cc2d2c0bce662448a72cc95a30fe8e83eb687dd59bbae4671f49ca7f70a4c",
+            "filename": "056_eb029c859755.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "8b8651fc8c44413613d7e43619fb44b0c71ab6bf1ef0faf6d822aa701a89c1d0",
+            "expected_sha256": "8b8651fc8c44413613d7e43619fb44b0c71ab6bf1ef0faf6d822aa701a89c1d0",
+            "filename": "057_bcb5c3f99d47.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "70f66103570a4d85758cbbe98b960233a730206f4f7fa19fcb252a2be714e367",
+            "expected_sha256": "70f66103570a4d85758cbbe98b960233a730206f4f7fa19fcb252a2be714e367",
+            "filename": "058_8f397f811d13.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "3ef2f0ec9765907dc05b13225bc1a70a0ba81c0c03f7239d4ac6b5158ae5beeb",
+            "expected_sha256": "3ef2f0ec9765907dc05b13225bc1a70a0ba81c0c03f7239d4ac6b5158ae5beeb",
+            "filename": "059_8ac9419f4801.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "f39a89d8d0eb6b01a33b3e03c73b083a85f0b39efc8d20bb172dc71ccfab9111",
+            "expected_sha256": "f39a89d8d0eb6b01a33b3e03c73b083a85f0b39efc8d20bb172dc71ccfab9111",
+            "filename": "060_6f6d80358091.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "ccbd130e321aba6f1190610eb20db4f81d4f770042e893679920b1854ae60634",
+            "expected_sha256": "ccbd130e321aba6f1190610eb20db4f81d4f770042e893679920b1854ae60634",
+            "filename": "061_34bf86f3afc9.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "ea5ef467089a88437143cc74341f5ffe2129d133c188bf9fe6c4f0133397a3d3",
+            "expected_sha256": "ea5ef467089a88437143cc74341f5ffe2129d133c188bf9fe6c4f0133397a3d3",
+            "filename": "062_9d19a272280c.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "b40fd4cfdaf16fc382f8cf56fd39be0735fe87e2174047466543d09705b38c04",
+            "expected_sha256": "b40fd4cfdaf16fc382f8cf56fd39be0735fe87e2174047466543d09705b38c04",
+            "filename": "063_8707c5776037.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "5f3e23c5a754a83bd30841ac8c222d68e8b28372cc15f7f91cb61720e8e0b385",
+            "expected_sha256": "5f3e23c5a754a83bd30841ac8c222d68e8b28372cc15f7f91cb61720e8e0b385",
+            "filename": "064_3e1b77588ac2.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "d062ad755b5555ff55981bc8aa3296622374c1869d42969e05d0a3c369dfa8ca",
+            "expected_sha256": "d062ad755b5555ff55981bc8aa3296622374c1869d42969e05d0a3c369dfa8ca",
+            "filename": "065_9e782b6fd4c7.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "a1b87c4356df0deaeb0359c0a6ec178a0ba251e9c7b40df98ef016fbe6e61dea",
+            "expected_sha256": "a1b87c4356df0deaeb0359c0a6ec178a0ba251e9c7b40df98ef016fbe6e61dea",
+            "filename": "066_e0ec462934e0.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "20d8d9b4febae53f1d435f0f6e01e562866c853e085aa69cbf5617d917ba78d6",
+            "expected_sha256": "20d8d9b4febae53f1d435f0f6e01e562866c853e085aa69cbf5617d917ba78d6",
+            "filename": "067_f5f529c7572a.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "0dd2b827b3b0fdb270ca78feefad33e2fbfe0a0223cfb9daec523aaff36b0422",
+            "expected_sha256": "0dd2b827b3b0fdb270ca78feefad33e2fbfe0a0223cfb9daec523aaff36b0422",
+            "filename": "068_fb53325bc956.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "369bdd6af6c3e72a2a531cf7a397b1363d580efd1bc13a3e3320afc2bf2a202e",
+            "expected_sha256": "369bdd6af6c3e72a2a531cf7a397b1363d580efd1bc13a3e3320afc2bf2a202e",
+            "filename": "069_541452427878.jpg",
+            "matched": true
+          },
+          {
+            "current_sha256": "1bf90f33715459b56bbe55e815e7c1973773dab683f4450fb56830763648b4e9",
+            "expected_sha256": "1bf90f33715459b56bbe55e815e7c1973773dab683f4450fb56830763648b4e9",
+            "filename": "070_da8a0b6d619d.jpg",
+            "matched": true
+          }
+        ],
+        "image_count": 70,
+        "image_manifest_sha256": "4424342f48d9893bf38eba38c6a4ba1a5bf87c9e3e9c71ca23a6e441d90d31ac"
+      },
+      "semantic_contract": {
+        "expected_provider": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2",
+        "expected_query": "精选旅行摄影作品集",
+        "feature_schema": true,
+        "prior_lambda": true,
+        "production_feature_dimension": 67,
+        "production_feature_schema": "capu-contextual-openclip512-67d-v1",
+        "production_projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+        "production_projection_version": "capu-contextual-shp-v1",
+        "projection_id": true,
+        "projection_matrix_sha256_float64_c_order": "fedb99b01ab9090de433193d5098340a0b389fe18db177930e210a2db692ab3e",
+        "projection_version": true,
+        "provider": true,
+        "query": true
+      },
+      "source_experiment_id": "contextual-preference-controlled-wikimedia-v1-20260828",
+      "source_path": "figures/contextual_preference_controlled_20260828.json",
+      "source_sha256_after_read": "16bfdde5c61fc6dca02d19676a441fd37b265effb9bd0631dc4947ad5bb2cdbc",
+      "source_sha256_before_read": "16bfdde5c61fc6dca02d19676a441fd37b265effb9bd0631dc4947ad5bb2cdbc",
+      "source_sha256_expected": "16bfdde5c61fc6dca02d19676a441fd37b265effb9bd0631dc4947ad5bb2cdbc",
+      "source_unchanged_during_read": true,
+      "splits": {
+        "0": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "0d908c257a9e87ce2d59e86e1daa72f408eebe4b6cafdee497ddc32aa823fd04",
+          "train_count": 42,
+          "train_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+        },
+        "1": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "11a946863f64e80b2a0dae01c5260e4ada8200551cde4e06779620d4dbe181a6",
+          "train_count": 42,
+          "train_manifest_sha256": "37c8c53bf28372225eb6fd26ec9da2368fe7feff1d77503b243ee918ca94e230"
+        },
+        "2": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "f6eb80a7b6a04242c4febb9a094285a93714c6b36f1f201f212cf4722d95fd69",
+          "train_count": 42,
+          "train_manifest_sha256": "c739f67110908ceacefb54ab60042c6a69728fa27fdf73729e4609786d88f116"
+        },
+        "3": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "0a8d31949d45c2d2439109712eedfeff4164a3be9059789a7452630137bf288a",
+          "train_count": 42,
+          "train_manifest_sha256": "708feabbd5b271c42c688016d2a8717438a6871e6c0f4a05360f851142132df7"
+        },
+        "4": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "c8e2250da6d6e6827bc8158767dd3b434b7fc91f6b199e64f1aa0e8b289f9e9f",
+          "train_count": 42,
+          "train_manifest_sha256": "b9d69c239e3d9861fe4f983e07f870b33c95d7b4f52f26be27faa898b844f4d2"
+        },
+        "5": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "d03a0a556ea4a0d053a84ee4ecc86b659aeab9f4c2253e9bb337c7fab89c85d8",
+          "train_count": 42,
+          "train_manifest_sha256": "9eccf8aa8b4d34a5f5bfcbe8c41d60c5d6526aab3e3d000b5804f418776e3df2"
+        },
+        "6": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "ccb76fa2a736f40dbccb7b9d16f2d375917a1f97f05b3ca56499180ac8b947f7",
+          "train_count": 42,
+          "train_manifest_sha256": "ca1eda538102d8f6bd367824461db12d2fcb4757b2558001a9fc155d1d2bfb63"
+        },
+        "7": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "eae4e4007c3801c0f4573190ead24ebf86e7ffb667bcdea91cccf674d0b153c8",
+          "train_count": 42,
+          "train_manifest_sha256": "ad118d6d683c7e165b4480e34624c94fe8c3c379def729ba2328b2baf8d20abb"
+        },
+        "8": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "ba0c3a6678c2f1488af4f6dcc828015f1fd4a748fad169d87fab70e03c43962e",
+          "train_count": 42,
+          "train_manifest_sha256": "698cbe6bd2c66e04b85444e940713ba03df1fdac5ee868fd204baaaccdb7268a"
+        },
+        "9": {
+          "exact_filename_overlap": [],
+          "test_count": 28,
+          "test_manifest_sha256": "8419f93220ed5b3c4c62488ac4de1afea326c7a91885daea7c5f911c724a815d",
+          "train_count": 42,
+          "train_manifest_sha256": "9598d545d9d09fc4995cd0a9b07b273230dc6eae2c994848a64c93b3b53457c0"
+        }
+      }
+    },
+    "source_files": {
+      "benchmark_script": {
+        "path": "figures/benchmark_pdrr_acquisition_controlled.py",
+        "sha256": "12773a0d63b3397138c3e907264ea2cce41f1d09abc12899e15021d20c2a3a92"
+      },
+      "production_acquisition": {
+        "path": "ai/preferences/acquisition.py",
+        "sha256": "decd6ee792d337fba0ff7d30f7917b52dc06044f60e26f9448efe9f1495db2d4",
+        "version": "capu-pdrr-v1"
+      },
+      "production_contextual_model": {
+        "path": "ai/preferences/contextual.py",
+        "sha256": "1e2420b44e1988052864108c158408ae38276c2a0a81e59387d50f8be7063a73"
+      }
+    }
+  },
+  "run_kind": "pilot",
+  "runs": [
+    {
+      "checkpoints": {
+        "0": {
+          "abstention_count": 0,
+          "constrained_set_regret": 4.557832159674176,
+          "constrained_set_regret_per_photo": 0.7596386932790294,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6979945639381284,
+          "heldout_pair_order_accuracy": 0.5211640211640212,
+          "observed_feedback_count": 0,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 0,
+            "covariance_diagonal": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 0.0,
+              "final_objective": 0.0,
+              "gradient_norm": 0.0,
+              "hessian_condition": 1.0,
+              "hessian_min_eigenvalue": 1.0,
+              "initial_negative_log_likelihood": 0.0,
+              "initial_objective": 0.0,
+              "iterations": 0,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 0.0,
+              "step_norm": 0.0
+            },
+            "mean": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "058_8f397f811d13.jpg",
+            "057_bcb5c3f99d47.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "054_c5ff34db3fb5.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "query_opportunities": 0
+        },
+        "10": {
+          "abstention_count": 0,
+          "constrained_set_regret": 4.557832159674176,
+          "constrained_set_regret_per_photo": 0.7596386932790294,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6979945639381284,
+          "heldout_pair_order_accuracy": 0.5211640211640212,
+          "observed_feedback_count": 0,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 0,
+            "covariance_diagonal": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 0.0,
+              "final_objective": 0.0,
+              "gradient_norm": 0.0,
+              "hessian_condition": 1.0,
+              "hessian_min_eigenvalue": 1.0,
+              "initial_negative_log_likelihood": 0.0,
+              "initial_objective": 0.0,
+              "iterations": 0,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 0.0,
+              "step_norm": 0.0
+            },
+            "mean": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "058_8f397f811d13.jpg",
+            "057_bcb5c3f99d47.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "054_c5ff34db3fb5.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "query_opportunities": 0
+        }
+      },
+      "feedback_trace": [],
+      "method": "zero_feedback_cosine",
+      "profile": "architecture_first",
+      "runtime": {
+        "selection_seconds": 0.0,
+        "total_seconds": 0.022395300096832216,
+        "training_seconds": 0.0
+      },
+      "seed": 0,
+      "test_candidate_count": 28,
+      "train_candidate_count": 42
+    },
+    {
+      "checkpoints": {
+        "0": {
+          "abstention_count": 0,
+          "constrained_set_regret": 4.557832159674176,
+          "constrained_set_regret_per_photo": 0.7596386932790294,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6979945639381284,
+          "heldout_pair_order_accuracy": 0.5211640211640212,
+          "observed_feedback_count": 0,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 0,
+            "covariance_diagonal": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 0.0,
+              "final_objective": 0.0,
+              "gradient_norm": 0.0,
+              "hessian_condition": 1.0,
+              "hessian_min_eigenvalue": 1.0,
+              "initial_negative_log_likelihood": 0.0,
+              "initial_objective": 0.0,
+              "iterations": 0,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 0.0,
+              "step_norm": 0.0
+            },
+            "mean": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "058_8f397f811d13.jpg",
+            "057_bcb5c3f99d47.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "054_c5ff34db3fb5.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "query_opportunities": 0
+        },
+        "10": {
+          "abstention_count": 0,
+          "constrained_set_regret": 0.18078897493464074,
+          "constrained_set_regret_per_photo": 0.030131495822440124,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6656496117919434,
+          "heldout_pair_order_accuracy": 0.6455026455026455,
+          "observed_feedback_count": 10,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 10,
+            "covariance_diagonal": [
+              0.918840747017867,
+              0.9711875711334673,
+              0.9478498811585151,
+              0.9328095730911744,
+              0.9286782467907913,
+              0.9493029407364406,
+              0.9255909391026437,
+              0.9099610285667423,
+              0.9081565103985328,
+              0.9665912161988278,
+              0.9786785727542363,
+              0.9726061179472337,
+              0.9628642295285483,
+              0.95682886541638,
+              0.9214989483219374,
+              0.9325554849234767,
+              0.9363032600541887,
+              0.942558339260648,
+              0.9301427014020046,
+              0.9526013615510277,
+              0.9537787646578035,
+              0.9535795045721782,
+              0.9572273822483419,
+              0.9658015853074887,
+              0.960588688137275,
+              0.9412982790914496,
+              0.9700179979413635,
+              0.9399576338557202,
+              0.9211311594609906,
+              0.9166397297448768,
+              0.9522273217568631,
+              0.9315789122140354,
+              0.9962914163306135,
+              0.9964608905132385,
+              0.9947706382823369,
+              0.9952619034651579,
+              0.9999912037837404,
+              0.9999997842133269,
+              0.998579109595689,
+              0.9993309652763064,
+              0.9926582964375205,
+              0.9995742007336983,
+              0.9999931771563118,
+              0.9991213931959164,
+              0.9999988637678977,
+              0.9998461054980722,
+              0.9990758727849599,
+              0.9999309016414847,
+              0.9980053358270392,
+              0.9978396816629104,
+              0.9988940140228668,
+              0.9999376858872238,
+              0.9923809835258078,
+              0.9978773544223841,
+              0.9998972426245503,
+              0.9951647176374625,
+              0.9929115911244223,
+              0.9984732005462122,
+              0.9999983701538541,
+              0.9959843543231686,
+              0.9992506256632481,
+              0.9995481094339851,
+              0.9998884741872313,
+              0.9890764633064488,
+              0.9933597250203677,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 5.556330303151002,
+              "final_objective": 6.183329047615947,
+              "gradient_norm": 9.761707010376834e-13,
+              "hessian_condition": 1.6878946815475933,
+              "hessian_min_eigenvalue": 0.9999999999999983,
+              "initial_negative_log_likelihood": 7.023863662356486,
+              "initial_objective": 7.023863662356486,
+              "iterations": 3,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 1.1198202931407744,
+              "step_norm": 3.9576251405963884e-06
+            },
+            "mean": [
+              0.11898500872139654,
+              -0.12331394738695863,
+              0.07887622953711927,
+              -0.104272588415664,
+              -0.12460423321999295,
+              -0.012259041995220873,
+              -0.10286280788363333,
+              -0.4597623527557694,
+              -0.19216065950789843,
+              -0.1640480580590321,
+              0.02089226820465815,
+              0.2790262112055142,
+              -0.010056435057533925,
+              -0.05566369468179858,
+              -0.15023866030908703,
+              -0.25225039673537125,
+              -0.08641232256990729,
+              0.05260161590172261,
+              -0.11636552740719805,
+              -0.03912155754290156,
+              -0.24093078082973649,
+              0.36060577126137555,
+              -0.05390246412054119,
+              0.1346821067223527,
+              -0.2318102701983641,
+              0.100367335263947,
+              -0.09260334694550532,
+              0.04336417670589176,
+              0.31390937791314016,
+              0.2034925279407926,
+              -0.26408696127618747,
+              -0.3879581318927229,
+              -0.025434737923474483,
+              -0.04321845764727212,
+              -0.02497714715678529,
+              -0.027689709954441106,
+              -0.0013837885759375244,
+              2.5291667173965822e-05,
+              -0.014214309065985836,
+              0.03963167915522784,
+              -0.054329876127073046,
+              -0.018520095212962717,
+              -0.00037373189840541227,
+              -0.049970706808101506,
+              -5.5626452148667376e-05,
+              -0.003323432405713589,
+              -0.016300834753585656,
+              -0.008074068041918875,
+              0.015291566195652672,
+              -0.010201040408672968,
+              0.014641759156519434,
+              0.0014184904351589556,
+              0.09781849354025902,
+              -0.07711103458990827,
+              0.002641996302854148,
+              -0.05064281453423184,
+              -0.09830975367017314,
+              0.01618668723383366,
+              -0.000682762521545792,
+              0.011214499579296084,
+              -0.030598558700324973,
+              -0.014982543503058585,
+              0.012759829260205182,
+              -0.1550142088514831,
+              -0.06006474188808545,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "034_78209f5ec935.jpg",
+            "021_077dd084a1e2.jpg",
+            "043_27eac2979c6a.jpg",
+            "013_da1ccc50a5ef.jpg",
+            "044_952d8cd6c02d.jpg",
+            "007_452a6cc76f01.jpg"
+          ],
+          "query_opportunities": 10
+        }
+      },
+      "feedback_trace": [
+        {
+          "acquisition": {
+            "eligible_pair_count": 861,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.22605503070343466,
+          "left": "001_302770d7dacd.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 1,
+          "observed_left_preferred": true,
+          "right": "049_49ff5ee1da69.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.03796169999986887,
+          "status": "feedback-recorded",
+          "step": 1,
+          "training_seconds": 1.600012183189392e-06,
+          "true_probability_left": 0.7961447662621044
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 860,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.5561292402159345,
+          "left": "062_9d19a272280c.jpg",
+          "left_category": "mountain travel landscape",
+          "observed_feedback_count": 2,
+          "observed_left_preferred": false,
+          "right": "064_3e1b77588ac2.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 1.479999627918005e-05,
+          "status": "feedback-recorded",
+          "step": 2,
+          "training_seconds": 1.400010660290718e-06,
+          "true_probability_left": 0.5325377915311306
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 859,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.28771197873566773,
+          "left": "012_0b8c21f5458c.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 3,
+          "observed_left_preferred": true,
+          "right": "023_53eabe29deee.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 1.109996810555458e-05,
+          "status": "feedback-recorded",
+          "step": 3,
+          "training_seconds": 8.998904377222061e-07,
+          "true_probability_left": 0.8052740172264822
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 858,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.12241374296209288,
+          "left": "006_9c8d9e57757e.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 4,
+          "observed_left_preferred": true,
+          "right": "008_5cb3ae6de6fc.jpg",
+          "right_category": "travel architecture",
+          "selection_seconds": 7.200054824352264e-06,
+          "status": "feedback-recorded",
+          "step": 4,
+          "training_seconds": 8.00006091594696e-07,
+          "true_probability_left": 0.5072749394780298
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 857,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.9859746869473761,
+          "left": "067_f5f529c7572a.jpg",
+          "left_category": "mountain travel landscape",
+          "observed_feedback_count": 5,
+          "observed_left_preferred": false,
+          "right": "068_fb53325bc956.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 6.500049494206905e-06,
+          "status": "feedback-recorded",
+          "step": 5,
+          "training_seconds": 7.00005330145359e-07,
+          "true_probability_left": 0.5419589928899085
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 856,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.9640442875235846,
+          "left": "006_9c8d9e57757e.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 6,
+          "observed_left_preferred": false,
+          "right": "031_652aa3111696.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 5.499925464391708e-06,
+          "status": "feedback-recorded",
+          "step": 6,
+          "training_seconds": 5.00003807246685e-07,
+          "true_probability_left": 0.7985074717771053
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 855,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.990166659039508,
+          "left": "060_6f6d80358091.jpg",
+          "left_category": "mountain travel landscape",
+          "observed_feedback_count": 7,
+          "observed_left_preferred": false,
+          "right": "068_fb53325bc956.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 5.499925464391708e-06,
+          "status": "feedback-recorded",
+          "step": 7,
+          "training_seconds": 4.00003045797348e-07,
+          "true_probability_left": 0.5393742755297878
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 854,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.0764636198913761,
+          "left": "029_75311d39815f.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 8,
+          "observed_left_preferred": true,
+          "right": "053_d25036d4bf2a.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 4.400033503770828e-06,
+          "status": "feedback-recorded",
+          "step": 8,
+          "training_seconds": 4.00003045797348e-07,
+          "true_probability_left": 0.8173191122867135
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 853,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.7435120542495696,
+          "left": "039_ed59405b1b1f.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 9,
+          "observed_left_preferred": true,
+          "right": "060_6f6d80358091.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 4.300032742321491e-06,
+          "status": "feedback-recorded",
+          "step": 9,
+          "training_seconds": 2.400018274784088e-06,
+          "true_probability_left": 0.7780334023377142
+        },
+        {
+          "acquisition": {
+            "eligible_pair_count": 852,
+            "kind": "uniform-random-unseen-train-pair"
+          },
+          "feedback_uniform_draw": 0.3281986787035136,
+          "left": "062_9d19a272280c.jpg",
+          "left_category": "mountain travel landscape",
+          "observed_feedback_count": 10,
+          "observed_left_preferred": true,
+          "right": "068_fb53325bc956.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 2.119992859661579e-05,
+          "status": "feedback-recorded",
+          "step": 10,
+          "training_seconds": 0.018911599996499717,
+          "true_probability_left": 0.5334944476640157
+        }
+      ],
+      "method": "random_pair_contextual",
+      "profile": "architecture_first",
+      "runtime": {
+        "selection_seconds": 0.038042199914343655,
+        "total_seconds": 0.06010160001460463,
+        "training_seconds": 0.018920699949376285
+      },
+      "seed": 0,
+      "test_candidate_count": 28,
+      "train_candidate_count": 42,
+      "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+    },
+    {
+      "checkpoints": {
+        "0": {
+          "abstention_count": 0,
+          "constrained_set_regret": 4.557832159674176,
+          "constrained_set_regret_per_photo": 0.7596386932790294,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6979945639381284,
+          "heldout_pair_order_accuracy": 0.5211640211640212,
+          "observed_feedback_count": 0,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 0,
+            "covariance_diagonal": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 0.0,
+              "final_objective": 0.0,
+              "gradient_norm": 0.0,
+              "hessian_condition": 1.0,
+              "hessian_min_eigenvalue": 1.0,
+              "initial_negative_log_likelihood": 0.0,
+              "initial_objective": 0.0,
+              "iterations": 0,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 0.0,
+              "step_norm": 0.0
+            },
+            "mean": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "058_8f397f811d13.jpg",
+            "057_bcb5c3f99d47.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "054_c5ff34db3fb5.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "query_opportunities": 0
+        },
+        "10": {
+          "abstention_count": 0,
+          "constrained_set_regret": 0.09461476752143572,
+          "constrained_set_regret_per_photo": 0.015769127920239285,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6687406979461531,
+          "heldout_pair_order_accuracy": 0.6693121693121693,
+          "observed_feedback_count": 10,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 10,
+            "covariance_diagonal": [
+              0.9192116610380652,
+              0.9316762335291353,
+              0.9349318606621869,
+              0.9736399548815771,
+              0.9314343332439272,
+              0.9661574505878194,
+              0.9687265371236495,
+              0.9239107617310773,
+              0.9270004724993002,
+              0.938313791349988,
+              0.9241954679147013,
+              0.8810335352130416,
+              0.9698800566373268,
+              0.9707956849250348,
+              0.9336721105119881,
+              0.9523264670492617,
+              0.9599032643265749,
+              0.9540017900212215,
+              0.932229857613818,
+              0.9103568804875091,
+              0.9361746303661332,
+              0.9550294814083236,
+              0.9451674985374563,
+              0.9460633647678224,
+              0.9650682363022309,
+              0.9347583042603641,
+              0.9696141232599624,
+              0.9083658617143341,
+              0.947887818932598,
+              0.9193590303109155,
+              0.9524485708397276,
+              0.9597957436422114,
+              0.9963083652998007,
+              0.9916076047872101,
+              0.9934752816589538,
+              0.9981411572424841,
+              0.9999915436959194,
+              0.9999998559527659,
+              0.9994028124696823,
+              0.9994346187912746,
+              0.9941646283973222,
+              0.9992138013002694,
+              0.9999757425960593,
+              0.9961843763064222,
+              0.9999990784290693,
+              0.999895893782595,
+              0.9992191772405364,
+              0.9999511574385581,
+              0.9987443702429909,
+              0.9982700573902039,
+              0.9989270580361446,
+              0.9998821478497734,
+              0.9894791530535347,
+              0.9979436567504938,
+              0.9998682698362686,
+              0.9923739488108543,
+              0.9937172701914281,
+              0.9983030994001919,
+              0.9999983481988961,
+              0.9938714901679141,
+              0.9995048547581378,
+              0.9995628505842729,
+              0.9998889906955086,
+              0.9935813258196792,
+              0.9976622051414158,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 5.052475040857862,
+              "final_objective": 5.860173306251235,
+              "gradient_norm": 5.757354409693575e-12,
+              "hessian_condition": 1.834518001910426,
+              "hessian_min_eigenvalue": 0.9999999999999983,
+              "initial_negative_log_likelihood": 6.950969180709472,
+              "initial_objective": 6.950969180709472,
+              "iterations": 3,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 1.2709825060899715,
+              "step_norm": 8.914182994705057e-06
+            },
+            "mean": [
+              0.12858011817214085,
+              0.04675223408720762,
+              0.3270448174081162,
+              -0.17255487147286142,
+              -0.056161818573062065,
+              0.019863745587263282,
+              -0.12365066704314893,
+              0.15604482362860528,
+              -0.1587587129221155,
+              0.06108779753233628,
+              -0.2460980217675562,
+              0.04715122588908282,
+              0.2162729119468418,
+              -0.11147701866971882,
+              0.043742979008845294,
+              -0.24836346108417648,
+              0.30494649813422486,
+              0.2369699065770084,
+              0.03483300369830577,
+              -0.41554878417924257,
+              -0.16708065037571962,
+              0.06220487721183606,
+              -0.043212999775230944,
+              -0.051144401059971346,
+              -0.29542668204779754,
+              0.41244307822663384,
+              0.0046868847935885175,
+              -0.17800352406382,
+              0.39008819226341335,
+              0.46345485116531543,
+              0.12772121729706212,
+              -0.3192734893270152,
+              -0.027485829038643262,
+              0.016385489976027044,
+              -0.10356284243305926,
+              -0.045822151486858406,
+              -0.0006237033922280066,
+              -4.098095450013522e-05,
+              -0.017086922219301814,
+              -0.01345111957691799,
+              -0.044886092862298665,
+              0.006896465828580209,
+              0.004402331042662885,
+              -0.008444296592661328,
+              0.0011962981631797147,
+              -0.006655798513863781,
+              0.004746095785104827,
+              -0.007949654430172488,
+              -0.05396347909268996,
+              -0.04595561469343294,
+              -0.004382882647573469,
+              0.015067190897340488,
+              0.0678351577295118,
+              -0.013301735081955016,
+              0.0021180587474829366,
+              0.019231184307830794,
+              -0.12528920446390338,
+              0.06651653241024354,
+              3.455630261126786e-05,
+              -0.04603386014372803,
+              -0.038024147378542095,
+              -0.03412278838714021,
+              -0.006171076821591747,
+              -0.12757027959131698,
+              -0.0207360173202487,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "005_1839d30785cb.jpg",
+            "034_78209f5ec935.jpg",
+            "046_920056957b00.jpg",
+            "020_408965518a0f.jpg",
+            "004_9a3b0cbbe3ff.jpg",
+            "024_3fd5f118eb04.jpg"
+          ],
+          "query_opportunities": 10
+        }
+      },
+      "feedback_trace": [
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 861,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471794903314,
+            "predictive_probability_left": 0.4999768741072984,
+            "predictive_variance": 1.207517106709996
+          },
+          "feedback_uniform_draw": 0.1050035135822614,
+          "left": "031_652aa3111696.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 1,
+          "observed_left_preferred": true,
+          "right": "035_bd0b8eaa1e38.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.004321900079958141,
+          "status": "feedback-recorded",
+          "step": 1,
+          "training_seconds": 0.0018441000720486045,
+          "true_probability_left": 0.4999489480103447
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 860,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471781627236,
+            "predictive_probability_left": 0.5000346209587726,
+            "predictive_variance": 0.7214452813527439
+          },
+          "feedback_uniform_draw": 0.8650070709140585,
+          "left": "002_6c3a6da04446.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 2,
+          "observed_left_preferred": false,
+          "right": "049_49ff5ee1da69.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.004451100016012788,
+          "status": "feedback-recorded",
+          "step": 2,
+          "training_seconds": 0.0013387000653892756,
+          "true_probability_left": 0.7989338586247807
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 859,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471796382958,
+            "predictive_probability_left": 0.5000214668295397,
+            "predictive_variance": 1.4059715167626947
+          },
+          "feedback_uniform_draw": 0.7041213292287238,
+          "left": "012_0b8c21f5458c.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 3,
+          "observed_left_preferred": false,
+          "right": "022_538c46a08497.jpg",
+          "right_category": "travel architecture",
+          "selection_seconds": 0.003993799909949303,
+          "status": "feedback-recorded",
+          "step": 3,
+          "training_seconds": 0.001558799995109439,
+          "true_probability_left": 0.4903411134591912
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 858,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471583382853,
+            "predictive_probability_left": 0.499894592078779,
+            "predictive_variance": 1.574025797681413
+          },
+          "feedback_uniform_draw": 0.11905572105458721,
+          "left": "010_714cb2e0d764.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 4,
+          "observed_left_preferred": true,
+          "right": "061_34bf86f3afc9.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 0.003070899983868003,
+          "status": "feedback-recorded",
+          "step": 4,
+          "training_seconds": 0.0021547001088038087,
+          "true_probability_left": 0.9378977259781487
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 857,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471801007065,
+            "predictive_probability_left": 0.5000151531984871,
+            "predictive_variance": 1.0702764170202734
+          },
+          "feedback_uniform_draw": 0.8369600166746666,
+          "left": "012_0b8c21f5458c.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 5,
+          "observed_left_preferred": false,
+          "right": "045_97237c6cfc32.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.0030540000880137086,
+          "status": "feedback-recorded",
+          "step": 5,
+          "training_seconds": 0.002648100024089217,
+          "true_probability_left": 0.8040105820099598
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 856,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471804144564,
+            "predictive_probability_left": 0.5000085290358209,
+            "predictive_variance": 1.4498624393712345
+          },
+          "feedback_uniform_draw": 0.06680517675098836,
+          "left": "047_f36674032a5c.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 6,
+          "observed_left_preferred": true,
+          "right": "053_d25036d4bf2a.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 0.005376500077545643,
+          "status": "feedback-recorded",
+          "step": 6,
+          "training_seconds": 0.0018980000168085098,
+          "true_probability_left": 0.806846941546222
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 855,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471716911233,
+            "predictive_probability_left": 0.5000665913733606,
+            "predictive_variance": 0.6366309965112175
+          },
+          "feedback_uniform_draw": 0.5598803933834613,
+          "left": "014_80a6bb329d74.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 7,
+          "observed_left_preferred": true,
+          "right": "033_1bcb794cd740.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.0028838999569416046,
+          "status": "feedback-recorded",
+          "step": 7,
+          "training_seconds": 0.002965299994684756,
+          "true_probability_left": 0.8020783828649998
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 854,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.693147139969706,
+            "predictive_probability_left": 0.49985753906025404,
+            "predictive_variance": 1.1753525131691078
+          },
+          "feedback_uniform_draw": 0.4760823501687779,
+          "left": "015_d58c4cf46e4f.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 8,
+          "observed_left_preferred": true,
+          "right": "045_97237c6cfc32.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.0028569999849423766,
+          "status": "feedback-recorded",
+          "step": 8,
+          "training_seconds": 0.00241950002964586,
+          "true_probability_left": 0.8036372974677138
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 853,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471205684733,
+            "predictive_probability_left": 0.49982680723045714,
+            "predictive_variance": 1.0822281489765462
+          },
+          "feedback_uniform_draw": 0.35821567724064884,
+          "left": "045_97237c6cfc32.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 9,
+          "observed_left_preferred": true,
+          "right": "067_f5f529c7572a.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 0.004509499995037913,
+          "status": "feedback-recorded",
+          "step": 9,
+          "training_seconds": 0.001873200060799718,
+          "true_probability_left": 0.778178284827755
+        },
+        {
+          "acquisition": {
+            "approximation": "logistic-normal-sigmoid-moment-pi-over-8",
+            "eligible_pair_count": 852,
+            "kind": "predictive-entropy",
+            "predictive_entropy": 0.6931471631871532,
+            "predictive_probability_left": 0.49990679916316744,
+            "predictive_variance": 0.7493173575003527
+          },
+          "feedback_uniform_draw": 0.8033278172615641,
+          "left": "035_bd0b8eaa1e38.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 10,
+          "observed_left_preferred": false,
+          "right": "065_9e782b6fd4c7.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 0.005339500028640032,
+          "status": "feedback-recorded",
+          "step": 10,
+          "training_seconds": 0.0018631001003086567,
+          "true_probability_left": 0.7922805622063455
+        }
+      ],
+      "method": "predictive_entropy_contextual",
+      "profile": "architecture_first",
+      "runtime": {
+        "selection_seconds": 0.03985810012090951,
+        "total_seconds": 0.0639158000703901,
+        "training_seconds": 0.020563500467687845
+      },
+      "seed": 0,
+      "test_candidate_count": 28,
+      "train_candidate_count": 42,
+      "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+    },
+    {
+      "checkpoints": {
+        "0": {
+          "abstention_count": 0,
+          "constrained_set_regret": 4.557832159674176,
+          "constrained_set_regret_per_photo": 0.7596386932790294,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6979945639381284,
+          "heldout_pair_order_accuracy": 0.5211640211640212,
+          "observed_feedback_count": 0,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 0,
+            "covariance_diagonal": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 0.0,
+              "final_objective": 0.0,
+              "gradient_norm": 0.0,
+              "hessian_condition": 1.0,
+              "hessian_min_eigenvalue": 1.0,
+              "initial_negative_log_likelihood": 0.0,
+              "initial_objective": 0.0,
+              "iterations": 0,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 0.0,
+              "step_norm": 0.0
+            },
+            "mean": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "058_8f397f811d13.jpg",
+            "057_bcb5c3f99d47.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "054_c5ff34db3fb5.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "query_opportunities": 0
+        },
+        "10": {
+          "abstention_count": 0,
+          "constrained_set_regret": 0.15120859041980994,
+          "constrained_set_regret_per_photo": 0.02520143173663499,
+          "heldout_pair_count": 378,
+          "heldout_pair_expected_log_loss": 0.6631002374234134,
+          "heldout_pair_order_accuracy": 0.6640211640211641,
+          "observed_feedback_count": 10,
+          "oracle_selection": [
+            "011_5cf58c0406f2.jpg",
+            "003_97b4ada6b34a.jpg",
+            "005_1839d30785cb.jpg",
+            "025_e5acabdb111b.jpg",
+            "034_78209f5ec935.jpg",
+            "044_952d8cd6c02d.jpg"
+          ],
+          "posterior": {
+            "comparisons": 10,
+            "covariance_diagonal": [
+              0.8663419065314325,
+              0.9674560811266116,
+              0.9230499307183256,
+              0.914363287361411,
+              0.8960829720397453,
+              0.9683382030070645,
+              0.9343369244486841,
+              0.9370620238486539,
+              0.8405453278214816,
+              0.9444723099161825,
+              0.9497172639755223,
+              0.8812589380447363,
+              0.920741284440145,
+              0.9661107634804709,
+              0.967563650232843,
+              0.9367662627601023,
+              0.9427413934941532,
+              0.973710496487449,
+              0.9433177667480297,
+              0.9116345767334062,
+              0.9688591440357253,
+              0.9084697669558137,
+              0.8987739738573745,
+              0.9059287443987962,
+              0.9794726311058748,
+              0.9246404973467499,
+              0.9485864850692642,
+              0.8967236913664631,
+              0.9176656190910335,
+              0.9475507155934223,
+              0.9299939978678319,
+              0.8876082991506405,
+              0.993892474308161,
+              0.9960025413839726,
+              0.9922838191856033,
+              0.9939611187177195,
+              0.9999871837607778,
+              0.9999998652349087,
+              0.9987461199907217,
+              0.9995323392658315,
+              0.9872536535810321,
+              0.9992922924151391,
+              0.9999839095552016,
+              0.9961916056746896,
+              0.9999975749447012,
+              0.9998791931871801,
+              0.9996181539872964,
+              0.9999352156740813,
+              0.9982069460526872,
+              0.999011280388134,
+              0.9991026026429973,
+              0.9998838276133812,
+              0.9948668032592456,
+              0.9958146451777633,
+              0.999756813556887,
+              0.9866993517939336,
+              0.9963080045554381,
+              0.9980399408107996,
+              0.9999972051192926,
+              0.9930928594438351,
+              0.9992176977414166,
+              0.9997156758639932,
+              0.9998365702620492,
+              0.9820564842213687,
+              0.9959539181107224,
+              1.0,
+              1.0
+            ],
+            "diagnostics": {
+              "converged": true,
+              "final_negative_log_likelihood": 5.275000572255898,
+              "final_objective": 5.9575954333993915,
+              "gradient_norm": 3.3581890027738236e-11,
+              "hessian_condition": 2.3775610320307035,
+              "hessian_min_eigenvalue": 0.9999999999999979,
+              "initial_negative_log_likelihood": 6.957823267378901,
+              "initial_objective": 6.957823267378901,
+              "iterations": 3,
+              "line_search_steps": 0,
+              "posterior_mean_l2": 1.1684133353770774,
+              "step_norm": 1.4720134641615146e-05
+            },
+            "mean": [
+              0.5079725163352993,
+              0.16067598645002557,
+              0.30841150864412925,
+              -0.15226107887143006,
+              0.04201801215543355,
+              -0.06682015411973358,
+              0.1054878651952781,
+              -0.21860356103980627,
+              0.03663919221932948,
+              0.0009143694431600968,
+              -0.06539716389359791,
+              0.2375724275781479,
+              -0.06498841790353664,
+              -0.25524778345250176,
+              0.3655479365796244,
+              -0.28180199484665897,
+              -0.1628222056763041,
+              0.047339604011810595,
+              0.15051123714766915,
+              0.019342861401736394,
+              -0.05586300431091435,
+              -0.13817331883297998,
+              0.06675142529016782,
+              -0.023188984362506927,
+              -0.032941868999788626,
+              -0.0011482114642090027,
+              -0.004519388418420836,
+              -0.02382465981661587,
+              -0.06377866947834566,
+              0.3838053361413432,
+              -0.3766777162137775,
+              -0.3532470559607106,
+              -0.10858635019785334,
+              0.0563129188747265,
+              -0.09766237155929748,
+              -0.04043311070876641,
+              0.00046662977413967764,
+              0.0001378568650933925,
+              0.014577058019775399,
+              0.018843705104149913,
+              0.01035905465650408,
+              0.0001032271234875256,
+              0.00116985891492791,
+              -0.04254676316216254,
+              -0.0003594787912462467,
+              -0.015239713422939448,
+              0.03966180539975342,
+              -0.009019959969091097,
+              0.028813095889271254,
+              -0.009180577538859256,
+              -0.018938162648069908,
+              -0.0007013438526029971,
+              0.022680518062108076,
+              0.029546636291102442,
+              -0.0032717802739497055,
+              0.008719461425774807,
+              -0.013970507104940112,
+              -0.00018517717742108495,
+              -3.332135537413912e-05,
+              -0.0061613446348217984,
+              0.00621687499378174,
+              -0.028258433877812,
+              0.018199850995238093,
+              -0.14114490303816274,
+              -0.011526742430494888,
+              0.0,
+              0.0
+            ],
+            "prior_lambda": 1.0,
+            "projection_id": "openclip512-structured-signed-hadamard-r32-rows37x-plus11-signmix-v1",
+            "projection_version": "capu-contextual-shp-v1"
+          },
+          "predicted_selection": [
+            "020_408965518a0f.jpg",
+            "034_78209f5ec935.jpg",
+            "043_27eac2979c6a.jpg",
+            "003_97b4ada6b34a.jpg",
+            "021_077dd084a1e2.jpg",
+            "041_00aa49cb3758.jpg"
+          ],
+          "query_opportunities": 10
+        }
+      },
+      "feedback_trace": [
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.08165880001615733,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 7.266073875,
+              "current_photo_ids": [
+                "067_f5f529c7572a.jpg",
+                "060_6f6d80358091.jpg",
+                "016_825407755eb2.jpg",
+                "056_eb029c859755.jpg",
+                "036_c8469d226791.jpg",
+                "038_acc5b352a05c.jpg"
+              ],
+              "eligible_pair_count": 861,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 5591149948075675045,
+              "suggested": {
+                "effective_sample_size_left": 46.061683269336626,
+                "effective_sample_size_right": 46.70448658137385,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "022_538c46a08497.jpg",
+                "membership_variance": 0.4052734375,
+                "pdrr": 2.0572384240722474,
+                "predictive_entropy": 0.6930679620859562,
+                "probability_left_preferred": 0.49370649612253087,
+                "raw_pdrr_estimate": 2.0572384240722474,
+                "regret_if_left_preferred": 5.2544141556622455,
+                "regret_if_right_preferred": 5.164389882418709,
+                "right_photo_id": "028_c814e49a5937.jpg",
+                "shortlist_score": 0.2808820354156952,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 5591149948075675045,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.6713382653744763,
+          "left": "022_538c46a08497.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 1,
+          "observed_left_preferred": true,
+          "right": "028_c814e49a5937.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.0817221999168396,
+          "status": "feedback-recorded",
+          "step": 1,
+          "training_seconds": 0.0025639000814408064,
+          "true_probability_left": 0.8143208592024611
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.06719390000216663,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 5.527926718750001,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "012_0b8c21f5458c.jpg",
+                "010_714cb2e0d764.jpg",
+                "053_d25036d4bf2a.jpg",
+                "060_6f6d80358091.jpg",
+                "029_75311d39815f.jpg"
+              ],
+              "eligible_pair_count": 860,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 3518980438026736650,
+              "suggested": {
+                "effective_sample_size_left": 50.37404367850269,
+                "effective_sample_size_right": 46.975260471432364,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "012_0b8c21f5458c.jpg",
+                "membership_variance": 0.4287109375,
+                "pdrr": 0.7489644203052901,
+                "predictive_entropy": 0.6904798431045136,
+                "probability_left_preferred": 0.53650318511871,
+                "raw_pdrr_estimate": 0.7489644203052901,
+                "regret_if_left_preferred": 4.540864039968016,
+                "regret_if_right_preferred": 5.054563920597565,
+                "right_photo_id": "059_8ac9419f4801.jpg",
+                "shortlist_score": 0.29601626086218896,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 3518980438026736650,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.567837538915903,
+          "left": "012_0b8c21f5458c.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 2,
+          "observed_left_preferred": true,
+          "right": "059_8ac9419f4801.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 0.06758899998385459,
+          "status": "feedback-recorded",
+          "step": 2,
+          "training_seconds": 0.002057200064882636,
+          "true_probability_left": 0.9399693947340804
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.09281750000081956,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 5.54992015625,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "012_0b8c21f5458c.jpg",
+                "010_714cb2e0d764.jpg",
+                "052_174b34677ba1.jpg",
+                "053_d25036d4bf2a.jpg",
+                "068_fb53325bc956.jpg"
+              ],
+              "eligible_pair_count": 859,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 1044587359137131854,
+              "suggested": {
+                "effective_sample_size_left": 46.74564178364485,
+                "effective_sample_size_right": 51.31603530910466,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "009_490655e9e2e7.jpg",
+                "membership_variance": 0.46484375,
+                "pdrr": 1.030649000108201,
+                "predictive_entropy": 0.6881470784278128,
+                "probability_left_preferred": 0.4500412025471976,
+                "raw_pdrr_estimate": 1.030649000108201,
+                "regret_if_left_preferred": 4.4320818371754225,
+                "regret_if_right_preferred": 4.590619748324773,
+                "right_photo_id": "012_0b8c21f5458c.jpg",
+                "shortlist_score": 0.31988086848792857,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 1044587359137131854,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.4540364520142291,
+          "left": "009_490655e9e2e7.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 3,
+          "observed_left_preferred": true,
+          "right": "012_0b8c21f5458c.jpg",
+          "right_category": "travel architecture",
+          "selection_seconds": 0.09293929999694228,
+          "status": "feedback-recorded",
+          "step": 3,
+          "training_seconds": 0.002939000027254224,
+          "true_probability_left": 0.5050843748576037
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.09937840001657605,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 5.5581619374999995,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "009_490655e9e2e7.jpg",
+                "016_825407755eb2.jpg",
+                "048_3939a99c73c6.jpg",
+                "036_c8469d226791.jpg",
+                "031_652aa3111696.jpg"
+              ],
+              "eligible_pair_count": 858,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 2457418680618010824,
+              "suggested": {
+                "effective_sample_size_left": 51.080596924126944,
+                "effective_sample_size_right": 49.10343592247323,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "016_825407755eb2.jpg",
+                "membership_variance": 0.450927734375,
+                "pdrr": 0.8426355240273988,
+                "predictive_entropy": 0.6921145331814489,
+                "probability_left_preferred": 0.5227188454370952,
+                "raw_pdrr_estimate": 0.8426355240273988,
+                "regret_if_left_preferred": 4.755926325701848,
+                "regret_if_right_preferred": 4.6712803851634135,
+                "right_photo_id": "019_f8ccc773d483.jpg",
+                "shortlist_score": 0.3120936383755215,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 2457418680618010824,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.13537380721209258,
+          "left": "016_825407755eb2.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 4,
+          "observed_left_preferred": true,
+          "right": "019_f8ccc773d483.jpg",
+          "right_category": "travel architecture",
+          "selection_seconds": 0.09944710007403046,
+          "status": "feedback-recorded",
+          "step": 4,
+          "training_seconds": 0.0027438999386504292,
+          "true_probability_left": 0.546476757924723
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.1449125000508502,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 4.632041750000001,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "016_825407755eb2.jpg",
+                "009_490655e9e2e7.jpg",
+                "036_c8469d226791.jpg",
+                "031_652aa3111696.jpg",
+                "048_3939a99c73c6.jpg"
+              ],
+              "eligible_pair_count": 857,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 10485642502826509797,
+              "suggested": {
+                "effective_sample_size_left": 50.85688148586973,
+                "effective_sample_size_right": 52.46689338097353,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "010_714cb2e0d764.jpg",
+                "membership_variance": 0.419677734375,
+                "pdrr": 0.4523141361521503,
+                "predictive_entropy": 0.6923293088310883,
+                "probability_left_preferred": 0.47978059430717657,
+                "raw_pdrr_estimate": 0.4523141361521503,
+                "regret_if_left_preferred": 4.407269837391708,
+                "regret_if_right_preferred": 3.969873190796375,
+                "right_photo_id": "036_c8469d226791.jpg",
+                "shortlist_score": 0.29055519577164085,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 10485642502826509797,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.4815509626250895,
+          "left": "010_714cb2e0d764.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 5,
+          "observed_left_preferred": true,
+          "right": "036_c8469d226791.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.1450761000160128,
+          "status": "feedback-recorded",
+          "step": 5,
+          "training_seconds": 0.0036724999081343412,
+          "true_probability_left": 0.7937326051267858
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.05502089997753501,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 4.95663025,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "016_825407755eb2.jpg",
+                "010_714cb2e0d764.jpg",
+                "048_3939a99c73c6.jpg",
+                "056_eb029c859755.jpg",
+                "029_75311d39815f.jpg"
+              ],
+              "eligible_pair_count": 856,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 16412253460640378466,
+              "suggested": {
+                "effective_sample_size_left": 50.6301560307667,
+                "effective_sample_size_right": 48.2371719242011,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "048_3939a99c73c6.jpg",
+                "membership_variance": 0.4365234375,
+                "pdrr": 0.47836867632502766,
+                "predictive_entropy": 0.6917304743585938,
+                "probability_left_preferred": 0.5266086175519389,
+                "raw_pdrr_estimate": 0.47836867632502766,
+                "regret_if_left_preferred": 4.464250195384271,
+                "regret_if_right_preferred": 4.493848068962458,
+                "right_photo_id": "060_6f6d80358091.jpg",
+                "shortlist_score": 0.301956564490519,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 16412253460640378466,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.2667226588867366,
+          "left": "048_3939a99c73c6.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 6,
+          "observed_left_preferred": true,
+          "right": "060_6f6d80358091.jpg",
+          "right_category": "mountain travel landscape",
+          "selection_seconds": 0.055106000043451786,
+          "status": "feedback-recorded",
+          "step": 6,
+          "training_seconds": 0.002049700007773936,
+          "true_probability_left": 0.7787764945439771
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.05168569996021688,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 3.953914828125,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "010_714cb2e0d764.jpg",
+                "016_825407755eb2.jpg",
+                "048_3939a99c73c6.jpg",
+                "031_652aa3111696.jpg",
+                "029_75311d39815f.jpg"
+              ],
+              "eligible_pair_count": 855,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 6315574696485127037,
+              "suggested": {
+                "effective_sample_size_left": 55.649431558246555,
+                "effective_sample_size_right": 52.46832226905319,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "010_714cb2e0d764.jpg",
+                "membership_variance": 0.453125,
+                "pdrr": 0.2004846287013775,
+                "predictive_entropy": 0.6886165044681727,
+                "probability_left_preferred": 0.5475595921200238,
+                "raw_pdrr_estimate": 0.2004846287013775,
+                "regret_if_left_preferred": 3.6703595633952926,
+                "regret_if_right_preferred": 3.8539652594859186,
+                "right_photo_id": "016_825407755eb2.jpg",
+                "shortlist_score": 0.31202935358714073,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 6315574696485127037,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.9717671731961615,
+          "left": "010_714cb2e0d764.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 7,
+          "observed_left_preferred": false,
+          "right": "016_825407755eb2.jpg",
+          "right_category": "travel architecture",
+          "selection_seconds": 0.05177000002004206,
+          "status": "feedback-recorded",
+          "step": 7,
+          "training_seconds": 0.0021168000530451536,
+          "true_probability_left": 0.463275777127231
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.055110399960540235,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 4.630185593749999,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "016_825407755eb2.jpg",
+                "009_490655e9e2e7.jpg",
+                "048_3939a99c73c6.jpg",
+                "023_53eabe29deee.jpg",
+                "031_652aa3111696.jpg"
+              ],
+              "eligible_pair_count": 854,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 12629578960519653172,
+              "suggested": {
+                "effective_sample_size_left": 50.870282068883824,
+                "effective_sample_size_right": 49.83023663486583,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "039_ed59405b1b1f.jpg",
+                "membership_variance": 0.4287109375,
+                "pdrr": 0.33377442259751966,
+                "predictive_entropy": 0.6928539073477236,
+                "probability_left_preferred": 0.5121087683389929,
+                "raw_pdrr_estimate": 0.33377442259751966,
+                "regret_if_left_preferred": 4.271898799485996,
+                "regret_if_right_preferred": 4.322140267411197,
+                "right_photo_id": "047_f36674032a5c.jpg",
+                "shortlist_score": 0.29703404816958073,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 12629578960519653172,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.3853435229384499,
+          "left": "039_ed59405b1b1f.jpg",
+          "left_category": "city night photography",
+          "observed_feedback_count": 8,
+          "observed_left_preferred": true,
+          "right": "047_f36674032a5c.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.05517309997230768,
+          "status": "feedback-recorded",
+          "step": 8,
+          "training_seconds": 0.0013827000511810184,
+          "true_probability_left": 0.5086911382779417
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.05528599990066141,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 3.7938218281250005,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "016_825407755eb2.jpg",
+                "009_490655e9e2e7.jpg",
+                "048_3939a99c73c6.jpg",
+                "039_ed59405b1b1f.jpg",
+                "023_53eabe29deee.jpg"
+              ],
+              "eligible_pair_count": 853,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 15445521687634557566,
+              "suggested": {
+                "effective_sample_size_left": 44.6631426660313,
+                "effective_sample_size_right": 54.43397461344306,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "008_5cb3ae6de6fc.jpg",
+                "membership_variance": 0.507568359375,
+                "pdrr": 0.2343366118184771,
+                "predictive_entropy": 0.6683737503137264,
+                "probability_left_preferred": 0.38916640835684324,
+                "raw_pdrr_estimate": 0.2343366118184771,
+                "regret_if_left_preferred": 3.8519570056027828,
+                "regret_if_right_preferred": 3.373149367487296,
+                "right_photo_id": "016_825407755eb2.jpg",
+                "shortlist_score": 0.339245367896054,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 15445521687634557566,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.12902472641665197,
+          "left": "008_5cb3ae6de6fc.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 9,
+          "observed_left_preferred": true,
+          "right": "016_825407755eb2.jpg",
+          "right_category": "travel architecture",
+          "selection_seconds": 0.05537889990955591,
+          "status": "feedback-recorded",
+          "step": 9,
+          "training_seconds": 0.0029157999670132995,
+          "true_probability_left": 0.45786068071073993
+        },
+        {
+          "acquisition": {
+            "abstained": false,
+            "acquisition_version": "capu-pdrr-v1",
+            "attempts": [
+              {
+                "error": null,
+                "posterior_samples": 64,
+                "seconds": 0.04954279994126409,
+                "status": "success"
+              }
+            ],
+            "constraint_solver": "exact-partition-matroid-v1",
+            "exhaustive": false,
+            "kind": "production-capu-pdrr-mc",
+            "latent_utility_supplied": false,
+            "mc_default_samples": 64,
+            "mc_retry_samples": 128,
+            "production_function": "ai.preferences.acquisition.suggest_pair",
+            "result": {
+              "constraint_solver": "exact-partition-matroid-v1",
+              "current_bayes_regret": 4.552652796875,
+              "current_photo_ids": [
+                "022_538c46a08497.jpg",
+                "048_3939a99c73c6.jpg",
+                "001_302770d7dacd.jpg",
+                "016_825407755eb2.jpg",
+                "039_ed59405b1b1f.jpg",
+                "040_b8eaa39d6720.jpg"
+              ],
+              "eligible_pair_count": 852,
+              "evaluated_pair_count": 16,
+              "posterior_samples": 64,
+              "seed": 5995425011013901924,
+              "suggested": {
+                "effective_sample_size_left": 52.67949478935639,
+                "effective_sample_size_right": 52.67892868031956,
+                "laplace_fallback_left": false,
+                "laplace_fallback_right": false,
+                "left_photo_id": "010_714cb2e0d764.jpg",
+                "membership_variance": 0.49609375,
+                "pdrr": 0.7833781519664109,
+                "predictive_entropy": 0.6931471804446057,
+                "probability_left_preferred": 0.5000075940620101,
+                "raw_pdrr_estimate": 0.7833781519664109,
+                "regret_if_left_preferred": 3.933373098271509,
+                "regret_if_right_preferred": 3.6051712067746373,
+                "right_photo_id": "023_53eabe29deee.jpg",
+                "shortlist_score": 0.34386598404869106,
+                "voi_invariant_ok": true
+              },
+              "version": "capu-pdrr-v1"
+            },
+            "retried_with_b128": false,
+            "seed": 5995425011013901924,
+            "shortlist_size": 16,
+            "test_candidate_count_supplied": 0,
+            "train_candidate_count": 42,
+            "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+          },
+          "feedback_uniform_draw": 0.23294437154287367,
+          "left": "010_714cb2e0d764.jpg",
+          "left_category": "travel architecture",
+          "observed_feedback_count": 10,
+          "observed_left_preferred": true,
+          "right": "023_53eabe29deee.jpg",
+          "right_category": "city night photography",
+          "selection_seconds": 0.04962589999195188,
+          "status": "feedback-recorded",
+          "step": 10,
+          "training_seconds": 0.002066000015474856,
+          "true_probability_left": 0.8038265468846826
+        }
+      ],
+      "method": "pdrr_mc_contextual",
+      "profile": "architecture_first",
+      "runtime": {
+        "selection_seconds": 0.753827599924989,
+        "total_seconds": 0.7829004999948665,
+        "training_seconds": 0.0245075001148507
+      },
+      "seed": 0,
+      "test_candidate_count": 28,
+      "train_candidate_count": 42,
+      "train_candidate_manifest_sha256": "206697a324e0a7236a72b59679d706e0ffea31a1ac42b8aa9328a18b30213f21"
+    }
+  ],
+  "runtime_and_acquisition_diagnostics": {
+    "pdrr": {
+      "abstentions_after_b128": 0,
+      "b128_retry_steps": 0,
+      "clipped_pdrr_mean": 0.7162143996074101,
+      "diagnostic_scope": "The public production result exposes the selected pair and raises only when all evaluated pairs violate the non-negative VOI invariant; counts of rejected unselected pairs are not observable here.",
+      "effective_sample_size": {
+        "count": 20,
+        "maximum": 55.649431558246555,
+        "median": 50.74351875831822,
+        "minimum": 44.6631426660313,
+        "p05": 45.99175623917136,
+        "p95": 54.494747460683236
+      },
+      "laplace_fallback_fraction_of_selected_hypothetical_outcomes": 0.0,
+      "laplace_fallback_outcomes": 0,
+      "observable_all_evaluated_pair_voi_invariant_errors": 0,
+      "query_opportunities": 10,
+      "raw_pdrr_estimate": {
+        "maximum": 2.0572384240722474,
+        "mean": 0.7162143996074101,
+        "minimum": 0.2004846287013775,
+        "negative_within_tolerance_count": 0
+      },
+      "selected_pair_voi_invariant_violations": 0,
+      "selection_runtime_seconds": {
+        "maximum": 0.1450761000160128,
+        "mean": 0.07538275999249891,
+        "median": 0.06148394994670525,
+        "p95": 0.12454305004212068,
+        "sum": 0.753827599924989
+      },
+      "successful_feedback": 10
+    },
+    "runtime_by_method": {
+      "pdrr_mc_contextual": {
+        "run_count": 1,
+        "selection_seconds_sum": 0.753827599924989,
+        "total_seconds_mean_per_seed_profile": 0.7829004999948665,
+        "total_seconds_sum": 0.7829004999948665,
+        "training_seconds_sum": 0.0245075001148507
+      },
+      "predictive_entropy_contextual": {
+        "run_count": 1,
+        "selection_seconds_sum": 0.03985810012090951,
+        "total_seconds_mean_per_seed_profile": 0.0639158000703901,
+        "total_seconds_sum": 0.0639158000703901,
+        "training_seconds_sum": 0.020563500467687845
+      },
+      "random_pair_contextual": {
+        "run_count": 1,
+        "selection_seconds_sum": 0.038042199914343655,
+        "total_seconds_mean_per_seed_profile": 0.06010160001460463,
+        "total_seconds_sum": 0.06010160001460463,
+        "training_seconds_sum": 0.018920699949376285
+      },
+      "zero_feedback_cosine": {
+        "run_count": 1,
+        "selection_seconds_sum": 0.0,
+        "total_seconds_mean_per_seed_profile": 0.022395300096832216,
+        "total_seconds_sum": 0.022395300096832216,
+        "training_seconds_sum": 0.0
+      }
+    }
+  },
+  "schema_version": 1,
+  "summary": {
+    "pdrr_mc_contextual": {
+      "0": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.7596386932790294,
+            0.7596386932790294
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.7596386932790294,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.7596386932790294
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6979945639381284,
+            0.6979945639381284
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6979945639381284,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6979945639381284
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.5211640211640212,
+            0.5211640211640212
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.5211640211640212,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.5211640211640212
+          ],
+          "sample_standard_deviation": null
+        }
+      },
+      "10": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.02520143173663499,
+            0.02520143173663499
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.02520143173663499,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.02520143173663499
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6631002374234134,
+            0.6631002374234134
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6631002374234134,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6631002374234134
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.6640211640211641,
+            0.6640211640211641
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6640211640211641,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6640211640211641
+          ],
+          "sample_standard_deviation": null
+        }
+      }
+    },
+    "predictive_entropy_contextual": {
+      "0": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.7596386932790294,
+            0.7596386932790294
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.7596386932790294,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.7596386932790294
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6979945639381284,
+            0.6979945639381284
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6979945639381284,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6979945639381284
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.5211640211640212,
+            0.5211640211640212
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.5211640211640212,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.5211640211640212
+          ],
+          "sample_standard_deviation": null
+        }
+      },
+      "10": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.015769127920239285,
+            0.015769127920239285
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.015769127920239285,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.015769127920239285
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6687406979461531,
+            0.6687406979461531
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6687406979461531,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6687406979461531
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.6693121693121693,
+            0.6693121693121693
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6693121693121693,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6693121693121693
+          ],
+          "sample_standard_deviation": null
+        }
+      }
+    },
+    "random_pair_contextual": {
+      "0": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.7596386932790294,
+            0.7596386932790294
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.7596386932790294,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.7596386932790294
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6979945639381284,
+            0.6979945639381284
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6979945639381284,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6979945639381284
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.5211640211640212,
+            0.5211640211640212
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.5211640211640212,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.5211640211640212
+          ],
+          "sample_standard_deviation": null
+        }
+      },
+      "10": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.030131495822440124,
+            0.030131495822440124
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.030131495822440124,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.030131495822440124
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6656496117919434,
+            0.6656496117919434
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6656496117919434,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6656496117919434
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.6455026455026455,
+            0.6455026455026455
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6455026455026455,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6455026455026455
+          ],
+          "sample_standard_deviation": null
+        }
+      }
+    },
+    "zero_feedback_cosine": {
+      "0": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.7596386932790294,
+            0.7596386932790294
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.7596386932790294,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.7596386932790294
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6979945639381284,
+            0.6979945639381284
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6979945639381284,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6979945639381284
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.5211640211640212,
+            0.5211640211640212
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.5211640211640212,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.5211640211640212
+          ],
+          "sample_standard_deviation": null
+        }
+      },
+      "10": {
+        "constrained_set_regret_per_photo": {
+          "bootstrap_95_percentile_ci": [
+            0.7596386932790294,
+            0.7596386932790294
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.7596386932790294,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.7596386932790294
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_expected_log_loss": {
+          "bootstrap_95_percentile_ci": [
+            0.6979945639381284,
+            0.6979945639381284
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.6979945639381284,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.6979945639381284
+          ],
+          "sample_standard_deviation": null
+        },
+        "heldout_pair_order_accuracy": {
+          "bootstrap_95_percentile_ci": [
+            0.5211640211640212,
+            0.5211640211640212
+          ],
+          "bootstrap_resamples": 0,
+          "mean": 0.5211640211640212,
+          "n_seed_replicates": 1,
+          "profiles_averaged_within_seed": 1,
+          "raw_seed_means": [
+            0.5211640211640212
+          ],
+          "sample_standard_deviation": null
+        }
+      }
+    }
+  }
+}
