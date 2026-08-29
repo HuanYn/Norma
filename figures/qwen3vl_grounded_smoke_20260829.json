@@ -1,0 +1,87 @@
+{
+  "benchmark": "qwen3vl-grounded-local-smoke-v5",
+  "claim_boundary": "generation/citation/provenance smoke only; retrieval quality and semantic entailment are not evaluated",
+  "deterministic_replay": true,
+  "duration_seconds": 76.3113730000332,
+  "environment": {
+    "jinja2": "3.1.6",
+    "machine": "AMD64",
+    "numeric_threading_contract": "windows-mkl-sequential-torch-openmp-v1",
+    "numpy": "2.1.3",
+    "pillow": "11.1.0",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "safetensors": "0.8.0",
+    "sleep_inhibition": "windows-es-system-required",
+    "tokenizers": "0.22.2",
+    "torch": "2.7.1+cpu",
+    "torch_threads": 8,
+    "torchvision": "0.22.1",
+    "transformers": "5.15.0"
+  },
+  "full_manifest_verification_count": 2,
+  "full_manifest_verification_ms": 4726.24,
+  "generation_provider_fingerprint": "qwen3-vl-local-v1|model=Qwen%2FQwen3-VL-2B-Instruct|revision=89644892e4d85e24eaac8bacfd4f463576704203|weights_sha256=7de1838c87a5349b016c|manifest_sha256=88218c4756bd929e3d317a95378df13026b58d97e1010b8bfbb8ffed708eea51|runtime=transformers-cpu-local-only-v3|preprocess=pil-rgb-waterfill-p16-m2-pre3840-hard4096-v2|prompt_contract_sha256=2f2fd08a335e3f4c85b0d0f28583ddc5e20489b28c33f0adee5cdc46514168a9|transformers=5.15.0|torch=2.7.1|torchvision=0.22.1|tokenizers=0.22.2|safetensors=0.8.0|numpy=2.1.3|numeric_threading=windows-mkl-sequential-torch-openmp-v1|jinja2=3.1.6|pillow=11.1.0|python=3.13.5|max_new_tokens=256",
+  "image": {
+    "byte_size": 152147,
+    "media_type": "image/jpeg",
+    "sha256": "5cd90ed5f970f80c7f39fdb5eca41c72bf21fd8dcdaf24ea287b4dc6b2405e9a",
+    "source": "Wikimedia Commons CC BY-SA 3.0 smoke fixture"
+  },
+  "max_new_tokens": 256,
+  "model": {
+    "file_count": 13,
+    "weight_byte_size": 4255140312,
+    "weight_sha256": "7de1838c87a5349b016c26a1c3f7d2bc400a3d485f95ef39a7059ffd734977a0"
+  },
+  "peak_rss_bytes": 5308608512,
+  "provenance": {
+    "candidate_digest": "760cabb223f10cc5288ec8d1d852d8bc21aa924ee6f7af4ce2fa398abf8ba83c",
+    "evidence_digest": "6604e30f41d942cafa9f3e7a3e3ed6b4ffb22c4302b6f91a31a6ea4eea9004e1",
+    "query_digest": "163d258d8e99478ad75e596b620c31539c6fd70e75b90b64c45d5e60cceab6d2",
+    "retrieval_provider_fingerprint": "public-smoke-retrieval-v1"
+  },
+  "provider_initialization_seconds": 2.39129109994974,
+  "query": "请用一个简短、可核对的 claim 描述图中最明显的建筑元素和可见材质；不要推断具体地点，也不要输出本地路径。",
+  "repeats": 2,
+  "runs": [
+    {
+      "answer": "图中可见的建筑元素是哥特式风格的石雕栏杆和拱形结构，主要材质为石头。 [claim_1]",
+      "citations": [
+        {
+          "claim_id": "claim_1",
+          "photo_id": "public-smoke-001"
+        }
+      ],
+      "claims": [
+        {
+          "claim_id": "claim_1",
+          "text": "图中可见的建筑元素是哥特式风格的石雕栏杆和拱形结构，主要材质为石头。"
+        }
+      ],
+      "duration_seconds": 48.05371359991841,
+      "repeat_index": 0,
+      "validation_scope": "referential-citation-and-provenance-only-v1"
+    },
+    {
+      "answer": "图中可见的建筑元素是哥特式风格的石雕栏杆和拱形结构，主要材质为石头。 [claim_1]",
+      "citations": [
+        {
+          "claim_id": "claim_1",
+          "photo_id": "public-smoke-001"
+        }
+      ],
+      "claims": [
+        {
+          "claim_id": "claim_1",
+          "text": "图中可见的建筑元素是哥特式风格的石雕栏杆和拱形结构，主要材质为石头。"
+        }
+      ],
+      "duration_seconds": 25.86511880008038,
+      "repeat_index": 1,
+      "validation_scope": "referential-citation-and-provenance-only-v1"
+    }
+  ],
+  "status": "passed",
+  "validation_scope": "referential-citation-and-provenance-only-v1"
+}

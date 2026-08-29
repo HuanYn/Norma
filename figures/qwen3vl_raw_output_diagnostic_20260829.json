@@ -1,0 +1,12 @@
+{
+  "benchmark": "qwen3vl-raw-output-diagnostic-v1",
+  "claim_boundary": "public-image output-contract diagnosis only",
+  "duration_seconds": 59.0434760999633,
+  "max_new_tokens": 256,
+  "provider_fingerprint": "qwen3-vl-local-v1|model=Qwen%2FQwen3-VL-2B-Instruct|revision=89644892e4d85e24eaac8bacfd4f463576704203|weights_sha256=7de1838c87a5349b016c|manifest_sha256=88218c4756bd929e3d317a95378df13026b58d97e1010b8bfbb8ffed708eea51|runtime=transformers-cpu-local-only-v1|preprocess=pil-rgb-multi-image-v1|max_new_tokens=256",
+  "raw_output": "```json\n{\n  \"claims\": [\n    {\n      \"claim_id\": \"claim_1\",\n      \"text\": \"图中显示了一位戴眼镜、穿西装的男性。\"\n    }\n  ],\n  \"citations\": [\n    {\n      \"claim_id\": \"claim_1\",\n      \"photo_id\": \"public-smoke-001\"\n    }\n  ]\n}\n```",
+  "raw_output_length": 209,
+  "raw_output_sha256": "9ca37e32f06d6bb8fb6827e75b733b031a4e6270ad52c7b9d52e1ee312741dd5",
+  "raw_output_type": "str",
+  "status": "captured"
+}

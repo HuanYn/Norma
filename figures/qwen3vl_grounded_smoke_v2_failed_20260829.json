@@ -1,0 +1,32 @@
+{
+  "benchmark": "qwen3vl-grounded-local-smoke-v1",
+  "claim_boundary": "generation/citation/provenance smoke only; retrieval quality and semantic entailment are not evaluated",
+  "duration_seconds": 73.29985419998411,
+  "environment": {
+    "machine": "AMD64",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "torch": "2.7.1+cpu",
+    "torch_threads": 8,
+    "transformers": "5.15.0"
+  },
+  "error": "CitationValidationError: local VLM returned invalid JSON: Expecting value: line 1 column 1 (char 0)",
+  "failed_repeat_index": 0,
+  "image": {
+    "byte_size": 13621,
+    "media_type": "image/jpeg",
+    "sha256": "fc8e5d885b8a4ef1ed0f6dfaa7ed38124d548f051c605e8b38dbb5ca269de8c4",
+    "source": "public LFW sample"
+  },
+  "max_new_tokens": 256,
+  "model": {
+    "file_count": 13,
+    "weight_byte_size": 4255140312,
+    "weight_sha256": "7de1838c87a5349b016c26a1c3f7d2bc400a3d485f95ef39a7059ffd734977a0"
+  },
+  "peak_rss_bytes": 3712589824,
+  "query": "请用一个简短、可核对的 claim 描述图中最明显的主体和可见特征；不要推断身份，也不要输出本地路径。",
+  "repeats": 2,
+  "runs": [],
+  "status": "failed"
+}

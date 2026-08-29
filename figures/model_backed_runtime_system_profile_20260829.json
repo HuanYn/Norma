@@ -1,0 +1,19 @@
+{
+  "schema": "norma-model-runtime-system-profile-v1",
+  "observed_date": "2026-08-29",
+  "source": "Windows CIM on the machine that produced the clean smoke artifacts",
+  "cpu": {
+    "name": "Intel(R) Core(TM) Ultra 7 255HX",
+    "physical_cores": 20,
+    "logical_processors": 20
+  },
+  "memory": {
+    "physical_bytes": 33751425024
+  },
+  "operating_system": {
+    "caption": "Microsoft Windows 11 Home Chinese Edition",
+    "version": "10.0.26200",
+    "build": "26200"
+  },
+  "claim_boundary": "single-machine environment description; not a cross-machine performance claim"
+}

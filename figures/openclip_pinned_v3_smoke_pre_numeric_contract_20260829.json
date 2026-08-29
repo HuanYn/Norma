@@ -1,0 +1,68 @@
+{
+  "benchmark": "openclip-pinned-v3-local-smoke-20260829",
+  "claim_boundary": "identity/cache and single-image/text inference smoke only; not a retrieval-quality or cross-machine reproducibility result",
+  "duration_seconds": 88.04295209993143,
+  "environment": {
+    "Pillow": "11.1.0",
+    "ftfy": "6.3.1",
+    "numpy": "2.1.3",
+    "open-clip-torch": "3.3.0",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "sentencepiece": "missing",
+    "tokenizers": "0.22.2",
+    "torch": "2.7.1",
+    "torch_threads": 8,
+    "torchvision": "0.22.1",
+    "transformers": "5.15.0"
+  },
+  "error": null,
+  "image": {
+    "byte_size": 13621,
+    "sha256": "fc8e5d885b8a4ef1ed0f6dfaa7ed38124d548f051c605e8b38dbb5ca269de8c4",
+    "source": "public LFW sample"
+  },
+  "manifest_sha256": "2db38e9efa07b63f1b4fda924d8c3a18b8d2541aed81001ca6d54a353f6e9d96",
+  "observations": {
+    "chinese": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "184669d5d94106383f7b4e10e529b20f202bb7395842bd5601de10d632d0da50"
+    },
+    "chinese_repeat": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "184669d5d94106383f7b4e10e529b20f202bb7395842bd5601de10d632d0da50"
+    },
+    "cold_text_seconds": 86.60150909994263,
+    "english": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "a18d1ae78375b672da8e935553a7cafb2e64bfbde62a2b2b462a359d67e79739"
+    },
+    "english_text_seconds": 0.2789428000105545,
+    "image": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "52fe2459fa2b8e08860ab4496c2ee823b0dead1583889d6ed91fdcaa5208c0bf"
+    },
+    "image_seconds": 0.6599810000043362,
+    "provider_initialization_seconds": 0.09919370000716299,
+    "repeat_cosine": 1.0,
+    "repeat_text_seconds": 0.26661449996754527,
+    "zh_en_cosine": 0.8679406642913818,
+    "zh_image_cosine": -0.05313102900981903
+  },
+  "peak_rss_bytes": 3566125056,
+  "provider_fingerprint": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-cpu-v3-m2db38e9efa07b63f-i91e726a5f8bf5488c9556d56",
+  "queries": {
+    "en": "a girl in a red dress by the sea",
+    "zh": "红色裙子的女孩在海边"
+  },
+  "resolved_device": "cpu",
+  "status": "passed"
+}

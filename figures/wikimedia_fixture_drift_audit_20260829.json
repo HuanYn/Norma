@@ -1,0 +1,176 @@
+{
+  "schema": "norma-wikimedia-fixture-drift-audit-v1",
+  "claim_boundary": "single-date upstream reproducibility audit of a historical public-image fixture; not an image-quality benchmark and not evidence that mutable Wikimedia thumbnail URLs will keep returning these variants",
+  "audit_date": "2026-08-29",
+  "historical_fixture": {
+    "manifest_path": "fixtures/contextual_preference_wikimedia_20260814.json",
+    "manifest_sha256": "991a0ebe0a2e66454ec7e85decd667a9bb2b81284278542f7cde5a64d3c72d12",
+    "attribution_sha256": "ad06ababdf5fb9f1827d38736a26186e832bbbc2653c6dc5c99c95cc598e03ac",
+    "image_count": 72,
+    "experiment_image_count": 70,
+    "local_raw_pin_matches": 72,
+    "local_total_bytes": 40446246
+  },
+  "decoder_contract": {
+    "library": "Pillow",
+    "version": "11.1.0",
+    "steps": [
+      "Image.open",
+      "ImageOps.exif_transpose",
+      "convert RGB",
+      "contiguous image.tobytes"
+    ]
+  },
+  "network_protocol": {
+    "mode": "sequential fixed-URL requests",
+    "request_count": 72,
+    "throttle_seconds": 0.35,
+    "max_retries": 3,
+    "successful_downloads": 72,
+    "decode_failures": 0,
+    "note": "the four pixel-drift rows were independently re-read once after the first audit to freeze full current hashes and error metrics"
+  },
+  "evidence_availability": {
+    "historical_manifest_and_local_files": "frozen and independently revalidated",
+    "current_response_binaries_in_public_artifact": false,
+    "complete_72_response_transcript_in_public_artifact": false,
+    "metadata_only_current_raw_hashes_retained": false,
+    "oldimage_per_file_response_transcript_in_public_artifact": false,
+    "independent_recompute_scope": "historical-side size, raw SHA, decoded-pixel SHA, count arithmetic, and PSNR-from-recorded-RMSE can be rechecked offline; current-side pixel differences, metadata-only RGB equivalence, and oldimage recovery outcomes are contemporaneous audit-record observations because their transient inputs were not frozen"
+  },
+  "first_full_pass": {
+    "all_72": {
+      "raw_exact": 58,
+      "raw_drift_pixel_exact": 10,
+      "pixel_drift": 4
+    },
+    "experiment_70": {
+      "raw_exact": 58,
+      "raw_drift_pixel_exact": 8,
+      "pixel_drift": 4
+    }
+  },
+  "metadata_only_drift": {
+    "count": 10,
+    "files": [
+      "001_302770d7dacd.jpg",
+      "020_408965518a0f.jpg",
+      "021_077dd084a1e2.jpg",
+      "038_acc5b352a05c.jpg",
+      "040_b8eaa39d6720.jpg",
+      "041_00aa49cb3758.jpg",
+      "048_3939a99c73c6.jpg",
+      "067_f5f529c7572a.jpg",
+      "071_0d9df8caf9ed.jpg",
+      "072_7532e20b3a82.jpg"
+    ],
+    "current_byte_delta_each": -52,
+    "exif_byte_delta_each": -52,
+    "decoded_rgb_exact": 10,
+    "jpeg_quantization_tables_exact": 10,
+    "current_raw_hashes_retained": false
+  },
+  "pixel_drift": [
+    {
+      "file": "030_790fd23570e0.jpg",
+      "historical_byte_size": 276794,
+      "historical_raw_sha256": "2b1acbe668b59103e27a7f1b9b861f3b001c60282f698c1f3b431ad7f0e39f40",
+      "historical_pixel_sha256": "c7b2f31e698098e1130b84506dc2e7fbf133d5fe3bc13fd906895cac0052415b",
+      "current_byte_size": 274661,
+      "current_raw_sha256": "13a4255dbc193daf498a59cb906439781ebb25230b2d81b94ff4c9e5aa8acb6a",
+      "current_pixel_sha256": "4e620b6274fbd95659b9efc0377fb9afafc428d153138fce3a2995140742e50b",
+      "width": 1920,
+      "height": 531,
+      "mae": 1.0873352165725048,
+      "rmse": 2.019432755116582,
+      "psnr_db": 42.02621568428842,
+      "max_abs": 32,
+      "changed_channel_pct": 50.849255858966316
+    },
+    {
+      "file": "035_bd0b8eaa1e38.jpg",
+      "historical_byte_size": 233293,
+      "historical_raw_sha256": "e71ac27575921d442045c4deaa3dddc3da0a3ec13a04b0538c50ba4fb6ef3af6",
+      "historical_pixel_sha256": "1ff8097934a1c18fd24c534e20b77294a4b90c08fd6d295ae5c9ad2a413c48dc",
+      "current_byte_size": 289231,
+      "current_raw_sha256": "69b55fa5075047ee9b835681860fa87711aa07345b9b2fb93bec7218fa8ef12a",
+      "current_pixel_sha256": "ba6a8a5b5e42f49ef5aede631e79a694d520dd5bb01c75a14c9a6715617cff87",
+      "width": 1920,
+      "height": 1105,
+      "mae": 2.880476212921066,
+      "rmse": 7.223290058883222,
+      "psnr_db": 30.95610251334748,
+      "max_abs": 246,
+      "changed_channel_pct": 72.56671065862243
+    },
+    {
+      "file": "039_ed59405b1b1f.jpg",
+      "historical_byte_size": 454244,
+      "historical_raw_sha256": "2d152821f96e654b83cd84fadf4a4428227185c0ef5c7a240213e5b133756f94",
+      "historical_pixel_sha256": "fb07bfec02b23791d58e99baaaf3dbc95222bfc8dbf216eebda476b1ad777f0b",
+      "current_byte_size": 449896,
+      "current_raw_sha256": "3290092afbef31c88572e3439081e98a8033b6907ddd46e2aefd3165b62f824a",
+      "current_pixel_sha256": "9f3f9f88c15d0177e1e4d31531e8393a5fa451a1482cbdc427fccc0e8d396792",
+      "width": 1920,
+      "height": 1280,
+      "mae": 1.0068617078993056,
+      "rmse": 1.7744228326103362,
+      "psnr_db": 43.14966126507428,
+      "max_abs": 37,
+      "changed_channel_pct": 55.50766330295139
+    },
+    {
+      "file": "043_27eac2979c6a.jpg",
+      "historical_byte_size": 1045582,
+      "historical_raw_sha256": "652afd198ec8590e5fde6471c773fa99f11816c03fa5149fdb228fb4015167fd",
+      "historical_pixel_sha256": "786e38fdbf66beb9eb2edade73eb72ed2f8b33dc29d168259ac0a8fe7a50ed2a",
+      "current_byte_size": 1042129,
+      "current_raw_sha256": "c52b04e4f71bc04f124940e300c34f49d915eb33c631fa63a4ad7b8dacddd096",
+      "current_pixel_sha256": "4deaa0680013f68fbf18d44067c2f5d3a6e9c05eef7f8bdcff5b3e2a3761ed5c",
+      "width": 1920,
+      "height": 1358,
+      "mae": 1.607865810628375,
+      "rmse": 2.5985677662221605,
+      "psnr_db": 39.83612266933766,
+      "max_abs": 37,
+      "changed_channel_pct": 65.39071449026346
+    }
+  ],
+  "repeat_behavior": {
+    "030_drift_observations": 8,
+    "030_exact_observations": 0,
+    "035_drift_observations": 7,
+    "035_exact_observations": 1,
+    "039_drift_observations": 8,
+    "039_exact_observations": 0,
+    "043_drift_observations": 7,
+    "043_exact_observations": 1,
+    "interpretation": "the ordinary thumbnail endpoint is not an immutable content source"
+  },
+  "oldimage_archive_audit": {
+    "raw_drift_files_queried": 14,
+    "files_with_one_original_revision": 13,
+    "files_with_two_original_revisions": 1,
+    "current_original_sha1_prefix_matches_local_filename": 14,
+    "historical_raw_recovered": 0,
+    "historical_pixels_recovered_for_pixel_drift": 0,
+    "interpretation": "drift occurred in thumbnail rendering or caching rather than replacement of the current original",
+    "only_archive_candidate": {
+      "file": "035_bd0b8eaa1e38.jpg",
+      "archive_timestamp": "2016-11-06T00:01:00Z",
+      "archive_thumbnail_requests": 2,
+      "archive_thumbnail_stable": true,
+      "archive_byte_size": 288373,
+      "archive_raw_sha256": "d24b190600df89df146a6922fd9b5aca146cd7092f56f3d7a6989393cab9eb82",
+      "archive_pixel_sha256": "91973fa9ca1008def8ded85701f6537b1eb4203624ae87d9337087475b82cbb2",
+      "matches_historical_raw": false,
+      "matches_historical_pixels": false
+    }
+  },
+  "decision": {
+    "historical_experiment_provenance_rewritten": false,
+    "downloader_policy": "fail closed on upstream byte drift",
+    "documentation_policy": "describe mutable upstream URLs as a verifier input, not a guaranteed reconstruction archive",
+    "exact_fresh_clone_requirement": "publish a separately licensed content-addressed archive with per-file attribution and archive SHA-256, or define a new dataset contract and rerun under a new experiment ID"
+  }
+}

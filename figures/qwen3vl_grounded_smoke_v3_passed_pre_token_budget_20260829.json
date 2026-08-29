@@ -1,0 +1,79 @@
+{
+  "benchmark": "qwen3vl-grounded-local-smoke-v1",
+  "claim_boundary": "generation/citation/provenance smoke only; retrieval quality and semantic entailment are not evaluated",
+  "deterministic_replay": true,
+  "duration_seconds": 97.04319460003171,
+  "environment": {
+    "machine": "AMD64",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "torch": "2.7.1+cpu",
+    "torch_threads": 8,
+    "transformers": "5.15.0"
+  },
+  "full_manifest_verification_count": 2,
+  "full_manifest_verification_ms": 7608.5509999999995,
+  "generation_provider_fingerprint": "qwen3-vl-local-v1|model=Qwen%2FQwen3-VL-2B-Instruct|revision=89644892e4d85e24eaac8bacfd4f463576704203|weights_sha256=7de1838c87a5349b016c|manifest_sha256=88218c4756bd929e3d317a95378df13026b58d97e1010b8bfbb8ffed708eea51|runtime=transformers-cpu-local-only-v1|preprocess=pil-rgb-multi-image-v1|max_new_tokens=256",
+  "image": {
+    "byte_size": 13621,
+    "media_type": "image/jpeg",
+    "sha256": "fc8e5d885b8a4ef1ed0f6dfaa7ed38124d548f051c605e8b38dbb5ca269de8c4",
+    "source": "public LFW sample"
+  },
+  "max_new_tokens": 256,
+  "model": {
+    "file_count": 13,
+    "weight_byte_size": 4255140312,
+    "weight_sha256": "7de1838c87a5349b016c26a1c3f7d2bc400a3d485f95ef39a7059ffd734977a0"
+  },
+  "peak_rss_bytes": 4896866304,
+  "provenance": {
+    "candidate_digest": "f5c658e601c031adb1d5087e1d78de23358cb02cfad605f0b3d19265d8034846",
+    "evidence_digest": "c84de8b146b8a6a835ccc27f442aa9dd70e089ceaa1b2f1d4b495a6a6fc04019",
+    "query_digest": "d3dddc573196767b24da002933282995d51b247febcc751d2f34898cdac31c16",
+    "retrieval_provider_fingerprint": "public-smoke-retrieval-v1"
+  },
+  "provider_initialization_seconds": 3.9570890000322834,
+  "query": "请用一个简短、可核对的 claim 描述图中最明显的主体和可见特征；不要推断身份，也不要输出本地路径。",
+  "repeats": 2,
+  "runs": [
+    {
+      "answer": "图中显示了一位戴眼镜、穿西装的男性。 [claim_1]",
+      "citations": [
+        {
+          "claim_id": "claim_1",
+          "photo_id": "public-smoke-001"
+        }
+      ],
+      "claims": [
+        {
+          "claim_id": "claim_1",
+          "text": "图中显示了一位戴眼镜、穿西装的男性。"
+        }
+      ],
+      "duration_seconds": 65.41615790000651,
+      "repeat_index": 0,
+      "validation_scope": "referential-citation-and-provenance-only-v1"
+    },
+    {
+      "answer": "图中显示了一位戴眼镜、穿西装的男性。 [claim_1]",
+      "citations": [
+        {
+          "claim_id": "claim_1",
+          "photo_id": "public-smoke-001"
+        }
+      ],
+      "claims": [
+        {
+          "claim_id": "claim_1",
+          "text": "图中显示了一位戴眼镜、穿西装的男性。"
+        }
+      ],
+      "duration_seconds": 27.66850410006009,
+      "repeat_index": 1,
+      "validation_scope": "referential-citation-and-provenance-only-v1"
+    }
+  ],
+  "status": "passed",
+  "validation_scope": "referential-citation-and-provenance-only-v1"
+}

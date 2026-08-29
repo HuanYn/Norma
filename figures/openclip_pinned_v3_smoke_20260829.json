@@ -1,0 +1,70 @@
+{
+  "benchmark": "openclip-pinned-v3-local-smoke-20260829",
+  "claim_boundary": "identity/cache and single-image/text inference smoke only; not a retrieval-quality or cross-machine reproducibility result",
+  "duration_seconds": 24.471050500054844,
+  "environment": {
+    "Pillow": "11.1.0",
+    "ftfy": "6.3.1",
+    "numeric_threading_contract": "windows-mkl-sequential-torch-openmp-v1",
+    "numpy": "2.1.3",
+    "open-clip-torch": "3.3.0",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "sentencepiece": "missing",
+    "sleep_inhibition": "windows-es-system-required",
+    "tokenizers": "0.22.2",
+    "torch": "2.7.1",
+    "torch_threads": 8,
+    "torchvision": "0.22.1",
+    "transformers": "5.15.0"
+  },
+  "error": null,
+  "image": {
+    "byte_size": 152147,
+    "sha256": "5cd90ed5f970f80c7f39fdb5eca41c72bf21fd8dcdaf24ea287b4dc6b2405e9a",
+    "source": "Wikimedia Commons CC BY-SA 3.0 smoke fixture"
+  },
+  "manifest_sha256": "2db38e9efa07b63f1b4fda924d8c3a18b8d2541aed81001ca6d54a353f6e9d96",
+  "observations": {
+    "chinese": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "9ed5d6c7ebafd119f7a3ae3e8f9e7a8f3bbb470f0264a6643916a98ccfbabeba"
+    },
+    "chinese_repeat": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "9ed5d6c7ebafd119f7a3ae3e8f9e7a8f3bbb470f0264a6643916a98ccfbabeba"
+    },
+    "cold_text_seconds": 24.01706360001117,
+    "english": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "ef92c3300fb4d702179ef1058bf6f522459e42dac54d8794e328a2f23afdaf6f"
+    },
+    "english_text_seconds": 0.08083160000387579,
+    "image": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "30249ee18f89197d995341f49ba762b024620d82820ae3ed0df4b86adb3dd0c0"
+    },
+    "image_seconds": 0.2506362999556586,
+    "provider_initialization_seconds": 0.04373789997771382,
+    "repeat_cosine": 1.0000001192092896,
+    "repeat_text_seconds": 0.07337440003175288,
+    "zh_en_cosine": 0.863965630531311,
+    "zh_image_cosine": 0.22557340562343597
+  },
+  "peak_rss_bytes": 3846266880,
+  "provider_fingerprint": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-cpu-v3-m2db38e9efa07b63f-if3fb2abc8eb5bff4454c1095",
+  "queries": {
+    "en": "stone carvings and Gothic cathedral roof details",
+    "zh": "哥特式教堂的石雕屋顶细节"
+  },
+  "resolved_device": "cpu",
+  "status": "passed"
+}

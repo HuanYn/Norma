@@ -1,0 +1,87 @@
+{
+  "benchmark": "openclip-pinned-v3-local-smoke-20260829",
+  "claim_boundary": "functional identity/cache and inference pass only; latency fields are excluded because the run overlapped a Windows Modern Standby session",
+  "duration_seconds": 41.28186739992816,
+  "excluded_from_latency_claims": true,
+  "environment": {
+    "Pillow": "11.1.0",
+    "ftfy": "6.3.1",
+    "numeric_threading_contract": "windows-mkl-sequential-torch-openmp-v1",
+    "numpy": "2.1.3",
+    "open-clip-torch": "3.3.0",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "sentencepiece": "missing",
+    "tokenizers": "0.22.2",
+    "torch": "2.7.1",
+    "torch_threads": 8,
+    "torchvision": "0.22.1",
+    "transformers": "5.15.0"
+  },
+  "error": null,
+  "image": {
+    "byte_size": 152147,
+    "sha256": "5cd90ed5f970f80c7f39fdb5eca41c72bf21fd8dcdaf24ea287b4dc6b2405e9a",
+    "source": "Wikimedia Commons CC BY-SA 3.0 smoke fixture"
+  },
+  "manifest_sha256": "2db38e9efa07b63f1b4fda924d8c3a18b8d2541aed81001ca6d54a353f6e9d96",
+  "observations": {
+    "chinese": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "9ed5d6c7ebafd119f7a3ae3e8f9e7a8f3bbb470f0264a6643916a98ccfbabeba"
+    },
+    "chinese_repeat": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "9ed5d6c7ebafd119f7a3ae3e8f9e7a8f3bbb470f0264a6643916a98ccfbabeba"
+    },
+    "cold_text_seconds": 40.74510079994798,
+    "english": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "ef92c3300fb4d702179ef1058bf6f522459e42dac54d8794e328a2f23afdaf6f"
+    },
+    "english_text_seconds": 0.0981243000132963,
+    "image": {
+      "dimension": 512,
+      "finite": true,
+      "l2_norm": 1.0,
+      "sha256_float32": "30249ee18f89197d995341f49ba762b024620d82820ae3ed0df4b86adb3dd0c0"
+    },
+    "image_seconds": 0.27467940002679825,
+    "provider_initialization_seconds": 0.06331710005179048,
+    "repeat_cosine": 1.0000001192092896,
+    "repeat_text_seconds": 0.09258569998200983,
+    "zh_en_cosine": 0.863965630531311,
+    "zh_image_cosine": 0.22557340562343597
+  },
+  "peak_rss_bytes": 3845361664,
+  "provider_fingerprint": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-cpu-v3-m2db38e9efa07b63f-if3fb2abc8eb5bff4454c1095",
+  "queries": {
+    "en": "stone carvings and Gothic cathedral roof details",
+    "zh": "哥特式教堂的石雕屋顶细节"
+  },
+  "resolved_device": "cpu",
+  "status": "passed",
+  "timing_exclusion": {
+    "clean_replacement_path": "figures/openclip_pinned_v3_smoke_20260829.json",
+    "clean_replacement_sha256": "9ed9caaf33f23cf2996e51a2a2e58ad57e521f8620f8f57746a5c7b9b550cad2",
+    "event_log_evidence": {
+      "duration_microseconds": 154904542,
+      "enter_event_id": 506,
+      "enter_record_id": 203529,
+      "enter_time_local": "2026-08-29T14:11:41.643624+08:00",
+      "exit_event_id": 507,
+      "exit_record_id": 203615,
+      "exit_time_local": "2026-08-29T14:14:16.546155+08:00",
+      "sleep_duration_microseconds": 996450,
+      "sleep_entered": true
+    },
+    "reason": "the timed interval was inside a Modern Standby session; functional vectors remain valid but wall-clock latency is not a clean benchmark"
+  },
+  "timing_valid": false
+}

@@ -1,0 +1,44 @@
+{
+  "schema": "norma-model-backed-runtime-integrity-summary-v1",
+  "claim_boundary": "single-machine functional/contract smokes and raw timing observations; not model-quality, semantic-entailment, inferential, cold-disk, CLI end-to-end, or cross-machine performance evidence",
+  "source_artifact_sha256": {
+    "openclip_clean": "9ed9caaf33f23cf2996e51a2a2e58ad57e521f8620f8f57746a5c7b9b550cad2",
+    "openclip_standby": "178295b487ffd1737df7fc87b6e3ed631620b3a0ffee03112ba19d61c5df0080",
+    "qwen_clean": "2651112ba55c6d0beb1d94d87d3788f34559ab31c23716ad81ace7cee4d488ca",
+    "qwen_standby": "7a4549c287d03dfc9ab7930a5aa79015d8a82a9415dcaa7b4fcb5c52a226515b"
+  },
+  "system_profile_sha256": "c5e9821f3b41fc9a0e8d372ab276681e9017cae8e702e16f87bafd0cbe89132d",
+  "checks": {
+    "openclip_functional_payload_unchanged": true,
+    "qwen_functional_payload_unchanged": true,
+    "qwen_same_process_canonical_replay": true,
+    "standby_timings_excluded": true,
+    "semantic_entailment_evaluated": false
+  },
+  "clean_observations": {
+    "openclip": {
+      "provider_initialization_seconds": 0.04373789997771382,
+      "first_text_load_verify_encode_seconds": 24.01706360001117,
+      "repeat_text_seconds": 0.07337440003175288,
+      "english_text_seconds": 0.08083160000387579,
+      "image_encode_seconds": 0.2506362999556586,
+      "timed_block_seconds": 24.471050500054844,
+      "sampled_peak_rss_bytes": 3846266880,
+      "sample_size": 1
+    },
+    "qwen3_vl": {
+      "provider_initialization_seconds": 2.39129109994974,
+      "run_seconds": [
+        48.05371359991841,
+        25.86511880008038
+      ],
+      "timed_block_seconds": 76.3113730000332,
+      "sampled_peak_rss_bytes": 5308608512,
+      "sample_size": 2
+    }
+  },
+  "historical_excluded_timed_block_seconds": {
+    "openclip": 41.28186739992816,
+    "qwen3_vl": 3229.986608600011
+  }
+}

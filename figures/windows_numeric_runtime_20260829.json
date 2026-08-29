@@ -1,0 +1,50 @@
+{
+  "profile": "windows-numpy-mkl-pytorch-openmp-20260829",
+  "claim_boundary": "single-machine compatibility and small-matrix timing profile; not a general BLAS benchmark",
+  "source_profile_sha256": "1D74968B26C9AEF6E7A9E3F398F70B8171D0B31F45F633685C2DF1E605012CF0",
+  "unsafe_workaround_used": false,
+  "iterations": {
+    "matvec_32x512": 20000,
+    "solve_67x67": 300,
+    "repeats": 5
+  },
+  "collision": {
+    "returncode": 3,
+    "error": "OpenMP Error #15"
+  },
+  "safe_runtime": {
+    "returncode": 0
+  },
+  "numpy_default_without_torch": {
+    "matvec_seconds": [
+      2.4405707999831066,
+      2.6859338000649586,
+      2.5409493000479415,
+      2.6983891000272706,
+      2.6777365000452846
+    ],
+    "solve_seconds": [
+      0.033004999975673854,
+      0.02747759991325438,
+      0.028006099979393184,
+      0.02994930010754615,
+      0.0298646999290213
+    ]
+  },
+  "sequential_with_torch": {
+    "matvec_seconds": [
+      0.13150010001845658,
+      0.13215249998029321,
+      0.13460020010825247,
+      0.13986240001395345,
+      0.13857329997699708
+    ],
+    "solve_seconds": [
+      0.02447500010021031,
+      0.026610700064338744,
+      0.02764670003671199,
+      0.02740979997906834,
+      0.03050579992122948
+    ]
+  }
+}

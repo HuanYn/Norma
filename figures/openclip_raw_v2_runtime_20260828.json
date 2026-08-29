@@ -1,0 +1,66 @@
+{
+  "experiment_id": "openclip-raw-v2-runtime-smoke-20260828",
+  "date": "2026-08-28",
+  "provider": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2",
+  "device": "cpu",
+  "hardware": {
+    "cpu": "Intel(R) Core(TM) Ultra 7 255HX",
+    "physical_cores": 20,
+    "logical_processors": 20,
+    "ram_gib": 31.43
+  },
+  "software": {
+    "python": "3.13.5",
+    "torch": "2.7.1",
+    "open_clip_torch": "3.3.0",
+    "transformers": "5.15.0",
+    "numpy": "2.1.3"
+  },
+  "active_cache": {
+    "bytes": 1478807645,
+    "gib": 1.377,
+    "excludes_abandoned_incomplete_downloads": true
+  },
+  "timings": [
+    {
+      "key": "recovery_warmup",
+      "label": "Recovery warmup\n(partial cache)",
+      "wall_seconds": [276.544],
+      "provider_duration_seconds": 272.621,
+      "note": "Successful HF_HUB_DISABLE_XET=1 retry after a prior Xet attempt left a partial cache; this is not a clean full-download benchmark."
+    },
+    {
+      "key": "offline_cached_first_text",
+      "label": "Offline cache load\n+ first text",
+      "wall_seconds": [41.0315346000134, 48.302607500052545],
+      "note": "Independent fresh Python processes with HF_HUB_OFFLINE=1 and TRANSFORMERS_OFFLINE=1."
+    },
+    {
+      "key": "warm_text",
+      "label": "Warm text\nencode",
+      "wall_seconds": [0.12502930004848167, 0.1198980999761261, 0.0843684000428766, 0.09927430003881454],
+      "note": "Two text queries from each of two already-loaded CPU processes."
+    },
+    {
+      "key": "warm_image",
+      "label": "Warm image\nencode",
+      "wall_seconds": [0.30823269998654723],
+      "note": "One public LFW image after the model was loaded."
+    }
+  ],
+  "validation": {
+    "dimension": 512,
+    "all_vectors_finite": true,
+    "all_l2_norms": [1.0, 1.0, 1.0, 1.0],
+    "raw_unicode_query_preserved": true,
+    "chinese_query_codepoints": [32418, 33394, 35033, 23376, 30340, 22899, 23401, 22312, 28023, 36793],
+    "chinese_english_paraphrase_cosine": 0.8679406642913818,
+    "scope": "Engineering smoke test only; no retrieval-accuracy claim."
+  },
+  "transport_diagnostic": {
+    "symptom": "The initial Xet-backed transfer did not reach a usable terminal cache and left an incomplete blob.",
+    "recovery": "Restarted the warmup with HF_HUB_DISABLE_XET=1, then verified a fresh offline process could load the completed cache.",
+    "abandoned_incomplete_bytes": 902748749,
+    "cleanup_status": "Retained because the runtime deletion guard rejected removal; excluded from active-cache accounting."
+  }
+}
