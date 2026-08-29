@@ -1,0 +1,2141 @@
+{
+  "experiment_id": "openclip-raw-v2-wikimedia-proxy-20260828",
+  "legacy_bridge_prompts": {
+    "城市夜景摄影": "a photo of night, architecture",
+    "山地旅行风景": "a photo of nature, landscape",
+    "旅行建筑": "a photo of architecture"
+  },
+  "limitations": [
+    "Only three query families are evaluated.",
+    "Labels inherit Wikimedia search-category bias and are not blind human judgments.",
+    "Nine synthetic derivative/duplicate candidates are unjudged and count as non-relevant.",
+    "This pilot is directional integration evidence, not a general multilingual retrieval claim."
+  ],
+  "providers": {
+    "legacy_image_vectors": "reused raw-v2 image vectors because the legacy subclass only changes text preparation",
+    "lightweight": "lightweight-semantic-v1",
+    "openclip_raw": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2"
+  },
+  "runs": [
+    {
+      "macro": {
+        "mrr": 1.0,
+        "ndcg_at_10": 0.7093122790613221,
+        "ndcg_at_20": 0.5391880346544605,
+        "precision_at_10": 0.6666666666666666,
+        "recall_at_20": 0.38399871733205065
+      },
+      "method": "lightweight-semantic-v1",
+      "per_query": {
+        "architecture": {
+          "category": "travel architecture",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.5926825204089028,
+            "ndcg_at_20": 0.44827372920788255,
+            "precision_at_10": 0.6,
+            "recall_at_20": 0.36363636363636365
+          },
+          "positive_count": 22,
+          "query": "travel architecture",
+          "top_20": [
+            {
+              "filename": "001_302770d7dacd.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.607227
+            },
+            {
+              "filename": "eval_duplicate_01.jpg",
+              "rank": 2,
+              "relevant": false,
+              "score": 0.607227
+            },
+            {
+              "filename": "047_f36674032a5c.jpg",
+              "rank": 3,
+              "relevant": false,
+              "score": 0.606441
+            },
+            {
+              "filename": "051_eacb43057bf3.jpg",
+              "rank": 4,
+              "relevant": false,
+              "score": 0.572304
+            },
+            {
+              "filename": "012_0b8c21f5458c.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.556435
+            },
+            {
+              "filename": "013_da1ccc50a5ef.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.553725
+            },
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.551328
+            },
+            {
+              "filename": "018_054c7f980b54.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.541868
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.541215
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.541215
+            },
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 11,
+              "relevant": false,
+              "score": 0.539277
+            },
+            {
+              "filename": "057_bcb5c3f99d47.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.53217
+            },
+            {
+              "filename": "053_d25036d4bf2a.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.527145
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 14,
+              "relevant": false,
+              "score": 0.524962
+            },
+            {
+              "filename": "052_174b34677ba1.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.523008
+            },
+            {
+              "filename": "040_b8eaa39d6720.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.519843
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.519455
+            },
+            {
+              "filename": "014_80a6bb329d74.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.515841
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.514434
+            },
+            {
+              "filename": "017_edd30ff0db3e.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.513965
+            }
+          ]
+        },
+        "city_night": {
+          "category": "city night photography",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.905211635630449,
+            "ndcg_at_20": 0.6493972947978072,
+            "precision_at_10": 0.9,
+            "recall_at_20": 0.4074074074074074
+          },
+          "positive_count": 27,
+          "query": "city night photography",
+          "top_20": [
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.63938
+            },
+            {
+              "filename": "047_f36674032a5c.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.578741
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.562893
+            },
+            {
+              "filename": "009_490655e9e2e7.jpg",
+              "rank": 4,
+              "relevant": false,
+              "score": 0.556433
+            },
+            {
+              "filename": "042_22a8dc3da4ac.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.523385
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.511245
+            },
+            {
+              "filename": "024_3fd5f118eb04.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.50683
+            },
+            {
+              "filename": "030_790fd23570e0.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.506373
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.500374
+            },
+            {
+              "filename": "029_75311d39815f.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.492339
+            },
+            {
+              "filename": "001_302770d7dacd.jpg",
+              "rank": 11,
+              "relevant": false,
+              "score": 0.483672
+            },
+            {
+              "filename": "eval_duplicate_01.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.483672
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.482041
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 14,
+              "relevant": false,
+              "score": 0.472707
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.461894
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.461894
+            },
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.45971
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.45887
+            },
+            {
+              "filename": "040_b8eaa39d6720.jpg",
+              "rank": 19,
+              "relevant": true,
+              "score": 0.454938
+            },
+            {
+              "filename": "041_00aa49cb3758.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.450371
+            }
+          ]
+        },
+        "mountain_landscape": {
+          "category": "mountain travel landscape",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.6300426811446146,
+            "ndcg_at_20": 0.5198930799576919,
+            "precision_at_10": 0.5,
+            "recall_at_20": 0.38095238095238093
+          },
+          "positive_count": 21,
+          "query": "mountain travel landscape",
+          "top_20": [
+            {
+              "filename": "062_9d19a272280c.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.59244
+            },
+            {
+              "filename": "063_8707c5776037.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.591036
+            },
+            {
+              "filename": "056_eb029c859755.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.577693
+            },
+            {
+              "filename": "064_3e1b77588ac2.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.520112
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 5,
+              "relevant": false,
+              "score": 0.442927
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 6,
+              "relevant": false,
+              "score": 0.442927
+            },
+            {
+              "filename": "eval_blur_02.jpg",
+              "rank": 7,
+              "relevant": false,
+              "score": 0.43609
+            },
+            {
+              "filename": "006_9c8d9e57757e.jpg",
+              "rank": 8,
+              "relevant": false,
+              "score": 0.433821
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.427501
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.42735
+            },
+            {
+              "filename": "070_da8a0b6d619d.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.412362
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.408303
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.394049
+            },
+            {
+              "filename": "065_9e782b6fd4c7.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.375667
+            },
+            {
+              "filename": "027_0fe667ea27f9.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.375568
+            },
+            {
+              "filename": "eval_duplicate_04.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.36763
+            },
+            {
+              "filename": "004_9a3b0cbbe3ff.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.36763
+            },
+            {
+              "filename": "030_790fd23570e0.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.364703
+            },
+            {
+              "filename": "032_8ecf08dcd954.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.363212
+            },
+            {
+              "filename": "046_920056957b00.jpg",
+              "rank": 20,
+              "relevant": false,
+              "score": 0.361454
+            }
+          ]
+        }
+      },
+      "query_language": "english"
+    },
+    {
+      "macro": {
+        "mrr": 1.0,
+        "ndcg_at_10": 0.8220924905878803,
+        "ndcg_at_20": 0.745933233617789,
+        "precision_at_10": 0.7999999999999999,
+        "recall_at_20": 0.607984607984608
+      },
+      "method": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2",
+      "per_query": {
+        "architecture": {
+          "category": "travel architecture",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.6785038377365555,
+            "ndcg_at_20": 0.5138615777242903,
+            "precision_at_10": 0.6,
+            "recall_at_20": 0.36363636363636365
+          },
+          "positive_count": 22,
+          "query": "travel architecture",
+          "top_20": [
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.252544
+            },
+            {
+              "filename": "014_80a6bb329d74.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.199398
+            },
+            {
+              "filename": "044_952d8cd6c02d.jpg",
+              "rank": 3,
+              "relevant": false,
+              "score": 0.189166
+            },
+            {
+              "filename": "015_d58c4cf46e4f.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.188922
+            },
+            {
+              "filename": "011_5cf58c0406f2.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.186813
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 6,
+              "relevant": false,
+              "score": 0.186315
+            },
+            {
+              "filename": "020_408965518a0f.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.184166
+            },
+            {
+              "filename": "eval_duplicate_03.jpg",
+              "rank": 8,
+              "relevant": false,
+              "score": 0.183585
+            },
+            {
+              "filename": "003_97b4ada6b34a.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.183585
+            },
+            {
+              "filename": "029_75311d39815f.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.179361
+            },
+            {
+              "filename": "010_714cb2e0d764.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.17875
+            },
+            {
+              "filename": "026_4c41b5c4a56e.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.177416
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.17523
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.172663
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.172663
+            },
+            {
+              "filename": "024_3fd5f118eb04.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.171624
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.171524
+            },
+            {
+              "filename": "035_bd0b8eaa1e38.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.168427
+            },
+            {
+              "filename": "072_7532e20b3a82.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.168019
+            },
+            {
+              "filename": "eval_dark_02.jpg",
+              "rank": 20,
+              "relevant": false,
+              "score": 0.165454
+            }
+          ]
+        },
+        "city_night": {
+          "category": "city night photography",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.7877736340270853,
+            "ndcg_at_20": 0.7568030936966537,
+            "precision_at_10": 0.8,
+            "recall_at_20": 0.5555555555555556
+          },
+          "positive_count": 27,
+          "query": "city night photography",
+          "top_20": [
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.254338
+            },
+            {
+              "filename": "072_7532e20b3a82.jpg",
+              "rank": 2,
+              "relevant": false,
+              "score": 0.233143
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.232507
+            },
+            {
+              "filename": "030_790fd23570e0.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.226849
+            },
+            {
+              "filename": "042_22a8dc3da4ac.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.22621
+            },
+            {
+              "filename": "036_c8469d226791.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.219684
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 7,
+              "relevant": false,
+              "score": 0.217274
+            },
+            {
+              "filename": "049_49ff5ee1da69.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.217263
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.215972
+            },
+            {
+              "filename": "027_0fe667ea27f9.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.214919
+            },
+            {
+              "filename": "031_652aa3111696.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.214269
+            },
+            {
+              "filename": "009_490655e9e2e7.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.207464
+            },
+            {
+              "filename": "037_2eeac5cb0583.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.204659
+            },
+            {
+              "filename": "040_b8eaa39d6720.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.203792
+            },
+            {
+              "filename": "eval_bright_01.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.203525
+            },
+            {
+              "filename": "039_ed59405b1b1f.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.202038
+            },
+            {
+              "filename": "033_1bcb794cd740.jpg",
+              "rank": 17,
+              "relevant": true,
+              "score": 0.200378
+            },
+            {
+              "filename": "046_920056957b00.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.199415
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 19,
+              "relevant": true,
+              "score": 0.199069
+            },
+            {
+              "filename": "eval_dark_02.jpg",
+              "rank": 20,
+              "relevant": false,
+              "score": 0.197624
+            }
+          ]
+        },
+        "mountain_landscape": {
+          "category": "mountain travel landscape",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 1.0,
+            "ndcg_at_20": 0.9671350294324229,
+            "precision_at_10": 1.0,
+            "recall_at_20": 0.9047619047619048
+          },
+          "positive_count": 21,
+          "query": "mountain travel landscape",
+          "top_20": [
+            {
+              "filename": "060_6f6d80358091.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.210507
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.210081
+            },
+            {
+              "filename": "056_eb029c859755.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.206217
+            },
+            {
+              "filename": "058_8f397f811d13.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.20309
+            },
+            {
+              "filename": "063_8707c5776037.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.201736
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.198292
+            },
+            {
+              "filename": "068_fb53325bc956.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.198272
+            },
+            {
+              "filename": "066_e0ec462934e0.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.192682
+            },
+            {
+              "filename": "062_9d19a272280c.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.190022
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.189678
+            },
+            {
+              "filename": "064_3e1b77588ac2.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.187171
+            },
+            {
+              "filename": "054_c5ff34db3fb5.jpg",
+              "rank": 12,
+              "relevant": true,
+              "score": 0.180173
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.17742
+            },
+            {
+              "filename": "070_da8a0b6d619d.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.177234
+            },
+            {
+              "filename": "057_bcb5c3f99d47.jpg",
+              "rank": 15,
+              "relevant": true,
+              "score": 0.175994
+            },
+            {
+              "filename": "055_c3251c45e2aa.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.168719
+            },
+            {
+              "filename": "051_eacb43057bf3.jpg",
+              "rank": 17,
+              "relevant": true,
+              "score": 0.163553
+            },
+            {
+              "filename": "065_9e782b6fd4c7.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.161269
+            },
+            {
+              "filename": "032_8ecf08dcd954.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.156308
+            },
+            {
+              "filename": "069_541452427878.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.153791
+            }
+          ]
+        }
+      },
+      "query_language": "english"
+    },
+    {
+      "macro": {
+        "mrr": 1.0,
+        "ndcg_at_10": 0.7093122790613221,
+        "ndcg_at_20": 0.5391880346544605,
+        "precision_at_10": 0.6666666666666666,
+        "recall_at_20": 0.38399871733205065
+      },
+      "method": "lightweight-semantic-v1",
+      "per_query": {
+        "architecture": {
+          "category": "travel architecture",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.5926825204089028,
+            "ndcg_at_20": 0.44827372920788255,
+            "precision_at_10": 0.6,
+            "recall_at_20": 0.36363636363636365
+          },
+          "positive_count": 22,
+          "query": "旅行建筑",
+          "top_20": [
+            {
+              "filename": "001_302770d7dacd.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.607227
+            },
+            {
+              "filename": "eval_duplicate_01.jpg",
+              "rank": 2,
+              "relevant": false,
+              "score": 0.607227
+            },
+            {
+              "filename": "047_f36674032a5c.jpg",
+              "rank": 3,
+              "relevant": false,
+              "score": 0.606441
+            },
+            {
+              "filename": "051_eacb43057bf3.jpg",
+              "rank": 4,
+              "relevant": false,
+              "score": 0.572304
+            },
+            {
+              "filename": "012_0b8c21f5458c.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.556435
+            },
+            {
+              "filename": "013_da1ccc50a5ef.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.553725
+            },
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.551328
+            },
+            {
+              "filename": "018_054c7f980b54.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.541868
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.541215
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.541215
+            },
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 11,
+              "relevant": false,
+              "score": 0.539277
+            },
+            {
+              "filename": "057_bcb5c3f99d47.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.53217
+            },
+            {
+              "filename": "053_d25036d4bf2a.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.527145
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 14,
+              "relevant": false,
+              "score": 0.524962
+            },
+            {
+              "filename": "052_174b34677ba1.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.523008
+            },
+            {
+              "filename": "040_b8eaa39d6720.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.519843
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.519455
+            },
+            {
+              "filename": "014_80a6bb329d74.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.515841
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.514434
+            },
+            {
+              "filename": "017_edd30ff0db3e.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.513965
+            }
+          ]
+        },
+        "city_night": {
+          "category": "city night photography",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.905211635630449,
+            "ndcg_at_20": 0.6493972947978072,
+            "precision_at_10": 0.9,
+            "recall_at_20": 0.4074074074074074
+          },
+          "positive_count": 27,
+          "query": "城市夜景摄影",
+          "top_20": [
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.63938
+            },
+            {
+              "filename": "047_f36674032a5c.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.578741
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.562893
+            },
+            {
+              "filename": "009_490655e9e2e7.jpg",
+              "rank": 4,
+              "relevant": false,
+              "score": 0.556433
+            },
+            {
+              "filename": "042_22a8dc3da4ac.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.523385
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.511245
+            },
+            {
+              "filename": "024_3fd5f118eb04.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.50683
+            },
+            {
+              "filename": "030_790fd23570e0.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.506373
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.500374
+            },
+            {
+              "filename": "029_75311d39815f.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.492339
+            },
+            {
+              "filename": "001_302770d7dacd.jpg",
+              "rank": 11,
+              "relevant": false,
+              "score": 0.483672
+            },
+            {
+              "filename": "eval_duplicate_01.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.483672
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.482041
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 14,
+              "relevant": false,
+              "score": 0.472707
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.461894
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.461894
+            },
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.45971
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.45887
+            },
+            {
+              "filename": "040_b8eaa39d6720.jpg",
+              "rank": 19,
+              "relevant": true,
+              "score": 0.454938
+            },
+            {
+              "filename": "041_00aa49cb3758.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.450371
+            }
+          ]
+        },
+        "mountain_landscape": {
+          "category": "mountain travel landscape",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.6300426811446146,
+            "ndcg_at_20": 0.5198930799576919,
+            "precision_at_10": 0.5,
+            "recall_at_20": 0.38095238095238093
+          },
+          "positive_count": 21,
+          "query": "山地旅行风景",
+          "top_20": [
+            {
+              "filename": "062_9d19a272280c.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.59244
+            },
+            {
+              "filename": "063_8707c5776037.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.591036
+            },
+            {
+              "filename": "056_eb029c859755.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.577693
+            },
+            {
+              "filename": "064_3e1b77588ac2.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.520112
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 5,
+              "relevant": false,
+              "score": 0.442927
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 6,
+              "relevant": false,
+              "score": 0.442927
+            },
+            {
+              "filename": "eval_blur_02.jpg",
+              "rank": 7,
+              "relevant": false,
+              "score": 0.43609
+            },
+            {
+              "filename": "006_9c8d9e57757e.jpg",
+              "rank": 8,
+              "relevant": false,
+              "score": 0.433821
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.427501
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.42735
+            },
+            {
+              "filename": "070_da8a0b6d619d.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.412362
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.408303
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.394049
+            },
+            {
+              "filename": "065_9e782b6fd4c7.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.375667
+            },
+            {
+              "filename": "027_0fe667ea27f9.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.375568
+            },
+            {
+              "filename": "eval_duplicate_04.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.36763
+            },
+            {
+              "filename": "004_9a3b0cbbe3ff.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.36763
+            },
+            {
+              "filename": "030_790fd23570e0.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.364703
+            },
+            {
+              "filename": "032_8ecf08dcd954.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.363212
+            },
+            {
+              "filename": "046_920056957b00.jpg",
+              "rank": 20,
+              "relevant": false,
+              "score": 0.361454
+            }
+          ]
+        }
+      },
+      "query_language": "chinese"
+    },
+    {
+      "macro": {
+        "mrr": 1.0,
+        "ndcg_at_10": 0.7333223774769625,
+        "ndcg_at_20": 0.709508526205601,
+        "precision_at_10": 0.6666666666666666,
+        "recall_at_20": 0.5762385762385763
+      },
+      "method": "openclip-xlm-roberta-base-vit-b-32-laion5b-zh-bridge-v1",
+      "per_query": {
+        "architecture": {
+          "category": "travel architecture",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.601572065456638,
+            "ndcg_at_20": 0.49083344254692407,
+            "precision_at_10": 0.5,
+            "recall_at_20": 0.36363636363636365
+          },
+          "positive_count": 22,
+          "query": "旅行建筑",
+          "top_20": [
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.248067
+            },
+            {
+              "filename": "014_80a6bb329d74.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.226514
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 3,
+              "relevant": false,
+              "score": 0.212637
+            },
+            {
+              "filename": "015_d58c4cf46e4f.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.209112
+            },
+            {
+              "filename": "029_75311d39815f.jpg",
+              "rank": 5,
+              "relevant": false,
+              "score": 0.200563
+            },
+            {
+              "filename": "002_6c3a6da04446.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.196636
+            },
+            {
+              "filename": "eval_duplicate_02.jpg",
+              "rank": 7,
+              "relevant": false,
+              "score": 0.196636
+            },
+            {
+              "filename": "011_5cf58c0406f2.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.195415
+            },
+            {
+              "filename": "024_3fd5f118eb04.jpg",
+              "rank": 9,
+              "relevant": false,
+              "score": 0.191544
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.191322
+            },
+            {
+              "filename": "eval_dark_02.jpg",
+              "rank": 11,
+              "relevant": false,
+              "score": 0.188712
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.187133
+            },
+            {
+              "filename": "035_bd0b8eaa1e38.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.179432
+            },
+            {
+              "filename": "072_7532e20b3a82.jpg",
+              "rank": 14,
+              "relevant": false,
+              "score": 0.176406
+            },
+            {
+              "filename": "018_054c7f980b54.jpg",
+              "rank": 15,
+              "relevant": true,
+              "score": 0.175422
+            },
+            {
+              "filename": "009_490655e9e2e7.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.173947
+            },
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.173869
+            },
+            {
+              "filename": "048_3939a99c73c6.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.173653
+            },
+            {
+              "filename": "026_4c41b5c4a56e.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.173208
+            },
+            {
+              "filename": "020_408965518a0f.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.172792
+            }
+          ]
+        },
+        "city_night": {
+          "category": "city night photography",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.6620158551732016,
+            "ndcg_at_20": 0.7463660587232136,
+            "precision_at_10": 0.6,
+            "recall_at_20": 0.5555555555555556
+          },
+          "positive_count": 27,
+          "query": "城市夜景摄影",
+          "top_20": [
+            {
+              "filename": "029_75311d39815f.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.241018
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.232231
+            },
+            {
+              "filename": "072_7532e20b3a82.jpg",
+              "rank": 3,
+              "relevant": false,
+              "score": 0.225278
+            },
+            {
+              "filename": "035_bd0b8eaa1e38.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.225274
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 5,
+              "relevant": false,
+              "score": 0.225199
+            },
+            {
+              "filename": "024_3fd5f118eb04.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.222561
+            },
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 7,
+              "relevant": false,
+              "score": 0.222551
+            },
+            {
+              "filename": "eval_dark_02.jpg",
+              "rank": 8,
+              "relevant": false,
+              "score": 0.222366
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.220971
+            },
+            {
+              "filename": "043_27eac2979c6a.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.219796
+            },
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.217982
+            },
+            {
+              "filename": "049_49ff5ee1da69.jpg",
+              "rank": 12,
+              "relevant": true,
+              "score": 0.214865
+            },
+            {
+              "filename": "044_952d8cd6c02d.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.213998
+            },
+            {
+              "filename": "048_3939a99c73c6.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.21203
+            },
+            {
+              "filename": "009_490655e9e2e7.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.207135
+            },
+            {
+              "filename": "042_22a8dc3da4ac.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.204939
+            },
+            {
+              "filename": "039_ed59405b1b1f.jpg",
+              "rank": 17,
+              "relevant": true,
+              "score": 0.203268
+            },
+            {
+              "filename": "045_97237c6cfc32.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.203223
+            },
+            {
+              "filename": "036_c8469d226791.jpg",
+              "rank": 19,
+              "relevant": true,
+              "score": 0.196321
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.191051
+            }
+          ]
+        },
+        "mountain_landscape": {
+          "category": "mountain travel landscape",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.9363792118010481,
+            "ndcg_at_20": 0.8913260773466652,
+            "precision_at_10": 0.9,
+            "recall_at_20": 0.8095238095238095
+          },
+          "positive_count": 21,
+          "query": "山地旅行风景",
+          "top_20": [
+            {
+              "filename": "062_9d19a272280c.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.222322
+            },
+            {
+              "filename": "060_6f6d80358091.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.212475
+            },
+            {
+              "filename": "058_8f397f811d13.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.199848
+            },
+            {
+              "filename": "056_eb029c859755.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.199151
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.198968
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.197177
+            },
+            {
+              "filename": "057_bcb5c3f99d47.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.195741
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.194672
+            },
+            {
+              "filename": "069_541452427878.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.193771
+            },
+            {
+              "filename": "049_49ff5ee1da69.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.185333
+            },
+            {
+              "filename": "068_fb53325bc956.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.183621
+            },
+            {
+              "filename": "070_da8a0b6d619d.jpg",
+              "rank": 12,
+              "relevant": true,
+              "score": 0.17792
+            },
+            {
+              "filename": "064_3e1b77588ac2.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.173708
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.172888
+            },
+            {
+              "filename": "063_8707c5776037.jpg",
+              "rank": 15,
+              "relevant": true,
+              "score": 0.17135
+            },
+            {
+              "filename": "033_1bcb794cd740.jpg",
+              "rank": 16,
+              "relevant": false,
+              "score": 0.170678
+            },
+            {
+              "filename": "066_e0ec462934e0.jpg",
+              "rank": 17,
+              "relevant": true,
+              "score": 0.170284
+            },
+            {
+              "filename": "065_9e782b6fd4c7.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.168054
+            },
+            {
+              "filename": "012_0b8c21f5458c.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.158345
+            },
+            {
+              "filename": "055_c3251c45e2aa.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.158185
+            }
+          ]
+        }
+      },
+      "query_language": "chinese"
+    },
+    {
+      "macro": {
+        "mrr": 1.0,
+        "ndcg_at_10": 0.8009152899554285,
+        "ndcg_at_20": 0.7534341885041674,
+        "precision_at_10": 0.7333333333333334,
+        "recall_at_20": 0.6051787718454386
+      },
+      "method": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2",
+      "per_query": {
+        "architecture": {
+          "category": "travel architecture",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.5637884576902256,
+            "ndcg_at_20": 0.46839461410398214,
+            "precision_at_10": 0.4,
+            "recall_at_20": 0.3181818181818182
+          },
+          "positive_count": 22,
+          "query": "旅行建筑",
+          "top_20": [
+            {
+              "filename": "016_825407755eb2.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.210947
+            },
+            {
+              "filename": "015_d58c4cf46e4f.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.200527
+            },
+            {
+              "filename": "014_80a6bb329d74.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.195366
+            },
+            {
+              "filename": "011_5cf58c0406f2.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.185629
+            },
+            {
+              "filename": "035_bd0b8eaa1e38.jpg",
+              "rank": 5,
+              "relevant": false,
+              "score": 0.183983
+            },
+            {
+              "filename": "044_952d8cd6c02d.jpg",
+              "rank": 6,
+              "relevant": false,
+              "score": 0.180044
+            },
+            {
+              "filename": "026_4c41b5c4a56e.jpg",
+              "rank": 7,
+              "relevant": false,
+              "score": 0.172381
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 8,
+              "relevant": false,
+              "score": 0.17109
+            },
+            {
+              "filename": "041_00aa49cb3758.jpg",
+              "rank": 9,
+              "relevant": false,
+              "score": 0.170675
+            },
+            {
+              "filename": "eval_dark_02.jpg",
+              "rank": 10,
+              "relevant": false,
+              "score": 0.16977
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 11,
+              "relevant": false,
+              "score": 0.169295
+            },
+            {
+              "filename": "036_c8469d226791.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.168433
+            },
+            {
+              "filename": "048_3939a99c73c6.jpg",
+              "rank": 13,
+              "relevant": false,
+              "score": 0.167032
+            },
+            {
+              "filename": "010_714cb2e0d764.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.164645
+            },
+            {
+              "filename": "038_acc5b352a05c.jpg",
+              "rank": 15,
+              "relevant": false,
+              "score": 0.164166
+            },
+            {
+              "filename": "021_077dd084a1e2.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.163966
+            },
+            {
+              "filename": "eval_duplicate_03.jpg",
+              "rank": 17,
+              "relevant": false,
+              "score": 0.162996
+            },
+            {
+              "filename": "003_97b4ada6b34a.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.162996
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 19,
+              "relevant": false,
+              "score": 0.160336
+            },
+            {
+              "filename": "043_27eac2979c6a.jpg",
+              "rank": 20,
+              "relevant": false,
+              "score": 0.159669
+            }
+          ]
+        },
+        "city_night": {
+          "category": "city night photography",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 0.8389574121760601,
+            "ndcg_at_20": 0.8253454427932339,
+            "precision_at_10": 0.8,
+            "recall_at_20": 0.5925925925925926
+          },
+          "positive_count": 27,
+          "query": "城市夜景摄影",
+          "top_20": [
+            {
+              "filename": "030_790fd23570e0.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.247624
+            },
+            {
+              "filename": "042_22a8dc3da4ac.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.246943
+            },
+            {
+              "filename": "025_e5acabdb111b.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.241363
+            },
+            {
+              "filename": "eval_bright_01.jpg",
+              "rank": 4,
+              "relevant": false,
+              "score": 0.23609
+            },
+            {
+              "filename": "028_c814e49a5937.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.234183
+            },
+            {
+              "filename": "027_0fe667ea27f9.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.225419
+            },
+            {
+              "filename": "036_c8469d226791.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.223893
+            },
+            {
+              "filename": "049_49ff5ee1da69.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.220805
+            },
+            {
+              "filename": "009_490655e9e2e7.jpg",
+              "rank": 9,
+              "relevant": false,
+              "score": 0.219546
+            },
+            {
+              "filename": "023_53eabe29deee.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.219006
+            },
+            {
+              "filename": "040_b8eaa39d6720.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.214374
+            },
+            {
+              "filename": "072_7532e20b3a82.jpg",
+              "rank": 12,
+              "relevant": false,
+              "score": 0.211369
+            },
+            {
+              "filename": "037_2eeac5cb0583.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.209603
+            },
+            {
+              "filename": "031_652aa3111696.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.208145
+            },
+            {
+              "filename": "035_bd0b8eaa1e38.jpg",
+              "rank": 15,
+              "relevant": true,
+              "score": 0.202803
+            },
+            {
+              "filename": "038_acc5b352a05c.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.201976
+            },
+            {
+              "filename": "033_1bcb794cd740.jpg",
+              "rank": 17,
+              "relevant": true,
+              "score": 0.201634
+            },
+            {
+              "filename": "034_78209f5ec935.jpg",
+              "rank": 18,
+              "relevant": true,
+              "score": 0.200426
+            },
+            {
+              "filename": "039_ed59405b1b1f.jpg",
+              "rank": 19,
+              "relevant": true,
+              "score": 0.199289
+            },
+            {
+              "filename": "071_0d9df8caf9ed.jpg",
+              "rank": 20,
+              "relevant": false,
+              "score": 0.198586
+            }
+          ]
+        },
+        "mountain_landscape": {
+          "category": "mountain travel landscape",
+          "metrics": {
+            "mrr": 1.0,
+            "ndcg_at_10": 1.0,
+            "ndcg_at_20": 0.9665625086152865,
+            "precision_at_10": 1.0,
+            "recall_at_20": 0.9047619047619048
+          },
+          "positive_count": 21,
+          "query": "山地旅行风景",
+          "top_20": [
+            {
+              "filename": "060_6f6d80358091.jpg",
+              "rank": 1,
+              "relevant": true,
+              "score": 0.236283
+            },
+            {
+              "filename": "056_eb029c859755.jpg",
+              "rank": 2,
+              "relevant": true,
+              "score": 0.213903
+            },
+            {
+              "filename": "062_9d19a272280c.jpg",
+              "rank": 3,
+              "relevant": true,
+              "score": 0.203215
+            },
+            {
+              "filename": "067_f5f529c7572a.jpg",
+              "rank": 4,
+              "relevant": true,
+              "score": 0.202719
+            },
+            {
+              "filename": "061_34bf86f3afc9.jpg",
+              "rank": 5,
+              "relevant": true,
+              "score": 0.192839
+            },
+            {
+              "filename": "068_fb53325bc956.jpg",
+              "rank": 6,
+              "relevant": true,
+              "score": 0.190942
+            },
+            {
+              "filename": "066_e0ec462934e0.jpg",
+              "rank": 7,
+              "relevant": true,
+              "score": 0.185965
+            },
+            {
+              "filename": "063_8707c5776037.jpg",
+              "rank": 8,
+              "relevant": true,
+              "score": 0.184257
+            },
+            {
+              "filename": "054_c5ff34db3fb5.jpg",
+              "rank": 9,
+              "relevant": true,
+              "score": 0.18381
+            },
+            {
+              "filename": "058_8f397f811d13.jpg",
+              "rank": 10,
+              "relevant": true,
+              "score": 0.183182
+            },
+            {
+              "filename": "050_30f4e9935e6f.jpg",
+              "rank": 11,
+              "relevant": true,
+              "score": 0.171028
+            },
+            {
+              "filename": "059_8ac9419f4801.jpg",
+              "rank": 12,
+              "relevant": true,
+              "score": 0.16895
+            },
+            {
+              "filename": "070_da8a0b6d619d.jpg",
+              "rank": 13,
+              "relevant": true,
+              "score": 0.168313
+            },
+            {
+              "filename": "064_3e1b77588ac2.jpg",
+              "rank": 14,
+              "relevant": true,
+              "score": 0.167588
+            },
+            {
+              "filename": "057_bcb5c3f99d47.jpg",
+              "rank": 15,
+              "relevant": true,
+              "score": 0.165841
+            },
+            {
+              "filename": "055_c3251c45e2aa.jpg",
+              "rank": 16,
+              "relevant": true,
+              "score": 0.158952
+            },
+            {
+              "filename": "051_eacb43057bf3.jpg",
+              "rank": 17,
+              "relevant": true,
+              "score": 0.158674
+            },
+            {
+              "filename": "049_49ff5ee1da69.jpg",
+              "rank": 18,
+              "relevant": false,
+              "score": 0.15389
+            },
+            {
+              "filename": "065_9e782b6fd4c7.jpg",
+              "rank": 19,
+              "relevant": true,
+              "score": 0.152926
+            },
+            {
+              "filename": "069_541452427878.jpg",
+              "rank": 20,
+              "relevant": true,
+              "score": 0.13762
+            }
+          ]
+        }
+      },
+      "query_language": "chinese"
+    }
+  ],
+  "scope": {
+    "candidate_images": 81,
+    "cutoffs": [
+      10,
+      20
+    ],
+    "labels": "Wikimedia download search terms; not independent human relevance judgments",
+    "proxy_labeled_images": 72,
+    "queries_per_language": 3,
+    "ranking_contract": "production score rounded to 6 decimals, then quality descending, then stable photo UUID"
+  },
+  "timings_seconds": {
+    "lightweight_image_mean": 0.06512616543217137,
+    "lightweight_image_total": 5.275219400005881,
+    "openclip_image_batch_total": 49.84843389998423,
+    "openclip_image_mean": 0.6154127641973361,
+    "text_groups": {
+      "lightweight_chinese": 0.00038590002804994583,
+      "lightweight_english": 0.0023015000042505562,
+      "openclip_legacy_bridge_chinese": 0.3421502999844961,
+      "openclip_raw_chinese": 0.3186975999851711,
+      "openclip_raw_english": 0.30523250001715496
+    }
+  },
+  "validation": {
+    "lightweight_images": {
+      "all_finite": true,
+      "count": 81,
+      "dimension": 16,
+      "norm_max": 1.0000001192092896,
+      "norm_min": 0.9999998807907104
+    },
+    "openclip_images": {
+      "all_finite": true,
+      "count": 81,
+      "dimension": 512,
+      "norm_max": 1.0000001192092896,
+      "norm_min": 0.9999998807907104
+    },
+    "raw_chinese_queries_preserved": [
+      true,
+      true,
+      true
+    ]
+  }
+}
