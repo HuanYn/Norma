@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import logging
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncIterator, Literal
 
 from fastapi import FastAPI, HTTPException, Query, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from ai.config import load_settings
@@ -146,9 +147,57 @@ app = FastAPI(
     description="Local domain API for multimodal photo understanding and selection.",
     lifespan=lifespan,
 )
-app.mount(
-    "/media", StaticFiles(directory=settings.data_dir, check_dir=False), name="media"
+
+_MEDIA_COMPONENT_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,254}\Z")
+_JPEG_SUFFIXES = frozenset({".jpg", ".jpeg"})
+
+
+def _derived_jpeg(*relative_parts: str) -> FileResponse:
+    """Serve one generated JPEG without exposing the rest of ``data_dir``."""
+
+    if not all(_MEDIA_COMPONENT_PATTERN.fullmatch(part) for part in relative_parts):
+        raise HTTPException(status_code=404, detail="media not found")
+    if Path(relative_parts[-1]).suffix.casefold() not in _JPEG_SUFFIXES:
+        raise HTTPException(status_code=404, detail="media not found")
+
+    data_root = settings.data_dir.resolve()
+    allowed_root = data_root.joinpath(*relative_parts[:-1]).resolve()
+    try:
+        allowed_root.relative_to(data_root)
+        candidate = allowed_root.joinpath(relative_parts[-1]).resolve(strict=True)
+        candidate.relative_to(allowed_root)
+    except (FileNotFoundError, OSError, RuntimeError, ValueError):
+        raise HTTPException(status_code=404, detail="media not found") from None
+
+    if not candidate.is_file() or candidate.suffix.casefold() not in _JPEG_SUFFIXES:
+        raise HTTPException(status_code=404, detail="media not found")
+    return FileResponse(
+        candidate,
+        media_type="image/jpeg",
+        headers={"X-Content-Type-Options": "nosniff"},
+    )
+
+
+@app.get(
+    "/media/thumbnails/{album_id}/{filename}",
+    response_class=FileResponse,
+    include_in_schema=False,
 )
+def album_thumbnail(album_id: str, filename: str) -> FileResponse:
+    return _derived_jpeg("thumbnails", album_id, filename)
+
+
+@app.get(
+    "/media/faces/{provider}/{album_id}/thumbnails/{filename}",
+    response_class=FileResponse,
+    include_in_schema=False,
+)
+def face_thumbnail(
+    provider: str,
+    album_id: str,
+    filename: str,
+) -> FileResponse:
+    return _derived_jpeg("faces", provider, album_id, "thumbnails", filename)
 
 
 @app.get("/health", response_model=HealthResponse)
