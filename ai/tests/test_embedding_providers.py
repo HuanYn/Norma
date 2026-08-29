@@ -6,7 +6,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from ai.config import load_settings
 from ai.index.embedding import (
+    OPENCLIP_LEGACY_BRIDGE_PROVIDER_NAME,
+    OPENCLIP_RAW_PROVIDER_NAME,
     EmbeddingProvider,
     create_embedding_provider,
     embedding_provider_capabilities,
@@ -44,10 +47,36 @@ def test_openclip_factory_is_lazy_and_versioned(tmp_path: Path) -> None:
         device="cpu",
         batch_size=4,
     )
-    assert provider.name == "openclip-xlm-roberta-base-vit-b-32-laion5b-v1"
+    assert provider.name == OPENCLIP_RAW_PROVIDER_NAME
     assert provider.dimension == 512
     assert provider.batch_size == 4
+    assert provider.query_mode == "raw-multilingual"
     assert provider._model is None
+
+
+def test_openclip_factory_aliases_select_distinct_query_versions(
+    tmp_path: Path,
+) -> None:
+    for alias in ("openclip", "openclip-multilingual", OPENCLIP_RAW_PROVIDER_NAME):
+        provider = create_embedding_provider(alias, cache_dir=tmp_path, device="cpu")
+        assert provider.name == OPENCLIP_RAW_PROVIDER_NAME
+        assert provider._prepare_text_query("城市 夜景") == "城市 夜景"
+
+    for alias in (
+        "openclip-legacy-bridge",
+        "openclip-multilingual-legacy",
+        "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+    ):
+        provider = create_embedding_provider(alias, cache_dir=tmp_path, device="cpu")
+        assert provider.name == OPENCLIP_LEGACY_BRIDGE_PROVIDER_NAME
+        assert provider._prepare_text_query("城市夜景摄影").startswith("a photo of ")
+
+
+def test_default_provider_is_model_backed_multilingual(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("NORMA_EMBEDDING_PROVIDER", raising=False)
+    assert load_settings().embedding_provider == "openclip-multilingual"
 
 
 def test_openclip_output_validation_normalizes_and_rejects_bad_shapes() -> None:
@@ -64,12 +93,34 @@ def test_openclip_output_validation_normalizes_and_rejects_bad_shapes() -> None:
         _validated_rows(np.zeros((1, 512), dtype=np.float32), 512)
 
 
-def test_provider_capabilities_keep_optional_model_explicit() -> None:
+def test_provider_capabilities_distinguish_default_baseline_and_legacy() -> None:
     capabilities = embedding_provider_capabilities("openclip-multilingual")
-    assert capabilities[0]["model_backed"] is False
-    assert capabilities[1]["model_backed"] is True
-    assert capabilities[1]["active"] is True
-    assert capabilities[1]["install_extra"] == "multimodal"
+    by_id = {item["id"]: item for item in capabilities}
+
+    baseline = by_id["lightweight"]
+    assert baseline["model_backed"] is False
+    assert baseline["default"] is False
+    assert baseline["baseline"] is True
+    assert baseline["legacy"] is False
+
+    default = by_id["openclip-multilingual"]
+    assert default["name"] == OPENCLIP_RAW_PROVIDER_NAME
+    assert default["model_backed"] is True
+    assert default["default"] is True
+    assert default["baseline"] is False
+    assert default["legacy"] is False
+    assert default["query_mode"] == "raw-multilingual"
+    assert default["active"] is True
+    assert default["install_extra"] == "multimodal"
+
+    legacy = by_id["openclip-legacy-bridge"]
+    assert legacy["name"] == OPENCLIP_LEGACY_BRIDGE_PROVIDER_NAME
+    assert legacy["model_backed"] is True
+    assert legacy["default"] is False
+    assert legacy["baseline"] is False
+    assert legacy["legacy"] is True
+    assert legacy["query_mode"] == "legacy-chinese-keyword-bridge"
+    assert legacy["active"] is False
 
 
 def test_huggingface_cache_is_scoped_to_norma(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -68,16 +69,27 @@ def _album(tmp_path: Path) -> tuple[Database, str, dict[str, str]]:
             path = embedding_dir / f"{name}.npy"
             normalized = vector / np.linalg.norm(vector)
             np.save(path, normalized.astype(np.float32), allow_pickle=False)
+            source_sha256 = hashlib.sha256(
+                (folder / f"{name}.jpg").read_bytes()
+            ).hexdigest()
             connection.execute(
                 """
                 UPDATE photos SET quality_score = ?, similarity_group = ?,
                                   auto_reject = ?, embedding_path = ?,
                                   embedding_provider = 'fake-selection-v1',
                                   embedding_source_size = file_size,
-                                  embedding_source_mtime_ns = source_mtime_ns
+                                  embedding_source_mtime_ns = source_mtime_ns,
+                                  embedding_source_sha256 = ?
                 WHERE id = ?
                 """,
-                (quality, group, reject, str(path.resolve()), ids[name]),
+                (
+                    quality,
+                    group,
+                    reject,
+                    str(path.resolve()),
+                    source_sha256,
+                    ids[name],
+                ),
             )
     return database, indexed.album_id, ids
 

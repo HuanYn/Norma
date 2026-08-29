@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import hashlib
+import os
 import shutil
 import threading
 import time
+from io import BytesIO
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -92,7 +95,7 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
             connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
                 0
             ]
-            == 9
+            == 14
         )
 
 
@@ -262,7 +265,7 @@ def test_base_refresh_clears_stale_group_when_a_member_is_deleted(
     assert tuple(row) == (1, None)
 
 
-def test_failed_rescan_preserves_existing_photo_and_all_derived_rows(
+def test_failed_rescan_preserves_photo_but_invalidates_unverifiable_derived_rows(
     tmp_path: Path,
 ) -> None:
     album = tmp_path / "album"
@@ -282,12 +285,17 @@ def test_failed_rescan_preserves_existing_photo_and_all_derived_rows(
             UPDATE photos SET embedding_path = ?, embedding_provider = 'test',
                 embedding_source_size = file_size,
                 embedding_source_mtime_ns = source_mtime_ns,
+                embedding_source_sha256 = ?,
                 face_provider = 'test-face', face_source_size = file_size,
                 face_source_mtime_ns = source_mtime_ns,
                 face_processed = 1, face_count = 1
             WHERE id = ?
             """,
-            (str(embedding_path), photo.id),
+            (
+                str(embedding_path),
+                hashlib.sha256(source.read_bytes()).hexdigest(),
+                photo.id,
+            ),
         )
         connection.execute(
             "INSERT INTO person_clusters(id, album_id, label) VALUES ('cluster', ?, 'Person')",
@@ -330,11 +338,65 @@ def test_failed_rescan_preserves_existing_photo_and_all_derived_rows(
                 0
             ],
         )
-    assert stored["embedding_path"] == str(embedding_path)
-    assert stored["embedding_provider"] == "test"
-    assert stored["face_processed"] == 1
-    assert stored["face_count"] == 1
-    assert counts == (1, 1, 1)
+    assert stored["embedding_path"] is None
+    assert stored["embedding_provider"] is None
+    assert stored["face_processed"] == 0
+    assert stored["face_count"] == 0
+    assert counts == (0, 0, 1)
+
+
+def test_same_size_restored_mtime_content_change_invalidates_embedding_cache(
+    tmp_path: Path,
+) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    source = album / "photo.jpg"
+    _jpeg(source, (45, 95, 145))
+    data_dir = tmp_path / "data"
+    database = Database(data_dir / "norma.db")
+    indexer = AlbumIndexer(database, data_dir)
+    initial = indexer.index(album)
+    photo = initial.photos[0]
+    original = source.read_bytes()
+    original_stat = source.stat()
+    embedding_path = data_dir / "bound.npy"
+    embedding_path.write_bytes(b"derived")
+    with database.connect() as connection:
+        connection.execute(
+            """
+            UPDATE photos SET embedding_path = ?, embedding_provider = 'test',
+                embedding_source_size = file_size,
+                embedding_source_mtime_ns = source_mtime_ns,
+                embedding_source_sha256 = ?
+            WHERE id = ?
+            """,
+            (
+                str(embedding_path),
+                hashlib.sha256(original).hexdigest(),
+                photo.id,
+            ),
+        )
+
+    replacement = bytearray(original)
+    replacement[100] ^= 1
+    with Image.open(BytesIO(replacement)) as image:
+        image.load()
+    source.write_bytes(replacement)
+    os.utime(source, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
+    assert source.stat().st_size == original_stat.st_size
+    assert source.stat().st_mtime_ns == original_stat.st_mtime_ns
+
+    indexer.index(album)
+
+    with database.connect() as connection:
+        row = connection.execute(
+            """SELECT embedding_path, embedding_provider,
+                      embedding_source_size, embedding_source_mtime_ns,
+                      embedding_source_sha256
+               FROM photos WHERE id = ?""",
+            (photo.id,),
+        ).fetchone()
+    assert tuple(row) == (None, None, None, None, None)
 
 
 def test_overlapping_parent_and_child_albums_keep_independent_photo_rows(

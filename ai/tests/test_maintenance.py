@@ -243,6 +243,17 @@ class BlockingWarmableProvider(WarmableProvider):
         self.loaded = True
 
 
+class FailingLoadedProvider(WarmableProvider):
+    def __init__(self) -> None:
+        super().__init__()
+        self.calls = 0
+
+    def warmup(self) -> None:
+        self.calls += 1
+        self.loaded = True
+        raise RuntimeError("tokenizer validation failed")
+
+
 def test_background_warmup_submission_is_idempotent() -> None:
     provider = BlockingWarmableProvider()
     manager = EmbeddingWarmupManager(lambda: provider)
@@ -264,6 +275,52 @@ def test_background_warmup_submission_is_idempotent() -> None:
     assert status.loaded is True
     assert status.finished_at is not None
     assert provider.calls == 1
+
+
+def test_loaded_provider_is_not_ready_until_warmup_probe_succeeds() -> None:
+    provider = FailingLoadedProvider()
+    manager = EmbeddingWarmupManager(lambda: provider)
+
+    first = manager.submit()
+    assert first.warmup_state == "loading"
+    for _ in range(100):
+        failed = manager.status()
+        if failed.warmup_state == "failed":
+            break
+        time.sleep(0.01)
+
+    assert failed.loaded is True
+    assert failed.warmup_state == "failed"
+    assert "tokenizer validation failed" in str(failed.error)
+
+    retry = manager.submit()
+    assert retry.warmup_state == "loading"
+    for _ in range(100):
+        failed_again = manager.status()
+        if failed_again.warmup_state == "failed":
+            break
+        time.sleep(0.01)
+    assert failed_again.warmup_state == "failed"
+    assert provider.calls == 2
+
+
+def test_loaded_provider_in_new_manager_remains_idle_until_probed() -> None:
+    provider = WarmableProvider()
+    provider.loaded = True
+    manager = EmbeddingWarmupManager(lambda: provider)
+
+    status = manager.status()
+    assert status.loaded is True
+    assert status.warmup_state == "idle"
+
+    submitted = manager.submit()
+    assert submitted.warmup_state in {"loading", "ready"}
+    for _ in range(100):
+        ready = manager.status()
+        if ready.warmup_state == "ready":
+            break
+        time.sleep(0.01)
+    assert ready.warmup_state == "ready"
 
 
 def test_prewarm_environment_flag(monkeypatch) -> None:

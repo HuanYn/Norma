@@ -31,7 +31,13 @@ def test_catalog_restores_album_counts_and_paginated_photos(
     monkeypatch.setattr(
         app_module,
         "settings",
-        Settings(host="127.0.0.1", port=8765, data_dir=data_dir, log_level="INFO"),
+        Settings(
+            host="127.0.0.1",
+            port=8765,
+            data_dir=data_dir,
+            log_level="INFO",
+            embedding_provider="lightweight",
+        ),
     )
 
     with TestClient(app_module.app) as client:

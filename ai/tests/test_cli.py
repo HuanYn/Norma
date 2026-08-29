@@ -22,7 +22,12 @@ def _result(capsys) -> object:
     return payload["result"]
 
 
-def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) -> None:
+def test_python_cli_runs_prepare_search_and_selection(
+    tmp_path: Path, capsys, monkeypatch
+) -> None:
+    # The product default is model-backed OpenCLIP. Keep this deterministic CLI
+    # integration test on the explicit zero-download baseline.
+    monkeypatch.setenv("NORMA_EMBEDDING_PROVIDER", "lightweight")
     album = tmp_path / "album"
     album.mkdir()
     _jpeg(album / "night-1.jpg", (5, 12, 35), 0)
@@ -99,11 +104,25 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
     assert all(photo["embedded"] for photo in photos)
 
     assert (
-        main(["--data-dir", str(data_dir), "search", album_id, "night", "--limit", "2"])
+        main(
+            [
+                "--data-dir",
+                str(data_dir),
+                "search",
+                album_id,
+                "night",
+                "--limit",
+                "2",
+                "--user-id",
+                "portfolio",
+            ]
+        )
         == 0
     )
     search = _result(capsys)
     assert search["mode"] == "text"
+    assert search["user_id"] == "portfolio"
+    assert search["algorithm"] == "legacy-cosine-v1"
     assert len(search["matches"]) == 2
 
     assert (
@@ -174,12 +193,16 @@ def test_python_cli_runs_prepare_search_and_selection(tmp_path: Path, capsys) ->
                 "select",
                 album_id,
                 "Select 1 photo of night, include blurry",
+                "--user-id",
+                "portfolio",
             ]
         )
         == 0
     )
     selection = _result(capsys)
     assert selection["feasible"]
+    assert selection["user_id"] == "portfolio"
+    assert selection["algorithm"] == "legacy-fixed-weight-selection-v1"
     assert len(selection["selected"]) == 1
 
     assert main(["--data-dir", str(data_dir), "album", album_id]) == 0

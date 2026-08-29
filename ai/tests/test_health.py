@@ -22,7 +22,8 @@ def test_health_initializes_sqlite(tmp_path: Path, monkeypatch) -> None:
     assert response.json() == {
         "service": "norma-ai",
         "status": "ok",
-        "schema_version": 9,
+        "schema_version": 14,
+        "embedding_provider": app_module.embedding_provider().name,
         "face_provider": canonical_face_provider_name(
             app_module.settings.face_provider
         ),
@@ -48,8 +49,15 @@ def test_capabilities_are_explicit(tmp_path: Path, monkeypatch) -> None:
     assert [item["id"] for item in provider_items] == [
         "lightweight",
         "openclip-multilingual",
+        "openclip-legacy-bridge",
     ]
-    assert provider_items[0]["active"] is True
+    assert provider_items[0]["baseline"] is True
+    assert provider_items[0]["active"] is False
+    assert provider_items[1]["default"] is True
+    assert provider_items[1]["query_mode"] == "raw-multilingual"
+    assert provider_items[1]["active"] is True
+    assert provider_items[2]["legacy"] is True
+    assert provider_items[2]["active"] is False
 
 
 def test_migrates_existing_v1_database(tmp_path: Path) -> None:
@@ -87,7 +95,7 @@ def test_migrates_existing_v1_database(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert {"phash", "dhash", "auto_reject", "metadata_json"} <= columns
 
 
@@ -120,7 +128,7 @@ def test_migrates_existing_v2_jobs_table(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert {
         "stage",
         "progress",
@@ -155,7 +163,7 @@ def test_migrates_existing_v3_photo_provider_column(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert "embedding_provider" in columns
 
 
@@ -185,11 +193,12 @@ def test_migrates_existing_v4_embedding_fingerprint_columns(tmp_path: Path) -> N
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert {
         "source_mtime_ns",
         "embedding_source_size",
         "embedding_source_mtime_ns",
+        "embedding_source_sha256",
     } <= columns
 
 
@@ -220,7 +229,7 @@ def test_migrates_existing_v5_evaluation_tables(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert {
         "evaluation_queries",
         "relevance_judgments",
@@ -254,7 +263,7 @@ def test_migrates_existing_v6_face_freshness_columns(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert {
         "face_provider",
         "face_source_size",
@@ -289,7 +298,7 @@ def test_migrates_existing_v7_maintenance_audit_table(tmp_path: Path) -> None:
         version = migrated.execute(
             "SELECT MAX(version) FROM schema_migrations"
         ).fetchone()[0]
-    assert version == 9
+    assert version == 14
     assert "maintenance_runs" in tables
 
 
@@ -404,4 +413,4 @@ def test_v9_photo_identity_migration_preserves_references_and_allows_overlap(
             == 1
         )
         assert migrated.execute("PRAGMA foreign_key_check").fetchall() == []
-    assert database.current_version() == 9
+    assert database.current_version() == 14

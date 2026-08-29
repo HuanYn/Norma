@@ -42,6 +42,7 @@ def _configure(tmp_path: Path, monkeypatch) -> tuple[Path, Path]:
             port=8765,
             data_dir=data_dir,
             log_level="INFO",
+            embedding_provider="lightweight",
             face_provider="opencv-haar",
         ),
     )

@@ -255,6 +255,44 @@ def test_unchanged_reindex_reuses_complete_embedding_cache(
     assert second["reused_count"] == 2
 
 
+def test_legacy_null_source_digest_recomputes_vector_before_cache_reuse(
+    tmp_path: Path, monkeypatch
+) -> None:
+    album = tmp_path / "album"
+    album.mkdir()
+    _scene(album / "one.jpg", (10, 20, 50), (80, 120, 190))
+    _scene(album / "two.jpg", (30, 80, 45), (120, 190, 90))
+
+    with _client(tmp_path, monkeypatch) as client:
+        indexed = client.post("/albums/index", json={"folder": str(album)}).json()
+        album_id = indexed["album_id"]
+        assert client.post(f"/albums/{album_id}/embed").status_code == 200
+        database = app_module.database
+        with database.connect() as connection:
+            photo_id = connection.execute(
+                "SELECT id FROM photos WHERE album_id = ? ORDER BY id LIMIT 1",
+                (album_id,),
+            ).fetchone()["id"]
+            connection.execute(
+                "UPDATE photos SET embedding_source_sha256 = NULL WHERE id = ?",
+                (photo_id,),
+            )
+
+        repaired = client.post(f"/albums/{album_id}/embed").json()
+        reused = client.post(f"/albums/{album_id}/embed").json()
+
+    assert repaired["computed_count"] == 1
+    assert repaired["reused_count"] == 1
+    assert reused["computed_count"] == 0
+    assert reused["reused_count"] == 2
+    with database.connect() as connection:
+        digest = connection.execute(
+            "SELECT embedding_source_sha256 FROM photos WHERE id = ?", (photo_id,)
+        ).fetchone()[0]
+    assert len(digest) == 64
+    assert digest == digest.lower()
+
+
 def test_reindex_recomputes_only_changed_photo(tmp_path: Path, monkeypatch) -> None:
     album = tmp_path / "album"
     album.mkdir()
