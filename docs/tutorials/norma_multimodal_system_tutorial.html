@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Norma 多模态照片系统：实现、算法与面试讲解</title>
+
+<meta name="generator" content="ARIS render-html (academic, v1)">
+<meta name="aris:source-path" content="docs\tutorials\norma_multimodal_system_tutorial.md">
+<meta name="aris:source-sha256" content="93b675cd1ded18fe40b02878dfd05268d582ad40ab65fa8b2f253e45c490d4c3">
+<meta name="aris:generated-at" content="2026-08-29 12:06 UTC">
+
+<!-- MathJax 3 -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-light.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+
+
+<style>
+:root {
+  --bg: #fdfcf7;
+  --bg-soft: #f4f1ea;
+  --bg-code: #f8f5ec;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-muted: #6b6b6b;
+  --primary: #1a4a8c;
+  --primary-soft: #2d6cb8;
+  --accent: #b8390e;
+  --warn: #b45309;
+  --warn-bg: #fef3c7;
+  --info-bg: #dbeafe;
+  --good-bg: #d1fae5;
+  --good: #065f46;
+  --bad-bg: #fee2e2;
+  --bad: #991b1b;
+  --border: #d6d0c0;
+  --border-soft: #e8e3d5;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Source Serif Pro", "Source Serif 4", "Crimson Pro", "Georgia", "Songti SC", "STSong", serif;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+.layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 48px;
+  padding: 40px 32px;
+}
+
+nav.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  font-size: 13px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border-soft);
+  padding-right: 16px;
+}
+nav.toc h3 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+nav.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: toc; }
+nav.toc ol li { margin: 5px 0; counter-increment: toc; }
+nav.toc ol li::before { content: counter(toc) ". "; color: var(--ink-muted); margin-right: 4px; }
+nav.toc a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted transparent;
+}
+nav.toc a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+nav.toc ul { list-style: none; padding-left: 14px; margin: 3px 0; font-size: 12px; }
+nav.toc ul li::before { content: "→ "; color: var(--border); }
+
+main { min-width: 0; }
+
+header.hero {
+  border-bottom: 3px double var(--primary);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+}
+header.hero .eyebrow {
+  color: var(--accent);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+header.hero h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+header.hero .subtitle {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+  font-style: italic;
+}
+header.hero .byline {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+header.hero .byline strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+header.hero .meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 14px;
+}
+header.hero .meta span strong { color: var(--ink-soft); }
+header.hero .meta code {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 11px;
+  background: var(--bg-soft);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+}
+
+h2 {
+  font-size: 24px;
+  margin: 44px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 700;
+}
+h2 .num { color: var(--primary); font-weight: 600; margin-right: 8px; }
+h3 { font-size: 19px; margin: 28px 0 10px; color: var(--primary); font-weight: 600; }
+h4 { font-size: 16px; margin: 20px 0 8px; color: var(--ink); font-weight: 600; }
+
+p { margin: 10px 0; }
+ul, ol { padding-left: 22px; margin: 10px 0; }
+ul li, ol li { margin: 4px 0; }
+ul li::marker { color: var(--primary); }
+
+strong { color: var(--accent); font-weight: 600; }
+em { color: var(--ink-soft); }
+
+a { color: var(--primary); }
+a:hover { color: var(--accent); }
+
+code:not(.hljs) {
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", "Consolas", monospace;
+  font-size: 0.86em;
+  background: var(--bg-code);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-soft);
+  color: var(--accent);
+}
+
+pre {
+  background: #fafaf6;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  padding: 0;
+  overflow-x: auto;
+  border-radius: 4px;
+  margin: 14px 0;
+}
+pre code, pre code.hljs {
+  background: transparent !important;
+  display: block;
+  padding: 14px 18px !important;
+  font-size: 13px;
+  line-height: 1.55;
+  font-family: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+  color: var(--ink);
+}
+pre.diagram {
+  background: #f9f6ed;
+  border-left: 4px solid var(--accent);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.callout {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  font-size: 15px;
+}
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.callout-info { background: var(--info-bg); border-left-color: var(--primary); }
+.callout-info .callout-title { color: var(--primary); }
+.callout-warn { background: var(--warn-bg); border-left-color: var(--warn); }
+.callout-warn .callout-title { color: var(--warn); }
+.callout-good { background: var(--good-bg); border-left-color: var(--good); }
+.callout-good .callout-title { color: var(--good); }
+.callout-bad { background: var(--bad-bg); border-left-color: var(--bad); }
+.callout-bad .callout-title { color: var(--bad); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+thead { background: var(--primary); color: white; }
+th, td {
+  text-align: left;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+th { font-weight: 600; font-size: 13px; letter-spacing: 0.02em; }
+tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--bg-soft); }
+
+details.qa, details {
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  margin: 10px 0;
+  padding: 0;
+}
+details summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary);
+  list-style: none;
+  user-select: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "▸ ";
+  margin-right: 4px;
+  display: inline-block;
+  transition: transform 0.15s;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details[open] summary { border-bottom: 1px solid var(--border-soft); }
+details > :not(summary) { padding: 10px 14px; }
+details p:first-of-type { margin-top: 8px; }
+
+mjx-container[display="true"] { margin: 12px 0 !important; }
+
+footer.aris-footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+footer.aris-footer a { color: var(--ink-muted); border-bottom: 1px dotted var(--border); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 20px; padding: 20px 16px; }
+  nav.toc {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border-soft);
+    padding-right: 0;
+    padding-bottom: 14px;
+  }
+  header.hero h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+}
+@media print {
+  nav.toc { display: none; }
+  .layout { grid-template-columns: 1fr; padding: 0; }
+  body { background: white; }
+  header.hero { border-bottom-color: var(--ink); }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <h3>Contents</h3>
+  <ol>
+<li><a href="#0-先用一分钟说清项目">0. 先用一分钟说清项目</a>
+<ul>
+<li><a href="#01-哪些是学习算法哪些不是">0.1 哪些是学习算法，哪些不是</a></li>
+<li><a href="#02-不能说成什么">0.2 不能说成什么</a></li>
+</ul>
+</li>
+<li><a href="#1-系统总览">1. 系统总览</a>
+<ul>
+<li><a href="#11-目录结构对应关系">1.1 目录结构对应关系</a></li>
+<li><a href="#12-一次请求如何经过系统">1.2 一次请求如何经过系统</a></li>
+</ul>
+</li>
+<li><a href="#2-启动配置与本地边界">2. 启动、配置与本地边界</a>
+<ul>
+<li><a href="#21-启动命令为什么是-python--m-ai-web">2.1 启动命令为什么是 `python -m ai web`</a></li>
+<li><a href="#22-为什么默认只监听-127001">2.2 为什么默认只监听 127.0.0.1</a></li>
+<li><a href="#23-windows-数值运行时问题">2.3 Windows 数值运行时问题</a></li>
+</ul>
+</li>
+<li><a href="#3-相册导入先快后重">3. 相册导入：先快后重</a>
+<ul>
+<li><a href="#31-为什么打开目录不自动跑所有模型">3.1 为什么打开目录不自动跑所有模型</a></li>
+<li><a href="#32-稳定-id">3.2 稳定 ID</a></li>
+<li><a href="#33-并发扫描">3.3 并发扫描</a></li>
+<li><a href="#34-aba-与源文件快照">3.4 ABA 与源文件快照</a></li>
+<li><a href="#35-旧图暂时损坏时为什么不删除数据库行">3.5 旧图暂时损坏时为什么不删除数据库行</a></li>
+<li><a href="#36-复杂度">3.6 复杂度</a></li>
+</ul>
+</li>
+<li><a href="#4-sqlite-后台任务进度与取消">4. SQLite 后台任务、进度与取消</a>
+<ul>
+<li><a href="#41-为什么-job-必须持久化">4.1 为什么 job 必须持久化</a></li>
+<li><a href="#42-外层串行内层有界并发">4.2 外层串行，内层有界并发</a></li>
+<li><a href="#43-百分比不是前端假动画">4.3 百分比不是前端假动画</a></li>
+<li><a href="#44-取消语义">4.4 取消语义</a></li>
+<li><a href="#45-重启语义">4.5 重启语义</a></li>
+</ul>
+</li>
+<li><a href="#5-质量评分可解释-baseline">5. 质量评分：可解释 baseline</a>
+<ul>
+<li><a href="#51-特征">5.1 特征</a></li>
+<li><a href="#52-评分公式">5.2 评分公式</a></li>
+<li><a href="#53-autoreject-的含义">5.3 auto_reject 的含义</a></li>
+<li><a href="#54-为什么不把它说成-learned-iqa">5.4 为什么不把它说成 learned IQA</a></li>
+</ul>
+</li>
+<li><a href="#6-phashdhash-近重复">6. pHash/dHash 近重复</a>
+<ul>
+<li><a href="#61-phash">6.1 pHash</a></li>
+<li><a href="#62-dhash">6.2 dHash</a></li>
+<li><a href="#63-双阈值与并查集">6.3 双阈值与并查集</a></li>
+<li><a href="#64-复杂度与缺点">6.4 复杂度与缺点</a></li>
+</ul>
+</li>
+<li><a href="#7-人脸yunet--sface--约束聚类">7. 人脸：YuNet + SFace + 约束聚类</a>
+<ul>
+<li><a href="#71-为什么旧-haar--dct-效果差">7.1 为什么旧 Haar + DCT 效果差</a></li>
+<li><a href="#72-新管线">7.2 新管线</a></li>
+<li><a href="#73-模型身份">7.3 模型身份</a></li>
+<li><a href="#74-第一阶段受约束凝聚">7.4 第一阶段受约束凝聚</a></li>
+<li><a href="#75-prototype-attachment">7.5 prototype attachment</a></li>
+<li><a href="#76-为什么不用-k-means">7.6 为什么不用 K-means</a></li>
+<li><a href="#77-边界">7.7 边界</a></li>
+</ul>
+</li>
+<li><a href="#8-multilingual-openclip-检索">8. multilingual OpenCLIP 检索</a>
+<ul>
+<li><a href="#81-为什么选-multilingual-openclip">8.1 为什么选 multilingual OpenCLIP</a></li>
+<li><a href="#82-归一化与-cosine">8.2 归一化与 cosine</a></li>
+<li><a href="#83-为什么现在不用向量数据库">8.3 为什么现在不用向量数据库</a></li>
+<li><a href="#84-provider-fingerprint">8.4 provider fingerprint</a></li>
+<li><a href="#85-fail-closed-本地加载">8.5 fail-closed 本地加载</a></li>
+<li><a href="#86-已有旧相册为什么提示重新索引">8.6 已有旧相册为什么提示重新索引</a></li>
+</ul>
+</li>
+<li><a href="#9-67d-bayesian-contextual-preference">9. 67D Bayesian contextual preference</a>
+<ul>
+<li><a href="#91-为什么不直接微调-openclip">9.1 为什么不直接微调 OpenCLIP</a></li>
+<li><a href="#92-67-维从哪里来">9.2 67 维从哪里来</a></li>
+<li><a href="#93-学习式-utility">9.3 学习式 utility</a></li>
+<li><a href="#94-pairwise-likelihood">9.4 pairwise likelihood</a></li>
+<li><a href="#95-map-目标">9.5 MAP 目标</a></li>
+<li><a href="#96-优化与-laplace">9.6 优化与 Laplace</a></li>
+<li><a href="#97-事件语义">9.7 事件语义</a></li>
+<li><a href="#98-不可变事件与模型版本">9.8 不可变事件与模型版本</a></li>
+<li><a href="#99-为什么这不是-dpo">9.9 为什么这不是 DPO</a></li>
+</ul>
+</li>
+<li><a href="#10-capu-pdrr-mc-主动提问">10. CAPU-PDRR-MC 主动提问</a>
+<ul>
+<li><a href="#101-为什么-entropy-不够">10.1 为什么 entropy 不够</a></li>
+<li><a href="#102-当前决策">10.2 当前决策</a></li>
+<li><a href="#103-shortlist">10.3 shortlist</a></li>
+<li><a href="#104-完整-pdrr">10.4 完整 PDRR</a></li>
+<li><a href="#105-数值稳定性">10.5 数值稳定性</a></li>
+<li><a href="#106-复杂度">10.6 复杂度</a></li>
+<li><a href="#107-科研-claim-边界">10.7 科研 claim 边界</a></li>
+</ul>
+</li>
+<li><a href="#11-searchselection-与-replacement">11. Search、Selection 与 Replacement</a>
+<ul>
+<li><a href="#111-search">11.1 Search</a></li>
+<li><a href="#112-selection">11.2 Selection</a></li>
+<li><a href="#113-为什么硬约束不交给模型">11.3 为什么硬约束不交给模型</a></li>
+<li><a href="#114-replacement">11.4 Replacement</a></li>
+<li><a href="#115-决策快照">11.5 决策快照</a></li>
+</ul>
+</li>
+<li><a href="#12-grounded-multimodal-rag">12. Grounded multimodal RAG</a>
+<ul>
+<li><a href="#121-为什么它是真-rag">12.1 为什么它是真 RAG</a></li>
+<li><a href="#122-三层绑定">12.2 三层绑定</a></li>
+<li><a href="#123-prompt-信任边界">12.3 prompt 信任边界</a></li>
+<li><a href="#124-模型输出合同">12.4 模型输出合同</a></li>
+<li><a href="#125-严格解析与校验">12.5 严格解析与校验</a></li>
+<li><a href="#126-qwen-本地运行时">12.6 Qwen 本地运行时</a></li>
+<li><a href="#127-图像预算">12.7 图像预算</a></li>
+<li><a href="#128-并发">12.8 并发</a></li>
+<li><a href="#129-它没有解决什么">12.9 它没有解决什么</a></li>
+</ul>
+</li>
+<li><a href="#13-sqlite-v14-与审计">13. SQLite v14 与审计</a>
+<ul>
+<li><a href="#131-重要表">13.1 重要表</a></li>
+<li><a href="#132-迁移思路">13.2 迁移思路</a></li>
+<li><a href="#133-为什么-ragruns-用-without-rowid">13.3 为什么 rag_runs 用 WITHOUT ROWID</a></li>
+</ul>
+</li>
+<li><a href="#14-实验结果怎么讲">14. 实验结果怎么讲</a>
+<ul>
+<li><a href="#141-openclip-proxy">14.1 OpenCLIP proxy</a></li>
+<li><a href="#142-contextual-preference-受控实验">14.2 contextual preference 受控实验</a></li>
+<li><a href="#143-pdrr-受控实验">14.3 PDRR 受控实验</a></li>
+<li><a href="#144-qwen-functional-smoke">14.4 Qwen functional smoke</a></li>
+<li><a href="#145-数据可复现性边界">14.5 数据可复现性边界</a></li>
+</ul>
+</li>
+<li><a href="#15-目前有了什么还差什么">15. 目前有了什么，还差什么</a>
+<ul>
+<li><a href="#151-已完成">15.1 已完成</a></li>
+<li><a href="#152-还没有">15.2 还没有</a></li>
+<li><a href="#153-下一步优先级">15.3 下一步优先级</a></li>
+</ul>
+</li>
+<li><a href="#16-面试讲解模板">16. 面试讲解模板</a>
+<ul>
+<li><a href="#161-30-秒版本">16.1 30 秒版本</a></li>
+<li><a href="#162-两分钟版本">16.2 两分钟版本</a></li>
+</ul>
+</li>
+<li><a href="#17-面试题库">17. 面试题库</a>
+<ul>
+<li><a href="#l1-1这个项目到底用了哪些学习算法">⭐ L1-1：这个项目到底用了哪些学习算法？</a></li>
+<li><a href="#l1-2为什么说它不是纯规则系统">⭐ L1-2：为什么说它不是纯规则系统？</a></li>
+<li><a href="#l1-3为什么说它不是-dpo">⭐ L1-3：为什么说它不是 DPO？</a></li>
+<li><a href="#l1-4为什么使用-openclip">⭐ L1-4：为什么使用 OpenCLIP？</a></li>
+<li><a href="#l1-5为什么归一化-embedding">⭐ L1-5：为什么归一化 embedding？</a></li>
+<li><a href="#l1-6为什么打开目录时不自动做人脸和语义索引">⭐ L1-6：为什么打开目录时不自动做人脸和语义索引？</a></li>
+<li><a href="#l1-7质量评分是不是-ai">⭐ L1-7：质量评分是不是 AI？</a></li>
+<li><a href="#l1-8rag-为什么是真的-rag">⭐ L1-8：RAG 为什么是真的 RAG？</a></li>
+<li><a href="#l1-9用户照片会上传吗">⭐ L1-9：用户照片会上传吗？</a></li>
+<li><a href="#l1-10为什么不用-faiss">⭐ L1-10：为什么不用 FAISS？</a></li>
+<li><a href="#l2-167d-是怎么组成的">⭐⭐ L2-1：67D 是怎么组成的？</a></li>
+<li><a href="#l2-2为什么-utility-还要保留-cosine">⭐⭐ L2-2：为什么 utility 还要保留 cosine？</a></li>
+<li><a href="#l2-3map-的-prior-是什么">⭐⭐ L2-3：MAP 的 prior 是什么？</a></li>
+<li><a href="#l2-4laplace-covariance-有什么用">⭐⭐ L2-4：Laplace covariance 有什么用？</a></li>
+<li><a href="#l2-5tieskipbothbad-为什么不训练">⭐⭐ L2-5：tie、skip、both_bad 为什么不训练？</a></li>
+<li><a href="#l2-6pdrr-与-entropy-的区别">⭐⭐ L2-6：PDRR 与 entropy 的区别？</a></li>
+<li><a href="#l2-7人脸为什么不用-single-link">⭐⭐ L2-7：人脸为什么不用 single-link？</a></li>
+<li><a href="#l2-8如何防止模型升级后复用旧向量">⭐⭐ L2-8：如何防止模型升级后复用旧向量？</a></li>
+<li><a href="#l2-9rag-如何防止向量与实际图片不一致">⭐⭐ L2-9：RAG 如何防止向量与实际图片不一致？</a></li>
+<li><a href="#l2-10为什么硬约束不让-preference-model-学">⭐⭐ L2-10：为什么硬约束不让 preference model 学？</a></li>
+<li><a href="#l3-1推导-pairwise-map-的梯度与-hessian">⭐⭐⭐ L3-1：推导 pairwise MAP 的梯度与 Hessian。</a></li>
+<li><a href="#l3-2pdrr-为什么可能出现负的-monte-carlo-估计">⭐⭐⭐ L3-2：PDRR 为什么可能出现负的 Monte Carlo 估计？</a></li>
+<li><a href="#l3-3如何保证同一-preference-suggestion-只训练一次">⭐⭐⭐ L3-3：如何保证同一 preference suggestion 只训练一次？</a></li>
+<li><a href="#l3-4grounded-rag-的-integrity-与-semantic-correctness-有什么区别">⭐⭐⭐ L3-4：Grounded RAG 的 integrity 与 semantic correctness 有什么区别？</a></li>
+<li><a href="#l3-5如果扩展到百万照片你会怎么改">⭐⭐⭐ L3-5：如果扩展到百万照片，你会怎么改？</a></li>
+</ul>
+</li>
+<li><a href="#18-面试前最后检查">18. 面试前最后检查</a>
+</li>
+<li><a href="#19-一段话总结">19. 一段话总结</a>
+</li>
+</ol>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Norma Engineering &amp; Interview Notes</div>
+  <h1>Norma 多模态照片系统：实现、算法与面试讲解</h1>
+
+
+  <div class="meta">
+    <span><strong>Source:</strong> <code>docs\tutorials\norma_multimodal_system_tutorial.md</code></span>
+    <span><strong>SHA256:</strong> <code>93b675cd1ded</code></span>
+    <span><strong>Rendered:</strong> 2026-08-29 12:06 UTC</span>
+
+  </div>
+</header>
+
+<h1 id="norma-多模态照片系统实现算法与面试讲解">Norma 多模态照片系统：实现、算法与面试讲解</h1>
+<blockquote><p>适用版本：SQLite schema v14，默认 multilingual OpenCLIP，YuNet + SFace，67D Bayesian contextual preference，CAPU-PDRR-MC，以及本地 Qwen3-VL Grounded RAG。 这份文档的目标不是堆名词，而是让你能从一次真实请求出发，解释数据经过了哪些模块、为什么这样设计、哪里发生了学习、哪些地方仍是规则，以及实验能支持到什么程度。</p></blockquote>
+<h2 id="0-先用一分钟说清项目">0. 先用一分钟说清项目</h2>
+<p>Norma 是一个本地优先的智能照片整理网页。 用户用一条命令启动：</p>
+<pre><code class="language-powershell">python -m ai web</code></pre>
+<p>随后打开：</p>
+<pre><code class="language-text">http://127.0.0.1:8765</code></pre>
+<p>用户选择本地照片目录后，系统先快速完成目录发现、元数据读取和缩略图生成。 质量分析、语义索引和人脸分组都由用户点击按钮后才运行。 搜索时，冻结的 multilingual OpenCLIP 把中文或英文查询与照片映射到同一个 512 维向量空间。 用户的 A/B 选择会训练一个本地 67 维 Bayesian contextual residual adapter。 这个小模型会影响搜索、结构化选片、替换和 RAG 检索排序。 CAPU-PDRR-MC 利用后验不确定性，选择最可能降低最终选片决策后悔值的 A/B 问题。 Grounded RAG 先检索 Top-K 原图，再把真实像素交给本地 Qwen3-VL。 模型只允许返回 claims 和 citation IDs；最终答案与 provenance 由服务器构造并严格验证。</p>
+<h3 id="01-哪些是学习算法哪些不是">0.1 哪些是学习算法，哪些不是</h3>
+<table><thead><tr><th>模块</th><th>类型</th><th style="text-align:right">是否在 Norma 内训练</th><th>面试时怎么说</th></tr></thead><tbody><tr><td>multilingual OpenCLIP</td><td>预训练多模态模型</td><td style="text-align:right">否，冻结推理</td><td>学习式跨模态表征</td></tr><tr><td>YuNet</td><td>预训练人脸检测</td><td style="text-align:right">否，冻结推理</td><td>学习式检测器</td></tr><tr><td>SFace</td><td>预训练人脸识别表征</td><td style="text-align:right">否，冻结推理</td><td>学习式 128D identity embedding</td></tr><tr><td>Qwen3-VL-2B</td><td>预训练视觉语言模型</td><td style="text-align:right">否，冻结推理</td><td>本地多模态生成器</td></tr><tr><td>67D preference adapter</td><td>Bayesian pairwise 模型</td><td style="text-align:right">是，本地反馈在线更新</td><td>项目中真正会学习用户偏好的模块</td></tr><tr><td>CAPU-PDRR-MC</td><td>Bayesian active acquisition</td><td style="text-align:right">不直接训练模型</td><td>用后验不确定性决定下一题问什么</td></tr><tr><td>质量评分</td><td>手工图像特征 + 规则加权</td><td style="text-align:right">否</td><td>可解释 baseline，不是 learned IQA</td></tr><tr><td>pHash/dHash</td><td>感知哈希</td><td style="text-align:right">否</td><td>近重复检测，不是语义检索</td></tr><tr><td>人脸约束聚类</td><td>确定性聚类</td><td style="text-align:right">否</td><td>使用 learned embedding 的规则决策层</td></tr><tr><td>exact-K / group cap</td><td>组合优化约束</td><td style="text-align:right">否</td><td>硬业务约束，不应伪装成学习</td></tr></tbody></table>
+<h3 id="02-不能说成什么">0.2 不能说成什么</h3>
+<ul><li>不是 DPO。</li><li>不是 SFT。</li><li>不是 LoRA。</li><li>没有微调 OpenCLIP、Qwen、YuNet 或 SFace。</li><li>不是“所有模块都是深度学习”。</li><li>RAG 的校验器不证明 claim 被图片语义蕴含。</li><li>SQLite 的 append-only 约束不是外部签名的密码学账本。</li></ul>
+<p>最诚实的一句话是：</p>
+<blockquote><p>Norma 把冻结的多模态基础模型、可解释的本地 Bayesian 偏好学习、决策感知主动提问、硬约束选片和引用受约束的本地多模态 RAG 组合成了一条可审计的照片工作流。</p></blockquote>
+<h2 id="1-系统总览">1. 系统总览</h2>
+<p><img src="../../figures/norma_multimodal_architecture.png" alt="Norma 多模态系统总览" /> 图中蓝色模块使用预训练模型或本地学习模型。 黄色模块是传统算法与确定性决策。 绿色模块负责快照、缓存、持久化与审计完整性。</p>
+<h3 id="11-目录结构对应关系">1.1 目录结构对应关系</h3>
+<table><thead><tr><th>责任</th><th>主要代码</th></tr></thead><tbody><tr><td>命令行与网页启动</td><td><code>ai/cli.py</code>、<code>ai/__main__.py</code></td></tr><tr><td>HTTP API</td><td><code>ai/app.py</code>、<code>ai/schemas.py</code></td></tr><tr><td>SQLite 与迁移</td><td><code>ai/storage.py</code></td></tr><tr><td>持久化后台任务</td><td><code>ai/jobs.py</code></td></tr><tr><td>相册扫描</td><td><code>ai/index/scanner.py</code></td></tr><tr><td>质量与近重复</td><td><code>ai/index/quality.py</code>、<code>ai/index/similarity.py</code></td></tr><tr><td>OpenCLIP provider</td><td><code>ai/index/openclip_provider.py</code>、<code>ai/index/openclip_identity.py</code></td></tr><tr><td>向量索引与检索</td><td><code>ai/retrieval/search.py</code></td></tr><tr><td>人脸 provider 与聚类</td><td><code>ai/people/provider.py</code>、<code>ai/people/indexer.py</code></td></tr><tr><td>偏好特征与训练</td><td><code>ai/preferences/contextual.py</code>、<code>ai/preferences/service.py</code></td></tr><tr><td>运行时打分</td><td><code>ai/preferences/runtime.py</code></td></tr><tr><td>主动提问</td><td><code>ai/preferences/acquisition.py</code>、<code>suggestion_service.py</code></td></tr><tr><td>结构化选择与替换</td><td><code>ai/selection/service.py</code>、<code>replacement.py</code></td></tr><tr><td>Grounded RAG</td><td><code>ai/rag/service.py</code>、<code>engine.py</code>、<code>providers.py</code></td></tr><tr><td>Qwen 本地运行时</td><td><code>ai/rag/transformers_runtime.py</code></td></tr><tr><td>Vue 网页</td><td><code>src/App.vue</code>、<code>src/styles.css</code></td></tr></tbody></table>
+<h3 id="12-一次请求如何经过系统">1.2 一次请求如何经过系统</h3>
+<p>以查询“夜晚的城市建筑”为例：</p>
+<ol><li>Vue 将查询发送到 FastAPI。</li><li>OpenCLIP 文本塔生成 512D 单位向量。</li><li>检索服务读取相册中当前 provider 对应的 512D 图像向量。</li><li>精确点积得到 cosine 分数。</li><li>如果本地存在兼容的 67D 偏好后验，再加入 preference residual。</li><li>Search 返回排序结果。</li><li>Selection 在同一 learned utility 上叠加 exact-K、质量门和相似组上限。</li><li>RAG 则冻结 Top-K 的候选摘要、embedding <code>.npy</code> SHA 和原始文件 bytes SHA。</li><li>Qwen3-VL 读取真实图像，只返回 claims 与 citations。</li><li>服务端验证引用白名单和所有 provenance，再构造规范答案。</li></ol>
+<h2 id="2-启动配置与本地边界">2. 启动、配置与本地边界</h2>
+<h3 id="21-启动命令为什么是-python--m-ai-web">2.1 启动命令为什么是 <code>python -m ai web</code></h3>
+<p><code>python -m ai</code> 会执行包的 <code>__main__.py</code>，再进入 CLI。 <code>web</code> 子命令启动 Uvicorn 和 FastAPI。 这也是为什么下面的命令是错误的：</p>
+<pre><code class="language-powershell">python-m -ai web</code></pre>
+<p>PowerShell 会把 <code>python-m</code> 当作一个不存在的命令。 正确写法中 <code>python</code>、<code>-m</code>、<code>ai</code>、<code>web</code> 之间都有空格。</p>
+<h3 id="22-为什么默认只监听-127001">2.2 为什么默认只监听 127.0.0.1</h3>
+<p>系统处理本地照片、人脸 embedding 和偏好事件。 当前 API 没有登录认证。 因此默认安全模型是可信本机、单进程、loopback 服务。 不能直接把它绑定到 <code>0.0.0.0</code> 后公开到局域网或互联网。 派生图片访问也只开放两类 JPEG 路由：</p>
+<ul><li><code>/media/thumbnails/{album_id}/{filename}</code></li><li><code>/media/faces/{provider}/{album_id}/thumbnails/{filename}</code></li></ul>
+<p>数据库、OpenCLIP <code>.npy</code>、SFace descriptor 和任意非 JPEG 文件都不应由 HTTP 暴露。</p>
+<h3 id="23-windows-数值运行时问题">2.3 Windows 数值运行时问题</h3>
+<p>Anaconda NumPy 与 PyTorch 可能各自加载一套 Intel OpenMP。 这不是普通 Python 异常，而可能直接 native abort。 Norma 在 <code>ai</code> 最早入口选择 <code>MKL_THREADING_LAYER=SEQUENTIAL</code>。 OpenCLIP/Qwen 加载前还会拒绝：</p>
+<ul><li>显式非 <code>SEQUENTIAL</code>；</li><li>truthy <code>KMP_DUPLICATE_LIB_OK</code>；</li><li>已加载的 <code>mkl_intel_thread*.dll</code>；</li><li>非 Torch 来源的第二份 <code>libiomp5md.dll</code>。</li></ul>
+<p>如果宿主程序先导入了不兼容的 NumPy backend，再导入 Norma，系统会 fail closed。 它不会假装能在同一进程中安全卸载原生 DLL。</p>
+<h2 id="3-相册导入先快后重">3. 相册导入：先快后重</h2>
+<h3 id="31-为什么打开目录不自动跑所有模型">3.1 为什么打开目录不自动跑所有模型</h3>
+<p>早期版本把扫描、质量、embedding 和人脸串成一个长任务。 对上千张照片，用户会长时间停在“Preparing locally”。 当前网页打开目录时发送：</p>
+<pre><code class="language-json">{
+  &quot;include_quality&quot;: false,
+  &quot;include_embeddings&quot;: false,
+  &quot;include_people&quot;: false
+}</code></pre>
+<p>因此关键路径只做：</p>
+<ul><li>发现 JPG/JPEG；</li><li>读取 EXIF 方向、尺寸和拍摄时间；</li><li>计算源 SHA-256；</li><li>生成最长边 480 的 JPEG 预览；</li><li>写入 SQLite 相册快照。</li></ul>
+<p>质量、语义和人脸都由按钮单独启动。 这是一种 progressive computation 设计。</p>
+<h3 id="32-稳定-id">3.2 稳定 ID</h3>
+<p>相册和照片使用 UUIDv5，而不是随机 UUIDv4。 相册 ID 由规范化目录路径派生。 照片 ID 由相册 ID 与源路径派生。 因此同一目录重复导入会得到稳定 ID。 稳定 ID 对以下功能非常重要：</p>
+<ul><li>缓存复用；</li><li>相关性标注；</li><li>preference event；</li><li>selection audit；</li><li>RAG citation。</li></ul>
+<h3 id="33-并发扫描">3.3 并发扫描</h3>
+<p><code>AlbumIndexer</code> 默认最多 4 个 worker。 in-flight future 被限制在 <code>2 × workers</code>。 这样不会一次性提交 1400 个 Future。 worker 只做单张图片处理，不访问 SQLite，也不写 job 状态。 主线程负责：</p>
+<ul><li>恢复原始路径顺序；</li><li>更新进度；</li><li>检查取消；</li><li>最终持久化。</li></ul>
+<p>所以并行完成顺序不会改变数据库顺序或测试结果。</p>
+<h3 id="34-aba-与源文件快照">3.4 ABA 与源文件快照</h3>
+<p>只比较 size 和 mtime 不够。 攻击者或外部程序可以替换文件内容，再恢复相同大小和时间戳。 Norma 同时绑定：</p>
+<pre><code class="language-text">source_size + source_mtime_ns + source_sha256</code></pre>
+<p>图片读取前后还会再次检查 stat。 如果文件在解码期间变化，本次结果不会提交。</p>
+<h3 id="35-旧图暂时损坏时为什么不删除数据库行">3.5 旧图暂时损坏时为什么不删除数据库行</h3>
+<p>相机复制未完成、网络盘短暂不可读或 JPEG 被部分写入时，扫描可能失败。 如果路径仍存在且数据库里有上一份完整记录，系统保留旧快照并报告错误。 只有目录中真正缺失的成员才被视为删除。 这避免一次暂时性 I/O 错误级联删除：</p>
+<ul><li>photo row；</li><li>embedding；</li><li>faces；</li><li>relevance judgment；</li><li>selection provenance。</li></ul>
+<h3 id="36-复杂度">3.6 复杂度</h3>
+<p>设目录项数为 $E$，总源文件字节为 $B$，图片像素数为 $P_i$。 目录发现约为：</p>
+<div class="math-display">$$ O(E) $$</div>
+<p>完整 SHA 校验约为：</p>
+<div class="math-display">$$ O(B) $$</div>
+<p>首次解码与缩略图约为：</p>
+<div class="math-display">$$ O\left(\sum_i P_i\right) $$</div>
+<p>缓存命中会省掉部分解码和派生计算，但为了内容完整性仍可能读取完整文件做 SHA。</p>
+<h2 id="4-sqlite-后台任务进度与取消">4. SQLite 后台任务、进度与取消</h2>
+<h3 id="41-为什么-job-必须持久化">4.1 为什么 job 必须持久化</h3>
+<p>如果任务状态只放在 Python 内存：</p>
+<ul><li>刷新网页后进度消失；</li><li>服务重启后不知道任务到哪里；</li><li>无法审计失败阶段；</li><li>cancel/completed 竞态难以处理。</li></ul>
+<p>Norma 将 job 状态写入 SQLite。 主要字段包括：</p>
+<ul><li>status；</li><li>stage；</li><li>progress；</li><li>completed_units；</li><li>total_units；</li><li>cancel_requested；</li><li>result_json；</li><li>error；</li><li>created/started/finished 时间。</li></ul>
+<h3 id="42-外层串行内层有界并发">4.2 外层串行，内层有界并发</h3>
+<p><code>PrepareJobManager</code> 的外层线程池只有一个 worker。 所以不会同时对同一块磁盘启动多个重型相册任务。 AlbumIndexer 内部仍可使用最多 4 个线程并行处理照片。 这是两层并发控制：</p>
+<pre><code class="language-text">任务级：1
+照片级：≤4</code></pre>
+<h3 id="43-百分比不是前端假动画">4.3 百分比不是前端假动画</h3>
+<p>后端回调提供真实 <code>completed/total</code>。 前端每 650 ms 轮询一次 job。 进度写 SQLite 做了节流，避免每张图都产生一次事务。 典型触发条件：</p>
+<ul><li>已完成；</li><li>至少前进 5%；</li><li>经过 0.25 秒心跳；</li><li>或前进至少 1% 且至少经过 0.05 秒。</li></ul>
+<h3 id="44-取消语义">4.4 取消语义</h3>
+<p>取消是 cooperative cancellation，不是强杀线程。 系统在以下边界检查：</p>
+<ul><li>照片之间；</li><li>embedding batch 之间；</li><li>分析阶段之间；</li><li>数据库提交前。</li></ul>
+<p>正在运行的一张图或一个模型 batch 会先结束。 相册完整快照只有在全部扫描成功且提交前未取消时才替换旧数据库状态。</p>
+<h3 id="45-重启语义">4.5 重启语义</h3>
+<p>服务重启后：</p>
+<ul><li>queued job 会重新排队；</li><li>之前 running 的 job 会标记为 interrupted/failed；</li><li>不会伪造“从任意 Python 栈位置继续”。</li></ul>
+<p>前端 localStorage 只保存活跃 job ID。 SQLite 才是真相源。</p>
+<h2 id="5-质量评分可解释-baseline">5. 质量评分：可解释 baseline</h2>
+<h3 id="51-特征">5.1 特征</h3>
+<p>图片最长边先缩到 768。 系统提取：</p>
+<ul><li>Laplacian 方差：清晰度；</li><li>灰度均值：亮度；</li><li>灰度标准差：对比度；</li><li>像素值 ≥250：过曝比例；</li><li>像素值 ≤5：欠曝比例；</li><li>256-bin 灰度熵：信息量；</li><li>原图最长边：分辨率。</li></ul>
+<h3 id="52-评分公式">5.2 评分公式</h3>
+<p>五个 component 都映射到 \([0,1]\)。</p>
+<div class="math-display">$$ Q=100(0.36S+0.23E+0.17C+0.14H+0.10R) $$</div>
+<p>其中：</p>
+<ul><li>$S$：sharpness；</li><li>$E$：exposure；</li><li>$C$：contrast；</li><li>$H$：entropy；</li><li>$R$：resolution。</li></ul>
+<h3 id="53-autoreject-的含义">5.3 auto_reject 的含义</h3>
+<p>只有这些严重信号会触发 auto_reject：</p>
+<ul><li>very_blurry；</li><li>underexposed；</li><li>overexposed；</li><li>low_information。</li></ul>
+<p>它不会删除原图。 它只是 UI 折叠和结构化选择的硬门控信号。</p>
+<h3 id="54-为什么不把它说成-learned-iqa">5.4 为什么不把它说成 learned IQA</h3>
+<p>权重和阈值由工程规则设定，没有训练数据和 optimizer。 它无法理解“艺术性虚化”“刻意剪影”“高调摄影”。 求职项目中正确说法是：</p>
+<blockquote><p>我保留了一个便宜、可解释的规则 baseline；下一步会用 learned IQA/aesthetic 模型做同一公开协议下的 ablation，而不是把规则结果包装成深度学习。</p></blockquote>
+<h2 id="6-phashdhash-近重复">6. pHash/dHash 近重复</h2>
+<h3 id="61-phash">6.1 pHash</h3>
+<ol><li>转灰度。</li><li>resize 到 32×32。</li><li>做二维 DCT。</li><li>取左上 8×8 低频块。</li><li>以中位数二值化为 64 bit。</li></ol>
+<h3 id="62-dhash">6.2 dHash</h3>
+<ol><li>转灰度。</li><li>resize 到 9×8。</li><li>比较每行相邻像素。</li><li>得到 64 bit。</li></ol>
+<h3 id="63-双阈值与并查集">6.3 双阈值与并查集</h3>
+<p>两张照片只有同时满足：</p>
+<pre><code class="language-text">pHash Hamming ≤ 7
+dHash Hamming ≤ 9</code></pre>
+<p>才建立边。 所有边用 union-find 合成 connected components。 单例不生成 similarity group。</p>
+<h3 id="64-复杂度与缺点">6.4 复杂度与缺点</h3>
+<p>全量两两比较是：</p>
+<div class="math-display">$$ O(N^2) $$</div>
+<p>它适合个人相册规模，但不适合百万级图库。 并查集还有 single-link 链风险：</p>
+<pre><code class="language-text">A 接近 B
+B 接近 C
+A 未必接近 C</code></pre>
+<p>未来可以用 LSH/BK-tree 先召回候选，再做严格 pairwise 验证。</p>
+<h2 id="7-人脸yunet--sface--约束聚类">7. 人脸：YuNet + SFace + 约束聚类</h2>
+<h3 id="71-为什么旧-haar--dct-效果差">7.1 为什么旧 Haar + DCT 效果差</h3>
+<p>旧实现的问题不是把阈值从 0.985 改成 0.95 就能解决。 根因有三层：</p>
+<ol><li>Haar frontal detector 对侧脸、低头、远景和遮挡召回差。</li><li>79D DCT/HSV 是手工外观描述，不是身份 embedding。</li><li>single-link 聚类既会严重拆分，也可能被桥接误合并。</li></ol>
+<p>所以正确升级顺序是先换检测与表征，再重做聚类。</p>
+<h3 id="72-新管线">7.2 新管线</h3>
+<ol><li>EXIF 校正并转 RGB。</li><li>检测图最长边限制到 1600。</li><li>YuNet 检测 bbox、置信度与五点 landmarks。</li><li>score threshold 为 0.8，NMS 为 0.3。</li><li>坐标映射回原图。</li><li>SFace <code>alignCrop</code> 做五点对齐。</li><li>输出 128D descriptor。</li><li>对 descriptor 做 L2 normalization。</li><li>保存 JPEG face preview 与 <code>.npy</code> descriptor。</li></ol>
+<h3 id="73-模型身份">7.3 模型身份</h3>
+<p>provider fingerprint 包含：</p>
+<ul><li>YuNet 版本与 SHA；</li><li>SFace 版本与 SHA；</li><li><code>align112-v1</code>；</li><li>聚类 policy version。</li></ul>
+<p>模型或预处理变化时，旧缓存不会继续显示 ready。</p>
+<h3 id="74-第一阶段受约束凝聚">7.4 第一阶段受约束凝聚</h3>
+<p>设每张脸单位向量为 $f_i\in\mathbb R^{128}$。 余弦矩阵：</p>
+<div class="math-display">$$ S_{ij}=f_i^\top f_j $$</div>
+<p>候选 pair 至少满足：</p>
+<div class="math-display">$$ S_{ij}\ge 0.45 $$</div>
+<p>合并两个 cluster 前，必须同时满足：</p>
+<ol><li>两簇不包含来自同一照片的脸；</li><li>跨簇最小相似度 ≥0.45；</li><li>跨簇平均相似度 ≥0.45；</li><li>两个质心的 cosine ≥0.45。</li></ol>
+<p>这阻止 A≈B、B≈C 造成 A/C 被 single-link 强行串起来。</p>
+<h3 id="75-prototype-attachment">7.5 prototype attachment</h3>
+<p>第一阶段优先精度，可能把同一人的姿态差异拆开。 第二阶段用互为最佳 prototype 做保守附着。 多样本簇阈值：</p>
+<pre><code class="language-text">centroid ≥ 0.40
+mean     ≥ 0.30
+max      ≥ 0.42</code></pre>
+<p>涉及单例时更严格：</p>
+<pre><code class="language-text">centroid ≥ 0.42
+mean     ≥ 0.36
+max      ≥ 0.48</code></pre>
+<p>每次合并后重新计算证据。 仍然保留 same-photo cannot-link。</p>
+<h3 id="76-为什么不用-k-means">7.6 为什么不用 K-means</h3>
+<p>K-means 要预先知道人数 $K$。 个人相册通常不知道有多少人。 K-means 也不能自然表达 same-photo cannot-link。 当前方法优先保证：</p>
+<ul><li>不知道簇数也能运行；</li><li>结果确定；</li><li>规则可审计；</li><li>降低误合并风险。</li></ul>
+<h3 id="77-边界">7.7 边界</h3>
+<ul><li>阈值仍是固定策略，不是用户训练出来的。</li><li>same-photo cannot-link 会拆开镜像、拼图或同一人重复曝光。</li><li>大型活动相册的完整相似矩阵会带来 $O(F^2)$ 内存。</li><li>输出是 Unknown cluster，不做人名识别。</li><li>它不是安防级生物识别系统。</li></ul>
+<h2 id="8-multilingual-openclip-检索">8. multilingual OpenCLIP 检索</h2>
+<h3 id="81-为什么选-multilingual-openclip">8.1 为什么选 multilingual OpenCLIP</h3>
+<p>普通 CLIP 文本塔主要面向英文。 Norma 的默认 provider 使用 XLM-R 文本塔与 ViT-B/32 图像塔。 原始中文查询直接进入模型。 旧关键词翻译 bridge 只保留为显式 ablation。 它不再是默认路径。</p>
+<h3 id="82-归一化与-cosine">8.2 归一化与 cosine</h3>
+<p>对图像 $I_i$：</p>
+<div class="math-display">$$ z_i=\frac{f_I(I_i)}{\|f_I(I_i)\|_2} $$</div>
+<p>对查询 $q$：</p>
+<div class="math-display">$$ z_q=\frac{f_T(q)}{\|f_T(q)\|_2} $$</div>
+<p>两者都是单位向量，因此：</p>
+<div class="math-display">$$ s_i=z_q^\top z_i=\cos(z_q,z_i) $$</div>
+<h3 id="83-为什么现在不用向量数据库">8.3 为什么现在不用向量数据库</h3>
+<p>当前个人相册通常是几百到几千张。 精确扫描的复杂度约为：</p>
+<div class="math-display">$$ O(Nd+N\log N),\quad d=512 $$</div>
+<p>优点：</p>
+<ul><li>没有 ANN recall 损失；</li><li>排序确定；</li><li>provider drift 容易检查；</li><li>不需要额外服务和索引生命周期。</li></ul>
+<p>百万级照片时才适合切换 FAISS/HNSW，并报告 Recall@K 与延迟权衡。</p>
+<h3 id="84-provider-fingerprint">8.4 provider fingerprint</h3>
+<p>OpenCLIP identity 不只是一个友好的模型名。 它绑定：</p>
+<ul><li>固定模型 revision；</li><li>权重、tokenizer 和 config 的完整 SHA；</li><li>preprocess contract；</li><li>raw multilingual query contract；</li><li>CPU/CUDA backend；</li><li>直接影响输出的 Python runtime versions；</li><li>Windows numeric threading contract。</li></ul>
+<p>不同 identity 的向量不能混用。</p>
+<h3 id="85-fail-closed-本地加载">8.5 fail-closed 本地加载</h3>
+<p>首次加载流程：</p>
+<ol><li>强制 Hugging Face/Transformers offline。</li><li>校验 closed-world 文件集合。</li><li>校验大小和完整 SHA。</li><li>强制 config 与 tokenizer 从已验证的本地 snapshot 读取。</li><li><code>local_files_only=True</code>。</li><li><code>trust_remote_code=False</code>。</li><li>加载后再做一次完整校验。</li><li>最后才发布 model instance。</li></ol>
+<p>缓存缺失或不一致时返回 unavailable。 不会偷偷切换到 lightweight 手工特征。</p>
+<h3 id="86-已有旧相册为什么提示重新索引">8.6 已有旧相册为什么提示重新索引</h3>
+<p>旧数据库中的照片可能仍绑定 <code>lightweight-semantic-v1</code> 或旧 raw-v2 fingerprint。 代码默认切换到新的 pinned OpenCLIP 后，provider mismatch 会让 readiness 归零。 这是正确行为。 用户需要点击一次“语义索引”生成当前 512D cache。</p>
+<h2 id="9-67d-bayesian-contextual-preference">9. 67D Bayesian contextual preference</h2>
+<p><img src="../../figures/norma_preference_rag_flow.png" alt="偏好学习与 RAG 数据流" /></p>
+<h3 id="91-为什么不直接微调-openclip">9.1 为什么不直接微调 OpenCLIP</h3>
+<p>本地用户反馈通常很少。 直接微调大模型会遇到：</p>
+<ul><li>样本不足；</li><li>过拟合；</li><li>CPU 成本高；</li><li>模型版本和回滚复杂；</li><li>隐私与审计困难。</li></ul>
+<p>因此 Norma 冻结 OpenCLIP，只学习小型 residual adapter。</p>
+<h3 id="92-67-维从哪里来">9.2 67 维从哪里来</h3>
+<p>固定投影：</p>
+<div class="math-display">$$ P\in\mathbb R^{32\times512} $$</div>
+<p>特征：</p>
+<div class="math-display">$$ \phi(z_i,z_q)= [Pz_i,\;(Pz_i)\odot(Pz_q),\;z_i^\top z_q,\;r_i,\;m_i] \in\mathbb R^{67} $$</div>
+<p>维度拆分：</p>
+<pre><code class="language-text">0..31   图像投影 Pzi
+32..63  图文交互 Pzi ⊙ Pzq
+64      OpenCLIP cosine
+65      auto_reject
+66      quality_missing</code></pre>
+<p>其中投影矩阵由固定算法生成并版本化。 同一输入在不同运行中得到相同特征。</p>
+<h3 id="93-学习式-utility">9.3 学习式 utility</h3>
+<div class="math-display">$$ U_i=z_q^\top z_i+\theta^\top\phi_i $$</div>
+<p>第一项是 OpenCLIP base score。 第二项是用户偏好 residual。 零反馈时令 \(\theta=0\)，于是严格退化为原始 cosine。 这很重要，因为系统没有反馈时不应该凭空改变基础模型排序。</p>
+<h3 id="94-pairwise-likelihood">9.4 pairwise likelihood</h3>
+<p>用户选择 $i$ 而拒绝 $j$。 定义：</p>
+<div class="math-display">$$ x_n=\phi_i-\phi_j $$</div>
+<div class="math-display">$$ b_n=cos_i-cos_j $$</div>
+<p>margin：</p>
+<div class="math-display">$$ m_n=b_n+x_n^\top\theta $$</div>
+<p>Bradley-Terry / logistic 概率：</p>
+<div class="math-display">$$ P(i\succ j)=\sigma(m_n) $$</div>
+<h3 id="95-map-目标">9.5 MAP 目标</h3>
+<p>使用零均值 isotropic Gaussian prior：</p>
+<div class="math-display">$$ \theta\sim\mathcal N(0,\lambda^{-1}I) $$</div>
+<p>默认 \(\lambda=1\)。 负对数后验：</p>
+<div class="math-display">$$ F(\theta)= \sum_n softplus(-m_n)+\frac{\lambda}{2}\|\theta\|_2^2 $$</div>
+<p>梯度：</p>
+<div class="math-display">$$ g=X^\top(\sigma(m)-1)+\lambda\theta $$</div>
+<p>Hessian：</p>
+<div class="math-display">$$ H=X^\top diag(\sigma(m)(1-\sigma(m)))X+\lambda I $$</div>
+<h3 id="96-优化与-laplace">9.6 优化与 Laplace</h3>
+<p>训练使用 full-batch damped Newton。 每一步解：</p>
+<div class="math-display">$$ H\Delta=-g $$</div>
+<p>再用 Armijo line search 确保目标下降。 MAP 点得到 \(\theta_{MAP}\)。 Laplace covariance：</p>
+<div class="math-display">$$ \Sigma=H(\theta_{MAP})^{-1} $$</div>
+<p>代码用 Cholesky 求解并对称化。 后验近似：</p>
+<div class="math-display">$$ \theta\mid D\approx\mathcal N(\theta_{MAP},\Sigma) $$</div>
+<h3 id="97-事件语义">9.7 事件语义</h3>
+<p>choice 有四种：</p>
+<pre><code class="language-text">preferred
+tie
+skip
+both_bad</code></pre>
+<p>只有 <code>preferred</code> 进入二元 posterior 训练。 另外三种仍写不可变事件和审计。 不能为了增加样本量，把 tie 强行随机改成 preferred。</p>
+<h3 id="98-不可变事件与模型版本">9.8 不可变事件与模型版本</h3>
+<p><code>preference_events</code> 使用 SQLite trigger 禁止 UPDATE 和 DELETE。 <code>preference_models</code> 保存每次训练的版本化快照。 同一 user、provider 和 feature schema 只能有一个 active model。 旧模型只允许从 active=1 退为 0。 加载模型时会重算训练事件 digest，并检查：</p>
+<ul><li>algorithm；</li><li>provider；</li><li>feature schema；</li><li>projection ID；</li><li>dimension；</li><li>prior；</li><li>covariance；</li><li>event count 与 digest。</li></ul>
+<p>不兼容时 fail closed 或显式回退 cosine。</p>
+<h3 id="99-为什么这不是-dpo">9.9 为什么这不是 DPO</h3>
+<p>DPO 要比较 chosen/rejected 生成序列，并计算 policy/reference model 的 token log-prob。 Norma 没有：</p>
+<ul><li>Qwen token log-prob；</li><li>reference LLM；</li><li>backward；</li><li>optimizer 更新大模型权重。</li></ul>
+<p>Norma 的监督对象是“用户更喜欢哪张照片”。 训练对象是 67D logistic posterior。 所以正确名称是 pairwise Bayesian contextual preference learning。</p>
+<h2 id="10-capu-pdrr-mc-主动提问">10. CAPU-PDRR-MC 主动提问</h2>
+<h3 id="101-为什么-entropy-不够">10.1 为什么 entropy 不够</h3>
+<p>常见主动学习会选预测最不确定的 pair。 但“最不确定”不等于“最影响最终选片集合”。 两个都不会入选的差照片即使胜负很不确定，也可能没有决策价值。 PDRR 直接估计问这个 pair 后，最终受约束决策的后悔值能降低多少。</p>
+<h3 id="102-当前决策">10.2 当前决策</h3>
+<p>目标是选出集合 $A$。 约束包括：</p>
+<pre><code class="language-text">|A| = K
+每个 similarity group 至多 cap 张</code></pre>
+<p>对 posterior sample \(\theta_b\)：</p>
+<div class="math-display">$$ U_{bi}=cos_i+\theta_b^\top\phi_i $$</div>
+<p>每个 sample 的 oracle action：</p>
+<div class="math-display">$$ A_b^*=\arg\max_A\sum_{i\in A}U_{bi} $$</div>
+<p>当前 posterior mean action：</p>
+<div class="math-display">$$ A_0=\arg\max_A\sum_{i\in A}\mathbb E[U_i] $$</div>
+<p>当前 Bayes regret：</p>
+<div class="math-display">$$ R_0=\mathbb E_b[V_b(A_b^*)-V_b(A_0)] $$</div>
+<h3 id="103-shortlist">10.3 shortlist</h3>
+<p>全部 pair 数约为：</p>
+<div class="math-display">$$ M=\frac{N(N-1)}{2} $$</div>
+<p>系统先用便宜分数 shortlist：</p>
+<div class="math-display">$$ H(\mathbb E_b[\sigma(U_{bi}-U_{bj})]) \times Var_b(1[i\in A_b^*]-1[j\in A_b^*]) $$</div>
+<p>第一项衡量 pair outcome entropy。 第二项衡量 pair 是否会改变最终集合 membership。 默认只对前 16 个 pair 做完整 PDRR 评估。</p>
+<h3 id="104-完整-pdrr">10.4 完整 PDRR</h3>
+<p>对 left/right 两个 hypothetical outcome：</p>
+<ol><li>重要性重加权 posterior samples；</li><li>计算 ESS；</li><li>必要时做 rank-one Laplace update；</li><li>重新求解受约束集合；</li><li>得到 outcome 后的 regret。</li></ol>
+<div class="math-display">$$ PDRR= \max(0,R_0-p_LR_L-(1-p_L)R_R) $$</div>
+<p>选择 PDRR 最大的 shortlist pair。</p>
+<h3 id="105-数值稳定性">10.5 数值稳定性</h3>
+<p>默认 posterior sample 数 \(B=64\)。 ESS 阈值：</p>
+<div class="math-display">$$ \min(0.25B,16) $$</div>
+<p>低 ESS 走 rank-one Laplace fallback。 如果所有 pair 的 raw VOI 都低于 <code>-1e-8</code>，服务最多重试一次：默认把 $B$ 从 64 提高到 128，且不超过 4096。 仍不稳定就 abstain，而不是伪造一个建议。</p>
+<h3 id="106-复杂度">10.6 复杂度</h3>
+<p>设特征维 \(D=67\)，候选数 \(N\)，样本数 \(B\)，pair 数 \(M\)，shortlist 长度 \(L\)。 主要复杂度近似：</p>
+<div class="math-display">$$ O(D^3+BD^2+BDN+BN\log N+MB+M\log M+LN\log N) $$</div>
+<p>内存约为：</p>
+<div class="math-display">$$ O(BN+ND+M) $$</div>
+<h3 id="107-科研-claim-边界">10.7 科研 claim 边界</h3>
+<p>受控半合成实验中，PDRR 在 feedback budget=10 时相对 random 和 entropy 显示探索性优势。 budget=30/60 的区间跨 0。 因此只能说：</p>
+<blockquote><p>PDRR 在这个受控协议的低预算阶段具有值得继续验证的决策感知信号。</p></blockquote>
+<p>不能说：</p>
+<blockquote><p>PDRR 在所有预算、所有用户和真实场景都优于 entropy。</p></blockquote>
+<h2 id="11-searchselection-与-replacement">11. Search、Selection 与 Replacement</h2>
+<h3 id="111-search">11.1 Search</h3>
+<p>Search 对每张候选计算：</p>
+<pre><code class="language-text">semantic_score = cosine
+preference_residual = μᵀφ
+utility_score = semantic_score + preference_residual</code></pre>
+<p>API 分开返回 base score 与 residual。 这样可以解释排序变化来自哪里。</p>
+<h3 id="112-selection">11.2 Selection</h3>
+<p>学习模型只给 utility。 硬约束仍由确定性求解器执行。 典型约束：</p>
+<ul><li>exact-K；</li><li>minimum quality；</li><li>exclude rejects；</li><li>similarity group cap。</li></ul>
+<p>质量、reject 和 group cap 不会被 preference model 软化。</p>
+<h3 id="113-为什么硬约束不交给模型">11.3 为什么硬约束不交给模型</h3>
+<p>“最多选 10 张”是产品合同，不是统计偏好。 “近重复组最多一张”也是明确业务规则。 如果让模型以 penalty 近似，可能出现违反约束的结果。 因此架构是：</p>
+<pre><code class="language-text">learned utility + deterministic constraints</code></pre>
+<h3 id="114-replacement">11.4 Replacement</h3>
+<p>替换一张照片时：</p>
+<ol><li>锁定其它已选照片；</li><li>读取一个当前 provider/model snapshot；</li><li>同时重算 locked items 与 replacement candidates；</li><li>保持原始约束；</li><li>选最高 utility 的可行候选。</li></ol>
+<p>不能把旧模型分数的 locked items 与新模型候选分数直接混合。</p>
+<h3 id="115-决策快照">11.5 决策快照</h3>
+<p>Selection audit 保存：</p>
+<ul><li>user；</li><li>raw query；</li><li>provider fingerprint；</li><li>model ID；</li><li>comparison count；</li><li>candidate universe digest；</li><li>query-dependent 67D feature digest；</li><li>algorithm version。</li></ul>
+<p>反馈前会重算 digest。 候选向量被无声替换时返回 409，不写训练事件。</p>
+<h2 id="12-grounded-multimodal-rag">12. Grounded multimodal RAG</h2>
+<h3 id="121-为什么它是真-rag">12.1 为什么它是真 RAG</h3>
+<p>实际流程是：</p>
+<pre><code class="language-text">query
+→ OpenCLIP 检索本地相册
+→ 偏好后验重排
+→ 读取 Top-K 原图
+→ Qwen3-VL 生成
+→ 引用验证与答案构造</code></pre>
+<p>生成模型参数之外的本地照片库在请求时被检索并注入。 所以它属于 multimodal RAG。</p>
+<h3 id="122-三层绑定">12.2 三层绑定</h3>
+<h4 id="候选层">候选层</h4>
+<p>绑定全相册：</p>
+<ul><li>photo IDs；</li><li>provider；</li><li>source size/mtime/SHA；</li><li>embedding SHA；</li><li>quality/reject；</li><li>preference model 与 event digest。</li></ul>
+<h4 id="检索层">检索层</h4>
+<p>RetrievalService 必须读取快照指定 SHA 的 frozen vectors。 检索前后重建候选摘要。 变化则 409。</p>
+<h4 id="证据层">证据层</h4>
+<p>Top-K 原图读取为 immutable bytes。 每张图计算 SHA。 这个 SHA 必须等于生成 embedding 时记录的源内容 SHA。 因此不会出现：</p>
+<pre><code class="language-text">排序用图片A的向量
+Qwen看到被替换后的图片B</code></pre>
+<h3 id="123-prompt-信任边界">12.3 prompt 信任边界</h3>
+<p>prompt 被分为：</p>
+<ul><li>system security rules；</li><li>trusted control JSON；</li><li>task query JSON；</li><li>untrusted evidence JSON。</li></ul>
+<p>文件名、OCR、caption 和图中文字都被视为不可信数据。 本地路径会脱敏。</p>
+<h3 id="124-模型输出合同">12.4 模型输出合同</h3>
+<p>Qwen 只能返回：</p>
+<pre><code class="language-json">{
+  &quot;claims&quot;: [
+    {&quot;claim_id&quot;: &quot;c1&quot;, &quot;text&quot;: &quot;...&quot;}
+  ],
+  &quot;citations&quot;: [
+    {&quot;claim_id&quot;: &quot;c1&quot;, &quot;photo_id&quot;: &quot;...&quot;}
+  ]
+}</code></pre>
+<p>模型不能定义 authoritative answer。 模型也不能定义 provenance。</p>
+<h3 id="125-严格解析与校验">12.5 严格解析与校验</h3>
+<p>系统拒绝：</p>
+<ul><li>多个 JSON fence；</li><li>fence 外散文；</li><li>重复 JSON key；</li><li>extra key；</li><li>NaN/Infinity；</li><li>重复 claim ID；</li><li>无 citation 的 claim；</li><li>引用 Top-K 外 photo ID；</li><li>重复 claim/photo pair；</li><li>本地路径泄露；</li><li>生成期间的候选、向量或像素漂移。</li></ul>
+<p>最终 answer 由服务器按 claim/citation 规范渲染。</p>
+<h3 id="126-qwen-本地运行时">12.6 Qwen 本地运行时</h3>
+<p>关键设置：</p>
+<ul><li>Qwen3-VL-2B-Instruct；</li><li>固定 revision 与 closed-world manifest；</li><li>CPU-only；</li><li>local files only；</li><li>trust remote code false；</li><li>eval；</li><li>do_sample false；</li><li>temperature 0；</li><li>max_new_tokens 默认 256。</li></ul>
+<p>provider fingerprint 绑定：</p>
+<ul><li>模型与资产 SHA；</li><li>runtime/preprocess version；</li><li>prompt contract SHA；</li><li>generation token budget；</li><li>直接影响输出的 Python distributions；</li><li>numeric threading contract。</li></ul>
+<h3 id="127-图像预算">12.7 图像预算</h3>
+<p>单请求 Top-K 最大为 6。 安全限制包括：</p>
+<ul><li>单图 ≤64 MP；</li><li>总图像 ≤96 MP；</li><li>编码字节总量 ≤128 MiB；</li><li>preflight visual tokens ≤3840；</li><li>processor 后 hard cap ≤4096。</li></ul>
+<p>缩放只用于模型输入副本。 证据 identity 仍绑定原始 bytes SHA。</p>
+<h3 id="128-并发">12.8 并发</h3>
+<p>进程级 nonblocking admission lock 保证同一时间只有一个 RAG 请求进入重型阶段。 第二个并发请求返回 429。 runtime 内部还有 generation lock。 这是单进程保证。 多 Uvicorn worker 需要外部队列或跨进程锁。</p>
+<h3 id="129-它没有解决什么">12.9 它没有解决什么</h3>
+<p>校验器证明：</p>
+<ul><li>citation ID 在 allow-list；</li><li>provenance 与快照一致；</li><li>模型没有越权构造服务器字段。</li></ul>
+<p>校验器不证明：</p>
+<ul><li>claim 一定被像素支持；</li><li>claim 没有视觉误读；</li><li>answer 没有语义幻觉。</li></ul>
+<p>如果要进一步解决，需要 learned visual entailment verifier 或人工评估集。</p>
+<h2 id="13-sqlite-v14-与审计">13. SQLite v14 与审计</h2>
+<h3 id="131-重要表">13.1 重要表</h3>
+<table><thead><tr><th>表</th><th>作用</th></tr></thead><tbody><tr><td>albums/photos</td><td>相册与照片快照</td></tr><tr><td>jobs</td><td>持久化后台任务</td></tr><tr><td>embeddings</td><td>通过 photos 字段绑定 provider/source/cache</td></tr><tr><td>faces/person_clusters</td><td>人脸 descriptor 与分组</td></tr><tr><td>relevance_*</td><td>检索人工标注与评估</td></tr><tr><td>preference_events</td><td>append-only 用户反馈</td></tr><tr><td>preference_models</td><td>版本化后验模型</td></tr><tr><td>preference_suggestions</td><td>PDRR 建议与消费状态</td></tr><tr><td>selections</td><td>可回放选片决策</td></tr><tr><td>rag_runs</td><td>不可变 RAG 审计</td></tr></tbody></table>
+<h3 id="132-迁移思路">13.2 迁移思路</h3>
+<p>当前 schema 版本为 14。 重要迁移包括：</p>
+<ul><li>v9：重建 photos，支持父目录/子目录相册重叠；</li><li>v10：不可变 preference event/model；</li><li>v11：suggestion one-shot 与 event 唯一关联；</li><li>v12：RAG audit；</li><li>v13：embedding source SHA；</li><li>v14：rag_runs 改为 WITHOUT ROWID。</li></ul>
+<p>表重建迁移会：</p>
+<ol><li>开启事务；</li><li>建新表；</li><li>复制数据；</li><li>核对行数；</li><li>重建索引/trigger；</li><li>做 foreign key check；</li><li>成功后记录 migration version。</li></ol>
+<h3 id="133-为什么-ragruns-用-without-rowid">13.3 为什么 rag_runs 用 WITHOUT ROWID</h3>
+<p>普通 rowid 表可以出现针对 rowid 的 <code>INSERT OR REPLACE</code> 绕过风险。 以 id 作为 WITHOUT ROWID 主键后，再配合 trigger：</p>
+<ul><li>禁 UPDATE；</li><li>禁 DELETE；</li><li>禁重复 ID replace。</li></ul>
+<p>这强化了 SQLite 内的 append-only 约束。 但拥有数据库文件权限的人仍能复制、替换整个 DB。 因此它不是外部不可篡改日志。</p>
+<h2 id="14-实验结果怎么讲">14. 实验结果怎么讲</h2>
+<h3 id="141-openclip-proxy">14.1 OpenCLIP proxy</h3>
+<p>固定公开代理实验的中文 macro 指标：</p>
+<table><thead><tr><th>Provider</th><th style="text-align:right">Precision@10</th><th style="text-align:right">Recall@20</th><th style="text-align:right">nDCG@10</th><th style="text-align:right">nDCG@20</th></tr></thead><tbody><tr><td>lightweight rules</td><td style="text-align:right">0.667</td><td style="text-align:right">0.384</td><td style="text-align:right">0.709</td><td style="text-align:right">0.539</td></tr><tr><td>legacy bridge</td><td style="text-align:right">0.667</td><td style="text-align:right">0.576</td><td style="text-align:right">0.733</td><td style="text-align:right">0.710</td></tr><tr><td>raw multilingual v2</td><td style="text-align:right">0.733</td><td style="text-align:right">0.605</td><td style="text-align:right">0.801</td><td style="text-align:right">0.753</td></tr></tbody></table>
+<p>raw multilingual 的 nDCG@20 相对 lightweight 增加 0.214。 相对 legacy bridge 增加约 0.044。 这是固定 proxy、查询数小、没有置信区间的结果。 不能泛化成所有相册上的总体优势。</p>
+<h3 id="142-contextual-preference-受控实验">14.2 contextual preference 受控实验</h3>
+<p>70 张 Wikimedia 公开图。 每个 seed 为 42 train / 28 test，严格文件级不重叠。 10 seeds × 3 个受控模拟用户。 budget 为 0/10/30/60。 budget=60 的均值：</p>
+<table><thead><tr><th>方法</th><th style="text-align:right">log loss ↓</th><th style="text-align:right">order accuracy ↑</th><th style="text-align:right">set regret/photo ↓</th></tr></thead><tbody><tr><td>zero cosine</td><td style="text-align:right">0.693718</td><td style="text-align:right">0.606085</td><td style="text-align:right">0.380869</td></tr><tr><td>random feedback</td><td style="text-align:right">0.629845</td><td style="text-align:right">0.693915</td><td style="text-align:right">0.057889</td></tr><tr><td>entropy feedback</td><td style="text-align:right">0.627782</td><td style="text-align:right">0.697531</td><td style="text-align:right">0.052210</td></tr></tbody></table>
+<p>random 与 entropy 相对 zero 的 paired bootstrap 区间支持改善。 entropy 与 random 的区间跨 0。 因此不能声称 entropy 稳定优于 random。</p>
+<h3 id="143-pdrr-受控实验">14.3 PDRR 受控实验</h3>
+<p>budget=10 时，PDRR 相对 random 的改善：</p>
+<ul><li>log loss：+0.0213，CI [0.0107, 0.0324]；</li><li>accuracy：+5.24 pp，CI [1.70, 8.83]；</li><li>regret/photo：+0.1131，CI [0.0436, 0.1888]。</li></ul>
+<p>相对 entropy：</p>
+<ul><li>log loss：+0.0271，CI [0.0160, 0.0374]；</li><li>accuracy：+8.02 pp，CI [3.39, 12.55]；</li><li>regret/photo：+0.1551，CI [0.1176, 0.1931]。</li></ul>
+<p>但 budget=30/60 的区间跨 0。 所以主张必须限定为低预算探索性优势。</p>
+<h3 id="144-qwen-functional-smoke">14.4 Qwen functional smoke</h3>
+<p>单机两次同进程 smoke：</p>
+<ul><li>第一次生成约 48.05 s；</li><li>第二次约 25.87 s；</li><li>peak RSS 约 4.94 GiB（5.31 GB）。</li></ul>
+<p>这证明 pinned local runtime 和严格输出合同可运行。 它不是延迟 benchmark 的统计结论。 它也不证明答案准确率或幻觉率。</p>
+<h3 id="145-数据可复现性边界">14.5 数据可复现性边界</h3>
+<p>Wikimedia thumbnail URL 会发生 renderer/cache 漂移。 72 个 URL 审计中：</p>
+<ul><li>58/72 raw bytes exact；</li><li>10/72 raw 漂移但 decoded RGB exact；</li><li>4/72 decoded pixels 也漂移。</li></ul>
+<p>因此当前下载器会 fail closed，但不能声称普通 URL 足以重建历史实验输入。 完整复现需要：</p>
+<ul><li>许可完整的 content-addressed archive；或</li><li>固定不可变 revision URL；或</li><li>使用新 experiment ID 重跑。</li></ul>
+<h2 id="15-目前有了什么还差什么">15. 目前有了什么，还差什么</h2>
+<h3 id="151-已完成">15.1 已完成</h3>
+<ul><li>Web-only 本地应用与 <code>python -m ai web</code>。</li><li>SQLite v14 数据模型和持久化 job。</li><li>按需质量、语义、人脸按钮与真实百分比。</li><li>pinned raw multilingual OpenCLIP 512D 检索。</li><li>YuNet + SFace learned face pipeline。</li><li>constrained face clustering。</li><li>67D Bayesian contextual preference learning。</li><li>Search / Selection / Replacement 统一消费 learned utility。</li><li>one-shot preference suggestions 与不可变事件。</li><li>CAPU-PDRR-MC 主动提问。</li><li>pinned local Qwen3-VL multimodal RAG。</li><li>evidence/candidate/embedding/source SHA 绑定。</li><li>strict claims/citations validator。</li><li>科研图、受控实验、原始 JSON 和完整性审计。</li><li>Windows NumPy/Torch OpenMP 冲突的 fail-closed 修复。</li></ul>
+<h3 id="152-还没有">15.2 还没有</h3>
+<ul><li>没有 DPO/SFT/LoRA。</li><li>没有真实用户长期在线实验。</li><li>没有 learned IQA/aesthetic 默认模型。</li><li>没有 learned reranker 的独立训练。</li><li>没有 visual entailment verifier。</li><li>没有 ANN/向量数据库。</li><li>没有多用户认证和远程部署安全层。</li><li>没有跨进程 Qwen 队列。</li><li>没有可公开下载的精确 72 图 content-addressed archive。</li><li>没有大规模人脸公开 benchmark 的完整报告。</li></ul>
+<h3 id="153-下一步优先级">15.3 下一步优先级</h3>
+<p>第一优先：真实用户评估。 需要收集：</p>
+<ul><li>用户是否更快找到照片；</li><li>经过 10/30/60 次反馈后的满意度；</li><li>false merge / false split；</li><li>RAG claim support rate；</li><li>真实 cold/warm latency 与峰值内存分布。</li></ul>
+<p>第二优先：learned quality/aesthetic 与 reranker ablation。 第三优先：visual entailment verifier。 第四优先：ANN 与大相册扩展。 第五优先：认证、跨进程队列和部署安全。</p>
+<h2 id="16-面试讲解模板">16. 面试讲解模板</h2>
+<h3 id="161-30-秒版本">16.1 30 秒版本</h3>
+<blockquote><p>Norma 是一个本地优先的多模态照片整理网页。我用 pinned multilingual OpenCLIP 做中英文图文检索，用 YuNet + SFace 做人脸表征；用户 A/B 反馈不是拿去微调大模型，而是训练一个 67D Bayesian contextual residual，用于 Search、Selection、Replacement 和 RAG retrieval。CAPU-PDRR-MC 根据最终 exact-K 选片决策的后悔值下降来挑下一组 A/B。RAG 把 Top-K 原图交给本地 Qwen3-VL，但模型只生成 claims/citations，服务器验证引用、源文件 bytes SHA 和 provenance 后才构造答案。整个系统强调本地隐私、缓存版本和可审计 claim boundary。</p></blockquote>
+<h3 id="162-两分钟版本">16.2 两分钟版本</h3>
+<p>先说产品痛点：本地照片多，用户不愿上传云端，传统关键词又不够。 再说架构：导入只生成预览；质量、OpenCLIP、人脸按需运行并落 SQLite job。 然后说学习：OpenCLIP/YuNet/SFace/Qwen 冻结；真正在线学习的是 67D pairwise Bayesian residual。 再说决策：learned utility 与 exact-K、质量门、近重复 cap 分离。 再说主动学习：PDRR 不只问最不确定 pair，而问最可能改变最终选片决策的 pair。 最后说 RAG：冻结候选、embedding 和原始文件 bytes；Qwen 只返回 claims/citations；服务器控制 answer/provenance。 收尾要主动讲边界：不是 DPO，没有微调，引用完整性不等于语义正确。</p>
+<h2 id="17-面试题库">17. 面试题库</h2>
+<h3 id="l1-1这个项目到底用了哪些学习算法">⭐ L1-1：这个项目到底用了哪些学习算法？</h3>
+<p>OpenCLIP、YuNet、SFace、Qwen3-VL 都是预训练模型的冻结推理。 项目内真正根据用户数据更新的是 67D Bayesian pairwise logistic preference model。 CAPU-PDRR-MC 使用该后验做主动提问，但自己不是神经网络训练。 质量、pHash/dHash、约束聚类和 exact-K 是传统算法。</p>
+<h3 id="l1-2为什么说它不是纯规则系统">⭐ L1-2：为什么说它不是纯规则系统？</h3>
+<p>因为语义检索、人脸检测、人脸 embedding 和多模态生成都来自 learned representations。 规则主要负责质量 baseline、近重复、硬约束和完整性校验。 系统是 learned models 与 deterministic guardrails 的组合。</p>
+<h3 id="l1-3为什么说它不是-dpo">⭐ L1-3：为什么说它不是 DPO？</h3>
+<p>DPO 要优化生成模型 policy，相对 reference model 使用 chosen/rejected 序列 log-prob。 Norma 不计算 Qwen token log-prob，也不反向传播。 它训练的是照片 pair 上的 67D logistic posterior。</p>
+<h3 id="l1-4为什么使用-openclip">⭐ L1-4：为什么使用 OpenCLIP？</h3>
+<p>它把文本和图像映射到统一向量空间。 multilingual 文本塔能直接处理中文。 相比有限关键词字典，它支持开放词汇检索。</p>
+<h3 id="l1-5为什么归一化-embedding">⭐ L1-5：为什么归一化 embedding？</h3>
+<p>归一化后点积等于 cosine。 这样分数只反映方向相似度，不受向量模长影响。 也让零反馈排序定义清晰。</p>
+<h3 id="l1-6为什么打开目录时不自动做人脸和语义索引">⭐ L1-6：为什么打开目录时不自动做人脸和语义索引？</h3>
+<p>模型推理是慢路径。 首屏只需要目录、元数据和缩略图。 拆成按需任务能显著改善首次体验，也便于独立取消、重试和缓存。</p>
+<h3 id="l1-7质量评分是不是-ai">⭐ L1-7：质量评分是不是 AI？</h3>
+<p>当前默认质量评分不是学习模型。 它由 Laplacian、亮度、对比度、曝光、熵和分辨率规则加权。 它是可解释 baseline。</p>
+<h3 id="l1-8rag-为什么是真的-rag">⭐ L1-8：RAG 为什么是真的 RAG？</h3>
+<p>系统先从 Qwen 参数之外的本地相册检索 Top-K，再把经过预算约束的 evidence images 输入 Qwen。 这包含 retrieval、augmentation 和 generation 三步。</p>
+<h3 id="l1-9用户照片会上传吗">⭐ L1-9：用户照片会上传吗？</h3>
+<p>默认不会。 模型、向量、数据库和生成都在本机。 但当前没有远程部署认证，所以只应监听 127.0.0.1。</p>
+<h3 id="l1-10为什么不用-faiss">⭐ L1-10：为什么不用 FAISS？</h3>
+<p>当前目标规模是个人相册，精确扫描更简单、确定、易审计且无 ANN recall 损失。 百万级规模时再引入 ANN，并测 Recall@K/latency/memory。</p>
+<h3 id="l2-167d-是怎么组成的">⭐⭐ L2-1：67D 是怎么组成的？</h3>
+<p>32D 图像固定投影，32D 图文逐元素交互，1D cosine，1D auto_reject，1D quality_missing。 总计 67D。</p>
+<h3 id="l2-2为什么-utility-还要保留-cosine">⭐⭐ L2-2：为什么 utility 还要保留 cosine？</h3>
+<p>preference model 被设计成 residual。 没有反馈时 \(\theta=0\)，utility 必须严格等于 OpenCLIP cosine。 这样不会在 cold start 时凭空改变排序。</p>
+<h3 id="l2-3map-的-prior-是什么">⭐⭐ L2-3：MAP 的 prior 是什么？</h3>
+<div class="math-display">$$ \theta\sim\mathcal N(0,\lambda^{-1}I) $$</div>
+<p>默认 \(\lambda=1\)。 等价于目标中的 L2 penalty，可抑制少量反馈下的过拟合。</p>
+<h3 id="l2-4laplace-covariance-有什么用">⭐⭐ L2-4：Laplace covariance 有什么用？</h3>
+<p>它近似 MAP 附近的 posterior uncertainty。 PDRR 需要从 \(\mathcal N(\mu,\Sigma)\) 采样，估计不同参数下最优选片集合如何变化。</p>
+<h3 id="l2-5tieskipbothbad-为什么不训练">⭐⭐ L2-5：tie、skip、both_bad 为什么不训练？</h3>
+<p>当前 likelihood 是有方向的二元 preferred/rejected 模型。 tie 和 both_bad 需要不同 observation model。 强行映射会制造错误监督，所以只审计不训练。</p>
+<h3 id="l2-6pdrr-与-entropy-的区别">⭐⭐ L2-6：PDRR 与 entropy 的区别？</h3>
+<p>entropy 问“哪一对胜负最不确定”。 PDRR 问“知道这对胜负后，最终受约束选片决策的 Bayes regret 能降低多少”。 它更贴近产品目标，但计算更贵。</p>
+<h3 id="l2-7人脸为什么不用-single-link">⭐⭐ L2-7：人脸为什么不用 single-link？</h3>
+<p>single-link 会链式误合并。 当前合并要求跨簇 minimum、mean、centroid 三个证据同时过阈值，并加入 same-photo cannot-link。</p>
+<h3 id="l2-8如何防止模型升级后复用旧向量">⭐⭐ L2-8：如何防止模型升级后复用旧向量？</h3>
+<p>provider fingerprint 绑定模型资产、预处理、query contract、runtime ABI 和 backend。 照片 cache 还绑定源 size/mtime/SHA。 任一不匹配就不 ready。</p>
+<h3 id="l2-9rag-如何防止向量与实际图片不一致">⭐⭐ L2-9：RAG 如何防止向量与实际图片不一致？</h3>
+<p>embedding 建立时保存 source SHA。 RAG 读取 Top-K 源文件后重算 source bytes SHA，必须与 embedding source SHA 一致。 否则 409，不进入生成。</p>
+<h3 id="l2-10为什么硬约束不让-preference-model-学">⭐⭐ L2-10：为什么硬约束不让 preference model 学？</h3>
+<p>exact-K 和 similarity cap 是必须满足的业务合同。 模型只提供 utility，确定性 solver 负责 feasibility。 这样任何反馈都不会导致非法集合。</p>
+<h3 id="l3-1推导-pairwise-map-的梯度与-hessian">⭐⭐⭐ L3-1：推导 pairwise MAP 的梯度与 Hessian。</h3>
+<p>单样本损失为：</p>
+<div class="math-display">$$ \ell_n=softplus(-(b_n+x_n^\top\theta)) $$</div>
+<p>令 \(p_n=\sigma(b_n+x_n^\top\theta)\)。 则：</p>
+<div class="math-display">$$ \nabla F=X^\top(p-1)+\lambda\theta $$</div>
+<div class="math-display">$$ \nabla^2F=X^\top diag(p(1-p))X+\lambda I $$</div>
+<p>高斯 prior 让 Hessian 至少有 \(\lambda I\)，改善可逆性。</p>
+<h3 id="l3-2pdrr-为什么可能出现负的-monte-carlo-估计">⭐⭐⭐ L3-2：PDRR 为什么可能出现负的 Monte Carlo 估计？</h3>
+<p>理论上的信息价值非负，但有限样本、importance weight 退化和分别重解集合会引入 Monte Carlo 误差。 因此实现检查 ESS、提供 rank-one Laplace fallback，并对明显负的 raw VOI 重采样或 abstain。 不能简单把所有负数 clip 后仍当可靠建议。</p>
+<h3 id="l3-3如何保证同一-preference-suggestion-只训练一次">⭐⭐⭐ L3-3：如何保证同一 preference suggestion 只训练一次？</h3>
+<p>事件表含 nullable suggestion_id，并有 partial UNIQUE index。 preferred、tie、skip、both_bad 都先消费 suggestion。 两个独立 SQLite connection 并发竞争时只有一个 insert 成功；另一方映射为 HTTP 409。</p>
+<h3 id="l3-4grounded-rag-的-integrity-与-semantic-correctness-有什么区别">⭐⭐⭐ L3-4：Grounded RAG 的 integrity 与 semantic correctness 有什么区别？</h3>
+<p>integrity 证明使用了哪组候选、哪份向量、哪张原图、引用 ID 是否在 allow-list，以及服务器 provenance 是否一致。 semantic correctness 要证明 claim 真被像素支持。 当前系统只有前者，没有视觉蕴含模型，所以必须明确 claim boundary。</p>
+<h3 id="l3-5如果扩展到百万照片你会怎么改">⭐⭐⭐ L3-5：如果扩展到百万照片，你会怎么改？</h3>
+<p>先将 exact cosine 替换为版本化 ANN candidate generation，例如 HNSW/IVF-PQ。 provider/source SHA 仍作为 index lifecycle 的 cache key。 再用 exact cosine + preference residual 精排候选。 人脸侧使用 ANN/kNN 图降低全矩阵成本。 job 与 RAG 快照改为增量 manifest，不再多次扫描全相册。 实验必须报告 ANN Recall@K、端到端 nDCG、延迟、内存与漂移恢复，而不能只报告 QPS。</p>
+<h2 id="18-面试前最后检查">18. 面试前最后检查</h2>
+<p>你应该能不看稿回答：</p>
+<ol><li>512D、128D、67D 分别是什么。</li><li>哪些模型冻结，哪个参数真的会更新。</li><li>为什么 preference utility 保留 cosine base。</li><li>为什么 PDRR 不等于 entropy。</li><li>为什么人脸聚类有 same-photo cannot-link。</li><li>为什么 RAG 是 RAG，但不是 DPO。</li><li>citation integrity 与 semantic entailment 的区别。</li><li>provider fingerprint 绑定了什么。</li><li>任务如何进度、取消、重启恢复。</li><li>当前实验支持什么，不支持什么。</li></ol>
+<p>如果面试官追问“为什么不直接微调大模型”，最好的回答不是“算力不够”。 更完整的回答是：</p>
+<blockquote><p>本地反馈稀疏且带用户特异性。冻结通用多模态表征、只训练低维 Bayesian residual，可以保留 cold-start 基线、得到不确定性、快速回滚、严格版本化，也能直接服务主动提问。大模型微调可以是后续 ablation，但不应该在没有足够真实反馈和评估协议时先做。</p></blockquote>
+<p>如果面试官追问“你最想继续改哪一项”，可以回答：</p>
+<blockquote><p>我会先补真实用户闭环和 visual entailment evaluation。当前工程完整性已经很强，但求职项目最需要补的是外部有效性：真实用户是否因为偏好学习更快得到满意选片，以及 RAG claim 是否真的被图片支持。</p></blockquote>
+<h2 id="19-一段话总结">19. 一段话总结</h2>
+<p>Norma 已从一个以手工规则为主的照片脚手架，演进为本地优先的多模态学习系统：它用 pinned multilingual OpenCLIP 完成 512D 中英文图文检索，用 YuNet 与 SFace 提取学习式人脸表征，用 67D Bayesian pairwise residual 从用户 A/B 反馈更新排序，并通过 CAPU-PDRR-MC 在低反馈预算下选择更有决策价值的问题；在此之上，Grounded RAG 将冻结的 Top-K 原图交给本地 Qwen3-VL，同时用候选、向量、源文件 bytes SHA、严格 citation allow-list 和服务器端 provenance 构造限制模型权限。质量评分、pHash/dHash、约束聚类与 exact-K 仍是可解释的传统算法，OpenCLIP/Qwen/YuNet/SFace 均未微调，因此项目应被准确描述为“冻结多模态模型 + 本地 Bayesian 偏好学习 + 决策感知主动学习 + 引用受约束 RAG”，而不是 DPO 或端到端大模型训练；下一阶段最重要的是补真实用户评估、visual entailment verifier 和可公开重建的数据归档。</p>
+
+<footer class="aris-footer">
+  Generated by <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/render-html/SKILL.md">ARIS <code>/render-html</code></a> ·
+  source path <code>docs\tutorials\norma_multimodal_system_tutorial.md</code> ·
+  SHA256 <code>93b675cd1ded</code> ·
+  generated at 2026-08-29 12:06 UTC.
+  This is a generated view — edit the source Markdown, then re-render.
+</footer>
+</main>
+
+</div>
+</body>
+</html>

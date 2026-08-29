@@ -1,0 +1,82 @@
+{
+  "verdict": "PASS",
+  "render_gate_final_verdict": "PASS",
+  "p0_p3": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 0
+  },
+  "checks": {
+    "source_hash_match": {
+      "status": "pass",
+      "markdown_sha256": "93b675cd1ded18fe40b02878dfd05268d582ad40ab65fa8b2f253e45c490d4c3",
+      "html_declared_source_sha256": "93b675cd1ded18fe40b02878dfd05268d582ad40ab65fa8b2f253e45c490d4c3",
+      "html_sha256": "12a65610a74435ed74735b076a7afc62f74e744a4f8094c820ef47b27ac08eea"
+    },
+    "information_fidelity": "pass",
+    "structure": {
+      "status": "pass",
+      "markdown_headings": {
+        "h1": 1,
+        "h2": 20,
+        "h3": 107,
+        "h4": 3
+      }
+    },
+    "math_code_tables": {
+      "status": "pass",
+      "markdown_display_math_blocks": 39,
+      "html_math_display_divs": 39,
+      "markdown_code_blocks": 18,
+      "html_code_blocks": 18,
+      "markdown_tables": 5,
+      "html_tables": 5
+    },
+    "question_bank": {
+      "status": "pass",
+      "total": 25,
+      "l1": 10,
+      "l2": 10,
+      "l3": 5
+    },
+    "image_references": {
+      "status": "pass",
+      "markdown_images": 2,
+      "html_images": 2,
+      "figures": [
+        {
+          "path": "figures/norma_multimodal_architecture.png",
+          "sha256": "7cbfed5419773196506c052350040e5f4f83e0287f90079483d6adcd9ea14725",
+          "width": 1784,
+          "height": 1180,
+          "readable": true
+        },
+        {
+          "path": "figures/norma_preference_rag_flow.png",
+          "sha256": "81907f82de6026fbdb5990dd2d6a12815ea7b268cef5dccd67a062bd4d1d2889",
+          "width": 1016,
+          "height": 1622,
+          "readable": true
+        }
+      ]
+    },
+    "terminology_residue": "pass",
+    "safety_escaping": "pass",
+    "placeholder_leak": "pass",
+    "privacy_path_leak": "pass",
+    "fact_spot_checks": {
+      "openclip": "pass",
+      "face_yunet_sface": "pass",
+      "map_laplace_67d": "pass",
+      "pdrr_retry_and_thresholds": "pass",
+      "rag_source_bytes_sha_boundary": "pass",
+      "qwen_memory_number": "pass",
+      "no_fake_dpo_sft_lora": "pass",
+      "experiment_claim_boundary": "pass"
+    }
+  },
+  "blocking_issues": [],
+  "warnings": [],
+  "summary": "Independent GPT-5.5 xhigh review passed: source and HTML hashes match, all math/code/table/image/question content is preserved, terminology and experiment boundaries match the implementation, and no P0-P3 findings remain."
+}
