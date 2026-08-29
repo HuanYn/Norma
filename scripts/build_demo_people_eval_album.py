@@ -10,10 +10,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from ai.people import create_face_provider
-
 
 def main() -> None:
+    from ai.people import create_face_provider
+
     parser = argparse.ArgumentParser(
         description="Build a controlled people-clustering fixture from public portraits"
     )

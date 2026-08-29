@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "norma-ai"
 version = "0.1.0"
 description = "Local AI worker for the Norma personal multimodal photo agent"
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1",
@@ -28,8 +30,9 @@ selection = [
   "ortools>=9.12,<10",
 ]
 multimodal = [
+  "huggingface-hub>=0.34,<2",
   "open-clip-torch>=3.3,<4",
-  "transformers>=4.56,<6",
+  "transformers>=4.57,<6",
 ]
 
 [tool.pytest.ini_options]
@@ -42,3 +45,5 @@ exclude = ["ai.tests", "ai.tests.*"]
 
 [tool.setuptools.package-data]
 ai = ["web_dist/index.html", "web_dist/assets/*"]
+"ai.index" = ["openclip_xlm_roberta_manifest.json"]
+"ai.rag" = ["qwen3_vl_2b_manifest.json"]

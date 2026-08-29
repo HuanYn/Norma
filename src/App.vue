@@ -8,6 +8,7 @@ interface WorkerStatus {
   healthy: boolean;
   url: string;
   message: string;
+  embedding_provider: string;
   face_provider: string;
   schema_version?: number;
 }
@@ -70,6 +71,16 @@ interface AlbumEmbeddingResponse {
   provider: string;
   dimension: number;
   duration_ms: number;
+}
+
+interface EmbeddingProviderStatus {
+  provider: string;
+  dimension: number;
+  model_backed: boolean;
+  loaded: boolean;
+  device: string | null;
+  warmup_state: "idle" | "loading" | "ready" | "failed";
+  error: string | null;
 }
 
 interface SearchMatch {
@@ -223,11 +234,14 @@ const worker = ref<WorkerStatus>({
   healthy: false,
   url: "http://127.0.0.1:8765",
   message: "Checking local AI worker…",
+  embedding_provider: "",
   face_provider: "",
 });
 const command = ref("");
 const album = ref<AlbumWorkspace | null>(null);
 const embedding = ref<AlbumEmbeddingResponse | null>(null);
+const embeddingProviderStatus = ref<EmbeddingProviderStatus | null>(null);
+const warmingEmbedding = ref(false);
 const people = ref<PeopleIndexResponse | null>(null);
 const peopleSummary = ref<PreparePeopleSummary | null>(null);
 const searchResult = ref<AlbumSearchResponse | null>(null);
@@ -255,6 +269,8 @@ const PHOTO_PAGE_SIZE = 300;
 let preparePollTimer: ReturnType<typeof setTimeout> | null = null;
 let preparePollGeneration = 0;
 let photoLoadGeneration = 0;
+let embeddingWarmupGeneration = 0;
+let embeddingWarmupPromise: Promise<void> | null = null;
 
 const statusLabel = computed(() =>
   worker.value.healthy ? "AI worker ready" : "AI worker unavailable",
@@ -273,8 +289,25 @@ const qualityReady = computed(
 );
 
 const embeddingReady = computed(
-  () => Boolean(album.value?.total) && album.value?.embedded_count === album.value?.total,
+  () =>
+    Boolean(album.value?.total) &&
+    album.value?.embedded_count === album.value?.total &&
+    embeddingProviderMatches.value &&
+    embeddingRuntimeReady.value,
 );
+
+const embeddingProviderMatches = computed(
+  () =>
+    Boolean(album.value?.embedding_provider && worker.value.embedding_provider) &&
+    album.value?.embedding_provider === worker.value.embedding_provider,
+);
+
+const embeddingRuntimeReady = computed(() => {
+  const status = embeddingProviderStatus.value;
+  return Boolean(
+    status && (!status.model_backed || (status.loaded && status.warmup_state === "ready")),
+  );
+});
 
 const peopleProviderMatches = computed(
   () =>
@@ -336,19 +369,29 @@ function analysisCompleted(kind: Exclude<AnalysisKind, "import">) {
 }
 
 function analysisPercent(kind: Exclude<AnalysisKind, "import">) {
+  if (kind === "embedding" && warmingEmbedding.value) return 0;
   if (activeJobKind.value === kind) return preparePercent.value;
+  if (kind === "embedding" && !embeddingProviderMatches.value) return 0;
   if (kind === "people" && !peopleProviderMatches.value) return 0;
   const total = album.value?.total ?? 0;
   return total ? Math.round((analysisCompleted(kind) / total) * 100) : 0;
 }
 
 function analysisActionLabel(kind: Exclude<AnalysisKind, "import">) {
+  if (kind === "embedding" && warmingEmbedding.value) return "加载模型";
   if (activeJobKind.value === kind) {
     if (prepareJob.value?.cancel_requested) return "停止中";
     if (prepareJob.value?.status === "queued") return "排队";
     return `${preparePercent.value}%`;
   }
   const completed = analysisCompleted(kind);
+  if (kind === "embedding" && completed && !embeddingProviderMatches.value) return "重新运行";
+  if (
+    kind === "embedding" &&
+    completed &&
+    embeddingProviderMatches.value &&
+    !embeddingRuntimeReady.value
+  ) return "加载模型";
   if (kind === "people" && completed && !peopleProviderMatches.value) return "重新运行";
   if (album.value?.total && completed === album.value.total) return "已完成";
   return completed ? "继续" : "开始";
@@ -358,6 +401,23 @@ function analysisDetail(kind: Exclude<AnalysisKind, "import">) {
   const total = album.value?.total ?? 0;
   const completed = analysisCompleted(kind);
   if (!total) return "打开相册后可用";
+  if (kind === "embedding" && warmingEmbedding.value) {
+    return "正在本机下载或加载多模态模型";
+  }
+  if (kind === "embedding" && embeddingProviderStatus.value?.warmup_state === "failed") {
+    return "模型加载失败 · 点击重试";
+  }
+  if (kind === "embedding" && completed && !embeddingProviderMatches.value) {
+    return "现有结果与当前语义模型不一致 · 需重新索引";
+  }
+  if (
+    kind === "embedding" &&
+    completed &&
+    embeddingProviderMatches.value &&
+    !embeddingRuntimeReady.value
+  ) {
+    return "语义缓存已就绪 · 点击加载本地模型";
+  }
   if (kind === "people" && completed && !peopleProviderMatches.value) {
     return "现有结果与当前人脸模型不一致 · 需重新分析";
   }
@@ -381,17 +441,37 @@ const hasMorePhotos = computed(
 
 async function refreshWorker() {
   try {
-    const health = await api<{ status: string; schema_version: number; face_provider: string }>(
-      "/health",
-    );
+    const health = await api<{
+      status: string;
+      schema_version: number;
+      embedding_provider: string;
+      face_provider: string;
+    }>("/health");
     worker.value = {
       running: true,
       healthy: health.status === "ok",
       url: window.location.origin,
       message: "Local Python service and SQLite are ready",
+      embedding_provider: health.embedding_provider,
       face_provider: health.face_provider,
       schema_version: health.schema_version,
     };
+  } catch (error) {
+    worker.value = {
+      ...worker.value,
+      healthy: false,
+      message: String(error),
+    };
+    return;
+  }
+  try {
+    const providerStatus = await api<EmbeddingProviderStatus>("/providers/embedding/status");
+    embeddingProviderStatus.value = providerStatus;
+    if (providerStatus.warmup_state === "loading" && !warmingEmbedding.value) {
+      void beginEmbeddingWarmup(providerStatus).catch((error) => {
+        indexingError.value = String(error);
+      });
+    }
     const albumId = album.value?.album_id;
     if (albumId && peopleReady.value) {
       await loadPeopleGroups(albumId);
@@ -399,17 +479,92 @@ async function refreshWorker() {
       people.value = null;
     }
   } catch (error) {
-    worker.value = {
-      ...worker.value,
-      healthy: false,
-      message: String(error),
-    };
+    if (warmingEmbedding.value) indexingError.value = String(error);
+  }
+}
+
+function warmupDelay(milliseconds: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+function finishEmbeddingWarmup(operation: Promise<void>, generation: number) {
+  if (embeddingWarmupPromise === operation) embeddingWarmupPromise = null;
+  if (generation === embeddingWarmupGeneration) warmingEmbedding.value = false;
+}
+
+function beginEmbeddingWarmup(initialStatus?: EmbeddingProviderStatus) {
+  if (embeddingWarmupPromise) return embeddingWarmupPromise;
+  const generation = ++embeddingWarmupGeneration;
+  warmingEmbedding.value = true;
+  const operation = pollEmbeddingWarmup(generation, initialStatus);
+  embeddingWarmupPromise = operation;
+  void operation.then(
+    () => finishEmbeddingWarmup(operation, generation),
+    () => finishEmbeddingWarmup(operation, generation),
+  );
+  return operation;
+}
+
+async function pollEmbeddingWarmup(
+  generation: number,
+  initialStatus?: EmbeddingProviderStatus,
+) {
+  let status =
+    initialStatus ?? (await api<EmbeddingProviderStatus>("/providers/embedding/status"));
+  let submitted = false;
+  let observedLoading = status.warmup_state === "loading";
+  let restartRetries = 0;
+  while (generation === embeddingWarmupGeneration) {
+    embeddingProviderStatus.value = status;
+    if (!status.model_backed) return;
+    if (status.warmup_state === "ready") {
+      if (!status.loaded) throw new Error("多模态模型状态异常：ready 但模型未加载");
+      return;
+    }
+    if (status.warmup_state === "failed") {
+      if (observedLoading || submitted) {
+        throw new Error(status.error || "多模态模型加载失败");
+      }
+      status = await api<EmbeddingProviderStatus>("/providers/embedding/warmup", {
+        method: "POST",
+      });
+      submitted = true;
+      continue;
+    }
+    if (status.warmup_state === "idle") {
+      if (observedLoading) {
+        if (restartRetries >= 1) {
+          throw new Error("本地服务在模型加载期间重复重启；请重新点击语义索引");
+        }
+        restartRetries += 1;
+      }
+      status = await api<EmbeddingProviderStatus>("/providers/embedding/warmup", {
+        method: "POST",
+      });
+      submitted = true;
+      continue;
+    }
+    if (status.warmup_state !== "loading") {
+      throw new Error(`未知的模型加载状态：${status.warmup_state}`);
+    }
+    observedLoading = true;
+    await warmupDelay(650);
+    status = await api<EmbeddingProviderStatus>("/providers/embedding/status");
+  }
+  throw new Error("多模态模型加载跟踪已取消");
+}
+
+async function ensureEmbeddingProviderReady() {
+  await beginEmbeddingWarmup();
+  const status = embeddingProviderStatus.value;
+  if (status?.model_backed && !(status.warmup_state === "ready" && status.loaded)) {
+    throw new Error(status.error || "多模态模型没有完成加载");
   }
 }
 
 async function indexFolder() {
   const folder = selectedFolder.value.trim();
-  if (!folder || indexing.value || searching.value || feedbackBusy.value) return;
+  if (!folder || indexing.value || warmingEmbedding.value || searching.value || feedbackBusy.value) return;
   clearPreparePoll();
   indexing.value = true;
   indexingError.value = null;
@@ -450,7 +605,25 @@ async function indexFolder() {
 }
 
 async function startAnalysis(kind: Exclude<AnalysisKind, "import">) {
-  if (!album.value || indexing.value || searching.value || feedbackBusy.value) return;
+  if (!album.value || indexing.value || warmingEmbedding.value || searching.value || feedbackBusy.value) return;
+  if (kind === "embedding") {
+    indexingError.value = null;
+    try {
+      await ensureEmbeddingProviderReady();
+    } catch (error) {
+      indexingError.value = String(error);
+      return;
+    }
+    const providerStatus = embeddingProviderStatus.value;
+    if (
+      providerStatus?.model_backed &&
+      !(providerStatus.warmup_state === "ready" && providerStatus.loaded)
+    ) {
+      indexingError.value = providerStatus.error || "多模态模型没有完成加载";
+      return;
+    }
+    if (!album.value || indexing.value || searching.value || feedbackBusy.value) return;
+  }
   const flags = {
     include_quality: kind === "quality",
     include_embeddings: kind === "embedding",
@@ -939,6 +1112,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   clearPreparePoll();
+  embeddingWarmupGeneration += 1;
   window.removeEventListener("keydown", handleCompareKeydown);
 });
 </script>
@@ -995,10 +1169,10 @@ onBeforeUnmount(() => {
               v-model="selectedFolder"
               aria-label="Local JPG folder path"
               placeholder="C:\Users\you\Pictures\Trip"
-              :disabled="indexing || searching || feedbackBusy"
+              :disabled="indexing || warmingEmbedding || searching || feedbackBusy"
               @keyup.enter="indexFolder"
             />
-            <button class="primary-button" :disabled="indexing || searching || feedbackBusy || !selectedFolder.trim()" @click="indexFolder">
+            <button class="primary-button" :disabled="indexing || warmingEmbedding || searching || feedbackBusy || !selectedFolder.trim()" @click="indexFolder">
               {{ prepareButtonLabel }}
             </button>
           </div>
@@ -1035,7 +1209,7 @@ onBeforeUnmount(() => {
             <div class="analysis-item" :class="{ running: activeJobKind === 'quality', ready: qualityReady }">
               <button
                 class="analysis-main"
-                :disabled="indexing || searching || feedbackBusy || !worker.healthy"
+                :disabled="indexing || warmingEmbedding || searching || feedbackBusy || !worker.healthy"
                 @click="startAnalysis('quality')"
               >
                 <span><strong>质量与相似</strong><small>{{ analysisDetail('quality') }}</small></span>
@@ -1058,10 +1232,10 @@ onBeforeUnmount(() => {
               >×</button>
             </div>
 
-            <div class="analysis-item" :class="{ running: activeJobKind === 'embedding', ready: embeddingReady }">
+            <div class="analysis-item" :class="{ running: activeJobKind === 'embedding' || warmingEmbedding, ready: embeddingReady }">
               <button
                 class="analysis-main"
-                :disabled="indexing || searching || feedbackBusy || !worker.healthy"
+                :disabled="indexing || warmingEmbedding || searching || feedbackBusy || !worker.healthy"
                 @click="startAnalysis('embedding')"
               >
                 <span><strong>语义索引</strong><small>{{ analysisDetail('embedding') }}</small></span>
@@ -1087,7 +1261,7 @@ onBeforeUnmount(() => {
             <div class="analysis-item" :class="{ running: activeJobKind === 'people', ready: peopleReady }">
               <button
                 class="analysis-main"
-                :disabled="indexing || searching || feedbackBusy || !worker.healthy"
+                :disabled="indexing || warmingEmbedding || searching || feedbackBusy || !worker.healthy"
                 @click="startAnalysis('people')"
               >
                 <span><strong>人脸分组</strong><small>{{ analysisDetail('people') }}</small></span>
@@ -1159,13 +1333,13 @@ onBeforeUnmount(() => {
             <input
               v-model="command"
               aria-label="Ask anything about this album"
-              :disabled="!embeddingReady || searching || indexing"
+              :disabled="!embeddingReady || searching || indexing || warmingEmbedding"
               :placeholder="embeddingReady ? '搜索照片，或输入：选 12 张夜景，质量至少 45…' : '先在 Library 点击“语义索引”'"
               @keyup.enter="runSearch"
             />
             <button
               aria-label="Run command"
-              :disabled="!embeddingReady || !command.trim() || searching || indexing"
+              :disabled="!embeddingReady || !command.trim() || searching || indexing || warmingEmbedding"
               @click="runSearch"
             >{{ searching ? "…" : "Search" }}</button>
           </div>
@@ -1181,7 +1355,7 @@ onBeforeUnmount(() => {
               <button
                 v-if="selectionResult.selected.length > 1 && !compareMode"
                 class="compare-launch"
-                :disabled="feedbackBusy || indexing"
+                :disabled="feedbackBusy || indexing || warmingEmbedding"
                 @click="startPreferenceCompare"
               >{{ compareCompleted ? "Compare again" : "A/B preference" }}</button>
             </div>
@@ -1254,7 +1428,7 @@ onBeforeUnmount(() => {
                 <small>{{ photo.total_score.toFixed(3) }}</small>
               </figcaption>
               <div class="photo-actions">
-                <button :disabled="feedbackBusy || indexing" @click="replacePhoto(photo)">Replace</button>
+                <button :disabled="feedbackBusy || indexing || warmingEmbedding" @click="replacePhoto(photo)">Replace</button>
               </div>
               <details class="photo-reasons">
                 <summary>Why this photo</summary>

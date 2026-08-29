@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 import re
 from abc import ABC, abstractmethod
 from functools import lru_cache
@@ -10,6 +13,12 @@ from typing import Mapping, Sequence
 import cv2
 import numpy as np
 from PIL import Image, ImageOps
+
+from ai.index.openclip_identity import (
+    canonical_openclip_provider_name,
+    resolve_openclip_backend,
+)
+from ai.numeric_runtime import NumericRuntimeConflictError
 
 
 SEMANTIC_DIMENSIONS = (
@@ -49,6 +58,47 @@ CONCEPT_TERMS: dict[str, tuple[str, ...]] = {
     "portrait": ("portrait", "person", "people", "人像", "人物"),
     "cinematic": ("cinematic", "film", "movie", "电影感", "胶片"),
 }
+
+OPENCLIP_RAW_V2_PROVIDER_NAME = "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-v2"
+OPENCLIP_LEGACY_BRIDGE_V1_PROVIDER_NAME = (
+    "openclip-xlm-roberta-base-vit-b-32-laion5b-zh-bridge-v1"
+)
+OPENCLIP_PREVIOUS_PROVIDER_NAME = "openclip-xlm-roberta-base-vit-b-32-laion5b-v1"
+_OPENCLIP_RAW_QUERY_CONTRACT = {
+    "normalization": "unicode-preserving-collapse-whitespace-v1"
+}
+_CONCEPT_TERMS_SHA256 = hashlib.sha256(
+    json.dumps(
+        CONCEPT_TERMS,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+).hexdigest()
+_OPENCLIP_LEGACY_QUERY_CONTRACT = {
+    "bridge": "bounded-chinese-concept-to-english-prompt-v1",
+    "concept_terms_sha256": _CONCEPT_TERMS_SHA256,
+    **_OPENCLIP_RAW_QUERY_CONTRACT,
+}
+
+
+def openclip_provider_name(query_mode: str, backend: str) -> str:
+    query_contract = (
+        _OPENCLIP_RAW_QUERY_CONTRACT
+        if query_mode == "raw-multilingual"
+        else _OPENCLIP_LEGACY_QUERY_CONTRACT
+    )
+    return canonical_openclip_provider_name(
+        query_mode,
+        query_contract=query_contract,
+        backend=backend,
+    )
+
+
+OPENCLIP_RAW_PROVIDER_NAME = openclip_provider_name("raw-multilingual", "cpu")
+OPENCLIP_LEGACY_BRIDGE_PROVIDER_NAME = openclip_provider_name(
+    "legacy-chinese-keyword-bridge", "cpu"
+)
 
 
 class EmbeddingProvider(ABC):
@@ -200,10 +250,21 @@ def _create_embedding_provider(
         raise ValueError("embedding batch size must be between 1 and 256")
     if normalized in {"lightweight", "lightweight-semantic-v1"}:
         return LightweightSemanticProvider()
+    try:
+        backend = resolve_openclip_backend(device)
+    except NumericRuntimeConflictError as error:
+        raise EmbeddingProviderUnavailableError(str(error)) from error
+    raw_provider_name = openclip_provider_name("raw-multilingual", backend)
+    legacy_provider_name = openclip_provider_name(
+        "legacy-chinese-keyword-bridge", backend
+    )
     if normalized in {
         "openclip",
         "openclip-multilingual",
-        "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+        "openclip-multilingual-raw",
+        OPENCLIP_RAW_PROVIDER_NAME,
+        raw_provider_name,
+        OPENCLIP_RAW_V2_PROVIDER_NAME,
     }:
         from ai.index.openclip_provider import OpenClipMultilingualProvider
 
@@ -212,14 +273,45 @@ def _create_embedding_provider(
             device=device,
             batch_size=batch_size,
         )
+    if normalized in {
+        "openclip-legacy",
+        "openclip-legacy-bridge",
+        "openclip-multilingual-legacy",
+        OPENCLIP_LEGACY_BRIDGE_PROVIDER_NAME,
+        legacy_provider_name,
+        OPENCLIP_LEGACY_BRIDGE_V1_PROVIDER_NAME,
+        OPENCLIP_PREVIOUS_PROVIDER_NAME,
+    }:
+        from ai.index.openclip_provider import OpenClipLegacyBridgeProvider
+
+        return OpenClipLegacyBridgeProvider(
+            cache_dir=Path(cache_dir) if cache_dir else Path(".norma/models"),
+            device=device,
+            batch_size=batch_size,
+        )
     raise ValueError(
         f"Unknown embedding provider '{normalized}'. "
-        "Available: lightweight, openclip-multilingual."
+        "Available: openclip-multilingual (default), lightweight (baseline), "
+        "openclip-legacy-bridge (legacy ablation)."
     )
 
 
-def embedding_provider_capabilities(active: str) -> list[dict[str, object]]:
+def embedding_provider_capabilities(
+    active: str, device: str = "auto"
+) -> list[dict[str, object]]:
     active_normalized = active.strip().casefold()
+    try:
+        backend = resolve_openclip_backend(device)
+    except NumericRuntimeConflictError:
+        backend = "unavailable"
+    raw_provider_name = openclip_provider_name("raw-multilingual", backend)
+    legacy_provider_name = openclip_provider_name(
+        "legacy-chinese-keyword-bridge", backend
+    )
+    openclip_available = backend != "unavailable" and all(
+        find_spec(module) is not None
+        for module in ("torch", "open_clip", "transformers")
+    )
     return [
         {
             "id": "lightweight",
@@ -227,25 +319,55 @@ def embedding_provider_capabilities(active: str) -> list[dict[str, object]]:
             "dimension": LightweightSemanticProvider.dimension,
             "available": True,
             "model_backed": False,
+            "default": False,
+            "baseline": True,
+            "legacy": False,
             "multilingual": "bounded-dictionary",
             "active": active_normalized in {"lightweight", "lightweight-semantic-v1"},
             "install_extra": None,
         },
         {
             "id": "openclip-multilingual",
-            "name": "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+            "name": raw_provider_name,
             "dimension": 512,
-            "available": all(
-                find_spec(module) is not None
-                for module in ("torch", "open_clip", "transformers")
-            ),
+            "available": openclip_available,
             "model_backed": True,
+            "default": True,
+            "baseline": False,
+            "legacy": False,
             "multilingual": "xlm-roberta",
+            "query_mode": "raw-multilingual",
             "active": active_normalized
             in {
                 "openclip",
                 "openclip-multilingual",
-                "openclip-xlm-roberta-base-vit-b-32-laion5b-v1",
+                "openclip-multilingual-raw",
+                OPENCLIP_RAW_PROVIDER_NAME,
+                raw_provider_name,
+                OPENCLIP_RAW_V2_PROVIDER_NAME,
+            },
+            "install_extra": "multimodal",
+        },
+        {
+            "id": "openclip-legacy-bridge",
+            "name": legacy_provider_name,
+            "dimension": 512,
+            "available": openclip_available,
+            "model_backed": True,
+            "default": False,
+            "baseline": False,
+            "legacy": True,
+            "multilingual": "bounded-dictionary-to-english",
+            "query_mode": "legacy-chinese-keyword-bridge",
+            "active": active_normalized
+            in {
+                "openclip-legacy",
+                "openclip-legacy-bridge",
+                "openclip-multilingual-legacy",
+                OPENCLIP_LEGACY_BRIDGE_PROVIDER_NAME,
+                legacy_provider_name,
+                OPENCLIP_LEGACY_BRIDGE_V1_PROVIDER_NAME,
+                OPENCLIP_PREVIOUS_PROVIDER_NAME,
             },
             "install_extra": "multimodal",
         },
@@ -268,7 +390,42 @@ def normalize_embedding(
     return array / norm
 
 
-def embedding_cache_is_current(row: Mapping[str, object], provider_name: str) -> bool:
+def source_file_sha256(path: Path) -> str:
+    """Hash one stable source snapshot without trusting size/mtime as identity."""
+
+    resolved = path.resolve(strict=True)
+    before_path = resolved.stat()
+    digest = hashlib.sha256()
+    with resolved.open("rb") as source:
+        before_fd = os.fstat(source.fileno())
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+        after_fd = os.fstat(source.fileno())
+    after_path = resolved.stat()
+    snapshots = {
+        (before_path.st_size, before_path.st_mtime_ns),
+        (before_fd.st_size, before_fd.st_mtime_ns),
+        (after_fd.st_size, after_fd.st_mtime_ns),
+        (after_path.st_size, after_path.st_mtime_ns),
+    }
+    if len(snapshots) != 1:
+        raise OSError("source changed while computing its content digest")
+    return digest.hexdigest()
+
+
+def embedding_cache_is_current(
+    row: Mapping[str, object],
+    provider_name: str,
+    *,
+    strict_source_hash: bool = False,
+) -> bool:
+    """Check cache readiness, optionally authenticating the complete source bytes.
+
+    Interactive ranking uses the cheap metadata/content-binding check.  Explicit
+    background embedding uses ``strict_source_hash=True`` so a same-stat source
+    replacement is recomputed without making every search reread the whole album.
+    """
+
     path = row["embedding_path"]
     if not path or row["embedding_provider"] != provider_name:
         return False
@@ -281,15 +438,28 @@ def embedding_cache_is_current(row: Mapping[str, object], provider_name: str) ->
         or row["embedding_source_mtime_ns"] != source_mtime_ns
     ):
         return False
+    expected_sha256 = row["embedding_source_sha256"]
+    if (
+        not isinstance(expected_sha256, str)
+        or re.fullmatch(r"[0-9a-f]{64}", expected_sha256) is None
+    ):
+        # A legacy vector cannot be authenticated retroactively.  The caller must
+        # recompute it from the current pixels before recording a source digest.
+        return False
     try:
-        source_stat = Path(str(row["absolute_path"])).stat()
+        source_path = Path(str(row["absolute_path"]))
+        source_stat = source_path.stat()
+        if source_stat.st_size != int(source_size) or source_stat.st_mtime_ns != int(
+            source_mtime_ns
+        ):
+            return False
+        if strict_source_hash:
+            current_sha256 = source_file_sha256(source_path)
     except OSError:
         return False
-    return (
-        source_stat.st_size == int(source_size)
-        and source_stat.st_mtime_ns == int(source_mtime_ns)
-        and Path(str(path)).is_file()
-    )
+    return (not strict_source_hash or current_sha256 == expected_sha256) and Path(
+        str(path)
+    ).is_file()
 
 
 def _normalize(vector: np.ndarray) -> np.ndarray:

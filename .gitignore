@@ -9,6 +9,7 @@ target/
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
 .pytest_cache/
 .ruff_cache/
 .venv/
@@ -16,8 +17,29 @@ __pycache__/
 # Norma runtime data
 .norma/
 
+# Defensive guardrails for local models, vectors, and databases
+*.onnx
+*.safetensors
+*.npy
+*.npz
+*.db
+*.sqlite
+*.sqlite3
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.gguf
+
 # Local configuration
 .env
+*.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+figures/puppeteer-edge.json
 
 # Editors / OS
 .idea/
@@ -32,3 +54,7 @@ Norma 项目 Codex 总提示词.md
 # Local experiment and audit artifacts
 profile_output/
 .aris/
+
+# Local research-orchestration traces; curated evidence lives in docs/figures
+refine-logs/
+MANIFEST.md

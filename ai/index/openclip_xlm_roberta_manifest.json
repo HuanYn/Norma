@@ -1,0 +1,99 @@
+{
+  "schema": "norma-openclip-pinned-manifest-v1",
+  "model": {
+    "name": "xlm-roberta-base-ViT-B-32",
+    "pretrained_tag": "laion5b_s13b_b90k",
+    "repository": "laion/CLIP-ViT-B-32-xlm-roberta-base-laion5B-s13B-b90k",
+    "revision": "506d40eb551f4801a1c27fc20a31c7b8f590deda",
+    "weight": {
+      "name": "open_clip_pytorch_model.bin",
+      "size": 1464635263,
+      "sha256": "a5412f19cca70db8d434f68361f7254bd322a553455a63dbb709bd6a650cf378"
+    },
+    "config": {
+      "embed_dim": 512,
+      "vision_cfg": {
+        "image_size": 224,
+        "layers": 12,
+        "patch_size": 32,
+        "width": 768
+      },
+      "text_cfg": {
+        "hf_model_name": "xlm-roberta-base",
+        "hf_pooler_type": "mean_pooler",
+        "hf_tokenizer_name": "xlm-roberta-base"
+      }
+    }
+  },
+  "preprocess": {
+    "image_size": 224,
+    "resize_mode": "shortest",
+    "interpolation": "bicubic",
+    "mean": [0.48145466, 0.4578275, 0.40821073],
+    "std": [0.26862954, 0.26130258, 0.27577711]
+  },
+  "tokenizer": {
+    "repository": "xlm-roberta-base",
+    "revision": "e73636d4f797dec63c3081bb6ed5c7b0bb3f2089",
+    "context_length": 77,
+    "clean": "whitespace",
+    "strip_sep_token": false,
+    "tokenizer_mode": null,
+    "local_files_only": true,
+    "model_source": "verified-local-snapshot",
+    "model_config_contract": {
+      "model_type": "xlm-roberta",
+      "hidden_size": 768,
+      "intermediate_size": 3072,
+      "num_attention_heads": 12,
+      "num_hidden_layers": 12,
+      "max_position_embeddings": 514,
+      "vocab_size": 250002,
+      "bos_token_id": 0,
+      "eos_token_id": 2,
+      "pad_token_id": 1,
+      "layer_norm_eps": 0.00001
+    },
+    "files": [
+      {
+        "name": "config.json",
+        "size": 615,
+        "sha256": "d66ed8cd4f2a93b358c245e50736fa389ed4f35c0bae7aad0b32abb20c62b579"
+      },
+      {
+        "name": "sentencepiece.bpe.model",
+        "size": 5069051,
+        "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+      },
+      {
+        "name": "tokenizer.json",
+        "size": 9096718,
+        "sha256": "a898ea75433890f6610f4e470b8ebeb0c21dce5c8dd61f892eb09eb5919d2e2c"
+      },
+      {
+        "name": "tokenizer_config.json",
+        "size": 25,
+        "sha256": "994f46754c5bf4014f1aa92d34b1374319c3a6b3f702105cd5b742beaecd18ce"
+      }
+    ]
+  },
+  "inference": {
+    "precision": "fp32",
+    "weights_only": true,
+    "eval_mode": true
+  },
+  "runtime_identity": {
+    "python": "full-version",
+    "distributions": [
+      "open-clip-torch",
+      "torch",
+      "torchvision",
+      "transformers",
+      "tokenizers",
+      "sentencepiece",
+      "ftfy",
+      "Pillow",
+      "numpy"
+    ]
+  }
+}

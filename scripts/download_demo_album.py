@@ -37,12 +37,16 @@ LICENSE_KEYS = (
 
 def api(params: dict[str, str]) -> dict[str, Any]:
     query = urllib.parse.urlencode({"format": "json", "formatversion": "2", **params})
-    request = urllib.request.Request(f"{API_URL}?{query}", headers={"User-Agent": USER_AGENT})
+    request = urllib.request.Request(
+        f"{API_URL}?{query}", headers={"User-Agent": USER_AGENT}
+    )
     with urllib.request.urlopen(request, timeout=60) as response:
         return json.load(response)
 
 
-def discover(count: int, searches: tuple[str, ...] = DEFAULT_SEARCHES) -> list[dict[str, Any]]:
+def discover(
+    count: int, searches: tuple[str, ...] = DEFAULT_SEARCHES
+) -> list[dict[str, Any]]:
     candidates: dict[str, dict[str, Any]] = {}
     per_query = max(12, (count // len(searches)) * 3)
     for term in searches:
@@ -85,15 +89,19 @@ def add_license_metadata(items: list[dict[str, Any]]) -> None:
                 "iiextmetadatalanguage": "en",
             }
         )
-        by_title = {page["title"]: page for page in payload.get("query", {}).get("pages", [])}
+        by_title = {
+            page["title"]: page for page in payload.get("query", {}).get("pages", [])
+        }
         for item in batch:
             page = by_title.get(item["title"], {})
             metadata = ((page.get("imageinfo") or [{}])[0]).get("extmetadata", {})
             item["license"] = {
-                key: _plain(metadata.get(key, {}).get("value", "")) for key in LICENSE_KEYS
+                key: _plain(metadata.get(key, {}).get("value", ""))
+                for key in LICENSE_KEYS
             }
-            item["source_page"] = "https://commons.wikimedia.org/wiki/" + urllib.parse.quote(
-                item["title"].replace(" ", "_"), safe="/:"
+            item["source_page"] = (
+                "https://commons.wikimedia.org/wiki/"
+                + urllib.parse.quote(item["title"].replace(" ", "_"), safe="/:")
             )
         time.sleep(0.2)
 
@@ -104,7 +112,9 @@ def download(items: list[dict[str, Any]], destination: Path) -> list[dict[str, A
     for index, item in enumerate(items, start=1):
         filename = f"{index:03d}_{item['sha1'][:12]}.jpg"
         target = destination / filename
-        request = urllib.request.Request(item["thumburl"], headers={"User-Agent": USER_AGENT})
+        request = urllib.request.Request(
+            item["thumburl"], headers={"User-Agent": USER_AGENT}
+        )
         try:
             with urllib.request.urlopen(request, timeout=90) as response:
                 data = response.read()
@@ -133,7 +143,9 @@ def _plain(value: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Download a licensed Wikimedia Commons demo album")
+    parser = argparse.ArgumentParser(
+        description="Download a licensed Wikimedia Commons demo album"
+    )
     parser.add_argument("--count", type=int, default=72)
     parser.add_argument("--output", type=Path, default=Path(".norma/demo-album"))
     parser.add_argument(

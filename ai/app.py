@@ -27,9 +27,32 @@ from ai.people import (
     canonical_face_provider_name,
     create_face_provider,
 )
-from ai.preferences import PreferenceService
-from ai.preferences.model import load_preference_model
+from ai.preferences import PreferenceService, PreferenceSuggestionAlreadyConsumedError
+from ai.preferences.suggestion_service import (
+    PreferenceSuggestionConflictError,
+    PreferenceSuggestionNumericalError,
+    PreferenceSuggestionService,
+)
 from ai.provider_runtime import EmbeddingWarmupManager
+from ai.rag import (
+    CitationValidationError,
+    EvidenceIntegrityError,
+    NoEvidenceError,
+    ProviderFailureError,
+    VLMInputBudgetError,
+)
+from ai.rag.providers import GroundedGenerationProvider
+from ai.rag.service import (
+    GroundedRAGService,
+    RAGBusyError,
+    RAGDriftError,
+    RAGEvidenceTooLargeError,
+)
+from ai.rag.security import redact_local_paths
+from ai.rag.transformers_runtime import (
+    LocalVLMUnavailableError,
+    create_local_qwen3vl_provider,
+)
 from ai.retrieval import RetrievalService
 from ai.selection import ReplacementService, SelectionService
 from ai.schemas import (
@@ -38,6 +61,8 @@ from ai.schemas import (
     AlbumIndexResponse,
     AlbumListResponse,
     AlbumPhotoListResponse,
+    AlbumRAGRequest,
+    AlbumRAGResponse,
     AlbumSearchRequest,
     AlbumSearchResponse,
     AlbumSummary,
@@ -62,6 +87,8 @@ from ai.schemas import (
     PeopleIndexResponse,
     PairwiseFeedbackRequest,
     PreferenceModelResponse,
+    PreferencePairSuggestionRequest,
+    PreferencePairSuggestionResponse,
     PreferenceStateResponse,
     PrepareJobRequest,
     RelevanceJudgmentBatchRequest,
@@ -129,6 +156,7 @@ def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
         schema_version=database.current_version(),
+        embedding_provider=embedding_provider().name,
         face_provider=canonical_face_provider_name(settings.face_provider),
     )
 
@@ -141,12 +169,13 @@ def capabilities() -> CapabilitiesResponse:
             "library": "cpu-fallback-indexer",
             "multimodal_index": embedding_provider().name,
             "people": "opencv-yunet-sface-constrained-prototype-clustering-v2",
-            "selection": "structured-cp-sat-or-greedy",
-            "preference": "online-pairwise-logistic-v1",
+            "selection": "contextual-utility+structured-cp-sat-or-greedy-v1",
+            "preference": "bayesian-contextual-laplace-runtime-v1+legacy-logistic-v1",
             "library_lifecycle": "persistent-catalog-and-jobs-v1",
             "retrieval_evaluation": "human-relevance-metrics-v1",
             "cache_maintenance": "audited-quota-gc-v2",
             "provider_warmup": "background-idempotent-v1",
+            "rag": "learned-openclip-retrieval+local-qwen3vl+citation-enforcement-v1",
             "video": "deferred",
             "world": "deferred",
         },
@@ -169,7 +198,9 @@ def embedding_provider() -> EmbeddingProvider:
 @app.get("/providers/embedding", response_model=EmbeddingProviderListResponse)
 def list_embedding_providers() -> EmbeddingProviderListResponse:
     return EmbeddingProviderListResponse(
-        items=embedding_provider_capabilities(settings.embedding_provider)
+        items=embedding_provider_capabilities(
+            settings.embedding_provider, settings.embedding_device
+        )
     )
 
 
@@ -364,6 +395,21 @@ def retrieval_service() -> RetrievalService:
     )
 
 
+def rag_generation_provider() -> GroundedGenerationProvider:
+    return create_local_qwen3vl_provider(
+        settings.local_vlm_model_dir,
+        max_new_tokens=settings.vlm_max_new_tokens,
+    )
+
+
+def rag_service() -> GroundedRAGService:
+    return GroundedRAGService(
+        database,
+        retrieval_service(),
+        rag_generation_provider,
+    )
+
+
 def evaluation_service() -> EvaluationService:
     return EvaluationService(database, retrieval_service())
 
@@ -387,6 +433,13 @@ def selection_service() -> SelectionService:
 
 def preference_service() -> PreferenceService:
     return PreferenceService(
+        database,
+        embedding_provider(),
+    )
+
+
+def preference_suggestion_service() -> PreferenceSuggestionService:
+    return PreferenceSuggestionService(
         database,
         embedding_provider(),
     )
@@ -426,6 +479,39 @@ def search_album(request: AlbumSearchRequest) -> AlbumSearchResponse:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except EmbeddingProviderUnavailableError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@app.post("/albums/{album_id}/rag", response_model=AlbumRAGResponse)
+def run_grounded_rag(
+    album_id: str,
+    request: AlbumRAGRequest,
+) -> AlbumRAGResponse:
+    """Learned retrieval + local VLM with referential citation validation only."""
+
+    try:
+        return rag_service().run(album_id, request)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=_safe_rag_error(error)) from error
+    except (RAGDriftError, EvidenceIntegrityError) as error:
+        raise HTTPException(status_code=409, detail=_safe_rag_error(error)) from error
+    except (RAGEvidenceTooLargeError, VLMInputBudgetError) as error:
+        raise HTTPException(status_code=413, detail=_safe_rag_error(error)) from error
+    except RAGBusyError as error:
+        raise HTTPException(status_code=429, detail=_safe_rag_error(error)) from error
+    except (CitationValidationError, NoEvidenceError, ValueError) as error:
+        raise HTTPException(status_code=422, detail=_safe_rag_error(error)) from error
+    except (
+        LocalVLMUnavailableError,
+        ProviderFailureError,
+        EmbeddingProviderUnavailableError,
+    ) as error:
+        raise HTTPException(status_code=503, detail=_safe_rag_error(error)) from error
+
+
+def _safe_rag_error(error: BaseException) -> str:
+    """Keep local loader/source paths out of RAG HTTP error details."""
+
+    return redact_local_paths(str(error)) or type(error).__name__
 
 
 @app.post("/evaluation/queries", response_model=EvaluationQuerySummary)
@@ -553,14 +639,31 @@ def get_selection(selection_id: str) -> SelectionResponse:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
 
+@app.post(
+    "/selections/{selection_id}/preference-pairs/suggest",
+    response_model=PreferencePairSuggestionResponse,
+)
+def suggest_preference_pair(
+    selection_id: str,
+    request: PreferencePairSuggestionRequest,
+) -> PreferencePairSuggestionResponse:
+    try:
+        return preference_suggestion_service().suggest(selection_id, request)
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except PreferenceSuggestionConflictError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except PreferenceSuggestionNumericalError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except EmbeddingProviderUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
 @app.get("/preferences/{user_id}", response_model=PreferenceStateResponse)
 def get_preference_state(user_id: str) -> PreferenceStateResponse:
-    model = load_preference_model(database, user_id)
-    return PreferenceStateResponse(
-        user_id=model.user_id,
-        comparisons=model.comparisons,
-        weights=model.weights,
-    )
+    return preference_service().get_state(user_id)
 
 
 @app.post("/feedback/pairwise", response_model=PreferenceModelResponse)
@@ -571,6 +674,8 @@ def record_pairwise_feedback(
         return preference_service().record_pairwise(request)
     except KeyError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
+    except PreferenceSuggestionAlreadyConsumedError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except EmbeddingProviderUnavailableError as error:

@@ -11,6 +11,7 @@ from typing import Callable
 
 from PIL import Image, ImageOps
 
+from ai.index.embedding import source_file_sha256
 from ai.index.quality import analyze_quality
 from ai.index.similarity import (
     assign_similarity_groups,
@@ -54,6 +55,7 @@ class ScannedPhoto:
     metadata: dict[str, object]
     similarity_group: str | None = None
     reused: bool = False
+    source_sha256: str | None = None
 
 
 @dataclass(slots=True)
@@ -317,6 +319,8 @@ class AlbumIndexer:
             if cached is not None:
                 try:
                     preserved = self._cached_photo(cached)
+                    preserved.source_sha256 = None
+                    preserved.metadata.pop("source_sha256", None)
                 except (TypeError, ValueError, json.JSONDecodeError):
                     pass
             return _ScanOutcome(
@@ -333,7 +337,8 @@ class AlbumIndexer:
                 SELECT id, absolute_path, thumbnail_path, width, height,
                        file_size, source_mtime_ns, capture_time, quality_score,
                        blur_score, phash, dhash, auto_reject, reject_reason,
-                       metadata_json, similarity_group
+                       metadata_json, similarity_group, embedding_path,
+                       embedding_source_sha256
                 FROM photos WHERE album_id = ?
                 """,
                 (album_id,),
@@ -368,6 +373,7 @@ class AlbumIndexer:
             metadata=metadata,
             similarity_group=row["similarity_group"],
             reused=True,
+            source_sha256=_stored_source_sha256(row),
         )
 
     def _scan_photo(
@@ -380,6 +386,8 @@ class AlbumIndexer:
         include_quality: bool = True,
     ) -> ScannedPhoto:
         before = path.stat()
+        before_sha256 = source_file_sha256(path)
+        _ensure_unchanged_source_stat(path, before.st_size, before.st_mtime_ns)
         photo_id = (
             photo_id
             or uuid.uuid5(
@@ -399,11 +407,18 @@ class AlbumIndexer:
             image.thumbnail((480, 480), Image.Resampling.LANCZOS)
             image.save(thumbnail_path, "JPEG", quality=84, optimize=True)
 
+        after_sha256 = source_file_sha256(path)
         after = path.stat()
-        if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+        if (before.st_size, before.st_mtime_ns) != (
+            after.st_size,
+            after.st_mtime_ns,
+        ) or before_sha256 != after_sha256:
             raise RuntimeError("source image changed during read-only indexing")
 
-        metadata: dict[str, object] = {"provider": PROVIDER_NAME}
+        metadata: dict[str, object] = {
+            "provider": PROVIDER_NAME,
+            "source_sha256": before_sha256,
+        }
         if quality is not None:
             metadata.update(
                 {
@@ -432,6 +447,7 @@ class AlbumIndexer:
             reject_reason=quality.reject_reason if quality is not None else None,
             quality_flags=list(quality.flags) if quality is not None else [],
             metadata=metadata,
+            source_sha256=before_sha256,
         )
 
     def _persist(
@@ -456,7 +472,9 @@ class AlbumIndexer:
             )
             current_ids = {photo.id for photo in photos}
             existing = connection.execute(
-                "SELECT id, file_size, source_mtime_ns FROM photos WHERE album_id = ?",
+                """SELECT id, file_size, source_mtime_ns, embedding_path,
+                          embedding_source_sha256, metadata_json
+                   FROM photos WHERE album_id = ?""",
                 (album_id,),
             ).fetchall()
             existing_by_id = {row["id"]: row for row in existing}
@@ -469,6 +487,9 @@ class AlbumIndexer:
                     existing_by_id[photo.id]["file_size"] != photo.file_size
                     or existing_by_id[photo.id]["source_mtime_ns"]
                     != photo.source_mtime_ns
+                    or photo.source_sha256 is None
+                    or _stored_source_sha256(existing_by_id[photo.id])
+                    != photo.source_sha256
                 )
             ]
             added = [photo.id for photo in photos if photo.id not in existing_by_id]
@@ -524,19 +545,28 @@ class AlbumIndexer:
                     embedding_path=CASE
                         WHEN photos.file_size = excluded.file_size
                          AND photos.source_mtime_ns = excluded.source_mtime_ns
+                         AND photos.embedding_source_sha256 = ?
                         THEN photos.embedding_path ELSE NULL END,
                     embedding_provider=CASE
                         WHEN photos.file_size = excluded.file_size
                          AND photos.source_mtime_ns = excluded.source_mtime_ns
+                         AND photos.embedding_source_sha256 = ?
                         THEN photos.embedding_provider ELSE NULL END,
                     embedding_source_size=CASE
                         WHEN photos.file_size = excluded.file_size
                          AND photos.source_mtime_ns = excluded.source_mtime_ns
+                         AND photos.embedding_source_sha256 = ?
                         THEN photos.embedding_source_size ELSE NULL END,
                     embedding_source_mtime_ns=CASE
                         WHEN photos.file_size = excluded.file_size
                          AND photos.source_mtime_ns = excluded.source_mtime_ns
+                         AND photos.embedding_source_sha256 = ?
                         THEN photos.embedding_source_mtime_ns ELSE NULL END,
+                    embedding_source_sha256=CASE
+                        WHEN photos.file_size = excluded.file_size
+                         AND photos.source_mtime_ns = excluded.source_mtime_ns
+                         AND photos.embedding_source_sha256 = ?
+                        THEN photos.embedding_source_sha256 ELSE NULL END,
                     face_provider=CASE
                         WHEN photos.file_size = excluded.file_size
                          AND photos.source_mtime_ns = excluded.source_mtime_ns
@@ -577,6 +607,11 @@ class AlbumIndexer:
                         int(photo.auto_reject),
                         photo.reject_reason,
                         json.dumps(photo.metadata, ensure_ascii=False),
+                        photo.source_sha256,
+                        photo.source_sha256,
+                        photo.source_sha256,
+                        photo.source_sha256,
+                        photo.source_sha256,
                     )
                     for photo in photos
                 ],
@@ -618,10 +653,47 @@ def _cached_source_matches(row: object, path: Path) -> bool:
     )
     if any(row[key] is None for key in required):
         return False
+    expected_sha256 = _stored_source_sha256(row)
+    if expected_sha256 is None:
+        return False
     current = path.stat()
-    return current.st_size == int(row["file_size"]) and current.st_mtime_ns == int(
+    if current.st_size != int(row["file_size"]) or current.st_mtime_ns != int(
         row["source_mtime_ns"]
+    ):
+        return False
+    return source_file_sha256(path) == expected_sha256
+
+
+def _stored_source_sha256(row: object) -> str | None:
+    embedding_sha256 = _valid_sha256(row["embedding_source_sha256"])
+    try:
+        metadata = json.loads(row["metadata_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        metadata = {}
+    metadata_sha256 = _valid_sha256(
+        metadata.get("source_sha256") if isinstance(metadata, dict) else None
     )
+    if (
+        embedding_sha256 is not None
+        and metadata_sha256 is not None
+        and embedding_sha256 != metadata_sha256
+    ):
+        return None
+    return metadata_sha256 or embedding_sha256
+
+
+def _valid_sha256(value: object) -> str | None:
+    if not isinstance(value, str) or len(value) != 64:
+        return None
+    return (
+        value if all(character in "0123456789abcdef" for character in value) else None
+    )
+
+
+def _ensure_unchanged_source_stat(path: Path, size: int, mtime_ns: int) -> None:
+    current = path.stat()
+    if (current.st_size, current.st_mtime_ns) != (size, mtime_ns):
+        raise RuntimeError("source image changed during read-only indexing")
 
 
 def _photo_quality_complete(photo: ScannedPhoto) -> bool:

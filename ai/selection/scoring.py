@@ -6,6 +6,7 @@ from typing import Mapping
 import numpy as np
 
 from ai.preferences.model import PreferenceModel, photo_features, preference_probability
+from ai.preferences.runtime import PreferenceRuntime
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,14 +50,51 @@ def score_photo(
     )
 
 
-def grounded_reasons(score: ScoreBreakdown, semantic_enabled: bool) -> list[str]:
+def score_contextual_photo(
+    row: Mapping[str, object],
+    image_vector: np.ndarray,
+    query_vector: np.ndarray,
+    runtime: PreferenceRuntime,
+    *,
+    decision_features: np.ndarray | None = None,
+) -> ScoreBreakdown:
+    utility = (
+        runtime.score_precomputed(decision_features)
+        if decision_features is not None
+        else runtime.score(
+            image_vector,
+            query_vector,
+            auto_reject=bool(row["auto_reject"]),
+            quality_missing=row["quality_score"] is None,
+        )
+    )
+    return ScoreBreakdown(
+        total=utility.total,
+        semantic=utility.cosine,
+        quality=float(row["quality_score"] or 0.0),
+        preference=utility.preference_residual,
+        preference_comparisons=runtime.comparisons,
+    )
+
+
+def grounded_reasons(
+    score: ScoreBreakdown,
+    semantic_enabled: bool,
+    *,
+    contextual_utility: bool = False,
+) -> list[str]:
     reasons = [
         f"quality {score.quality:.1f}/100",
         "passes reject and collection constraints",
     ]
     if semantic_enabled:
         reasons.insert(0, f"semantic similarity {score.semantic:.3f}")
-    if score.preference_comparisons > 0:
+    if contextual_utility and score.preference_comparisons > 0:
+        reasons.append(
+            f"learned contextual utility residual {score.preference:+.3f} "
+            f"from {score.preference_comparisons} comparisons"
+        )
+    elif score.preference_comparisons > 0:
         reasons.append(
             f"personal preference fit {score.preference:.3f} "
             f"from {score.preference_comparisons} comparisons"

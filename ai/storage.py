@@ -6,9 +6,214 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 14
 
-SCHEMA_SQL = """
+
+PREFERENCE_SCHEMA_V10_SQL = """
+CREATE TABLE IF NOT EXISTS preference_events (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    album_id TEXT NOT NULL,
+    selection_id TEXT,
+    suggestion_id TEXT,
+    query_text TEXT NOT NULL,
+    preferred_photo_id TEXT NOT NULL,
+    rejected_photo_id TEXT NOT NULL,
+    choice TEXT NOT NULL CHECK(
+        choice IN ('preferred', 'tie', 'skip', 'both_bad')
+    ),
+    provider_fingerprint TEXT NOT NULL,
+    feature_schema TEXT NOT NULL,
+    preferred_features_json TEXT NOT NULL,
+    rejected_features_json TEXT NOT NULL,
+    base_margin REAL NOT NULL,
+    context_json TEXT NOT NULL,
+    model_id_at_display TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_preference_events_compatible
+    ON preference_events(
+        user_id, provider_fingerprint, feature_schema, created_at, id
+    );
+
+CREATE TRIGGER IF NOT EXISTS preference_events_no_update
+BEFORE UPDATE ON preference_events
+BEGIN
+    SELECT RAISE(ABORT, 'preference_events are immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS preference_events_no_delete
+BEFORE DELETE ON preference_events
+BEGIN
+    SELECT RAISE(ABORT, 'preference_events are immutable');
+END;
+
+CREATE TABLE IF NOT EXISTS preference_models (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    algorithm TEXT NOT NULL,
+    provider_fingerprint TEXT NOT NULL,
+    feature_schema TEXT NOT NULL,
+    projection_id TEXT,
+    mean_json TEXT NOT NULL,
+    covariance_json TEXT NOT NULL,
+    training_pair_count INTEGER NOT NULL CHECK(training_pair_count >= 0),
+    training_event_digest TEXT NOT NULL,
+    hyperparameters_json TEXT NOT NULL,
+    diagnostics_json TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_preference_models_one_active
+    ON preference_models(user_id, provider_fingerprint, feature_schema)
+    WHERE active = 1;
+
+CREATE INDEX IF NOT EXISTS idx_preference_models_history
+    ON preference_models(
+        user_id, provider_fingerprint, feature_schema, created_at, id
+    );
+
+CREATE TRIGGER IF NOT EXISTS preference_models_restrict_update
+BEFORE UPDATE ON preference_models
+WHEN NOT (
+    OLD.active = 1 AND NEW.active = 0
+    AND NEW.id IS OLD.id
+    AND NEW.user_id IS OLD.user_id
+    AND NEW.algorithm IS OLD.algorithm
+    AND NEW.provider_fingerprint IS OLD.provider_fingerprint
+    AND NEW.feature_schema IS OLD.feature_schema
+    AND NEW.projection_id IS OLD.projection_id
+    AND NEW.mean_json IS OLD.mean_json
+    AND NEW.covariance_json IS OLD.covariance_json
+    AND NEW.training_pair_count IS OLD.training_pair_count
+    AND NEW.training_event_digest IS OLD.training_event_digest
+    AND NEW.hyperparameters_json IS OLD.hyperparameters_json
+    AND NEW.diagnostics_json IS OLD.diagnostics_json
+    AND NEW.created_at IS OLD.created_at
+)
+BEGIN
+    SELECT RAISE(ABORT, 'preference_models are immutable except deactivation');
+END;
+
+CREATE TRIGGER IF NOT EXISTS preference_models_no_delete
+BEFORE DELETE ON preference_models
+BEGIN
+    SELECT RAISE(ABORT, 'preference_models are immutable');
+END;
+"""
+
+PREFERENCE_SUGGESTION_SCHEMA_V11_SQL = """
+CREATE TABLE IF NOT EXISTS preference_suggestions (
+    id TEXT PRIMARY KEY,
+    selection_id TEXT NOT NULL,
+    album_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    query_text TEXT NOT NULL,
+    left_photo_id TEXT NOT NULL,
+    right_photo_id TEXT NOT NULL,
+    provider_fingerprint TEXT NOT NULL,
+    feature_schema TEXT NOT NULL,
+    projection_id TEXT NOT NULL,
+    model_id_at_display TEXT,
+    acquisition_version TEXT NOT NULL,
+    constraint_solver TEXT NOT NULL,
+    mode TEXT NOT NULL CHECK(mode IN ('shortlist', 'exhaustive')),
+    candidate_digest TEXT NOT NULL,
+    candidate_source_digest TEXT NOT NULL,
+    candidate_ids_json TEXT NOT NULL,
+    left_features_json TEXT NOT NULL,
+    right_features_json TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    diagnostics_json TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK(left_photo_id <> right_photo_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_preference_suggestions_context
+    ON preference_suggestions(
+        selection_id, user_id, provider_fingerprint, feature_schema,
+        model_id_at_display, candidate_digest, created_at, id
+    );
+
+CREATE INDEX IF NOT EXISTS idx_preference_suggestions_exclusion
+    ON preference_suggestions(
+        selection_id, user_id, provider_fingerprint, feature_schema,
+        candidate_digest, created_at, id
+    );
+
+CREATE TRIGGER IF NOT EXISTS preference_suggestions_no_update
+BEFORE UPDATE ON preference_suggestions
+BEGIN
+    SELECT RAISE(ABORT, 'preference_suggestions are immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS preference_suggestions_no_delete
+BEFORE DELETE ON preference_suggestions
+BEGIN
+    SELECT RAISE(ABORT, 'preference_suggestions are immutable');
+END;
+"""
+
+PREFERENCE_SUGGESTION_EVENT_INDEX_V11_SQL = """
+CREATE UNIQUE INDEX IF NOT EXISTS idx_preference_events_one_per_suggestion
+    ON preference_events(suggestion_id)
+    WHERE suggestion_id IS NOT NULL;
+"""
+
+RAG_SCHEMA_V12_SQL = """
+CREATE TABLE IF NOT EXISTS rag_runs (
+    id TEXT PRIMARY KEY,
+    album_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    query_text TEXT NOT NULL,
+    retrieval_provider_fingerprint TEXT NOT NULL,
+    generation_provider_fingerprint TEXT NOT NULL,
+    candidate_digest TEXT NOT NULL,
+    query_digest TEXT NOT NULL,
+    evidence_digest TEXT NOT NULL,
+    evidence_json TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    request_json TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK(length(candidate_digest) = 64
+          AND candidate_digest NOT GLOB '*[^0-9a-f]*'),
+    CHECK(length(query_digest) = 64
+          AND query_digest NOT GLOB '*[^0-9a-f]*'),
+    CHECK(length(evidence_digest) = 64
+          AND evidence_digest NOT GLOB '*[^0-9a-f]*'),
+    CHECK(json_valid(evidence_json)),
+    CHECK(json_valid(result_json)),
+    CHECK(json_valid(request_json))
+) WITHOUT ROWID;
+
+CREATE INDEX IF NOT EXISTS idx_rag_runs_context
+    ON rag_runs(album_id, user_id, created_at DESC, id DESC);
+
+CREATE TRIGGER IF NOT EXISTS rag_runs_no_update
+BEFORE UPDATE ON rag_runs
+BEGIN
+    SELECT RAISE(ABORT, 'rag_runs are immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS rag_runs_no_replace
+BEFORE INSERT ON rag_runs
+WHEN EXISTS(SELECT 1 FROM rag_runs WHERE id = NEW.id)
+BEGIN
+    SELECT RAISE(ABORT, 'rag_runs are immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS rag_runs_no_delete
+BEFORE DELETE ON rag_runs
+BEGIN
+    SELECT RAISE(ABORT, 'rag_runs are immutable');
+END;
+"""
+
+SCHEMA_SQL = (
+    """
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 
@@ -41,6 +246,11 @@ CREATE TABLE IF NOT EXISTS photos (
     embedding_provider TEXT,
     embedding_source_size INTEGER,
     embedding_source_mtime_ns INTEGER,
+    embedding_source_sha256 TEXT CHECK(
+        embedding_source_sha256 IS NULL
+        OR (length(embedding_source_sha256) = 64
+            AND embedding_source_sha256 NOT GLOB '*[^0-9a-f]*')
+    ),
     face_provider TEXT,
     face_source_size INTEGER,
     face_source_mtime_ns INTEGER,
@@ -156,6 +366,10 @@ CREATE TABLE IF NOT EXISTS maintenance_runs (
 CREATE INDEX IF NOT EXISTS idx_maintenance_runs_created
     ON maintenance_runs(created_at DESC, id DESC);
 """
+    + PREFERENCE_SCHEMA_V10_SQL
+    + PREFERENCE_SUGGESTION_SCHEMA_V11_SQL
+    + RAG_SCHEMA_V12_SQL
+)
 
 PHOTO_COLUMNS_V2: dict[str, str] = {
     "file_size": "INTEGER",
@@ -192,6 +406,14 @@ PHOTO_COLUMNS_V7: dict[str, str] = {
     "face_count": "INTEGER NOT NULL DEFAULT 0",
 }
 
+PHOTO_COLUMNS_V13: dict[str, str] = {
+    "embedding_source_sha256": (
+        "TEXT CHECK(embedding_source_sha256 IS NULL "
+        "OR (length(embedding_source_sha256) = 64 "
+        "AND embedding_source_sha256 NOT GLOB '*[^0-9a-f]*'))"
+    ),
+}
+
 
 class Database:
     def __init__(self, path: Path) -> None:
@@ -216,6 +438,24 @@ class Database:
                 connection.execute(
                     "INSERT INTO schema_migrations(version) VALUES (?)", (version,)
                 )
+            # Version 11 was developed in-place before release. Repair databases
+            # initialized by an earlier development snapshot of v11 as well as
+            # applying the tracked migration below for v10 databases.
+            self._ensure_v11_suggestion_event_key(connection)
+
+    @staticmethod
+    def _ensure_v11_suggestion_event_key(
+        connection: sqlite3.Connection,
+    ) -> None:
+        columns = {
+            str(row["name"])
+            for row in connection.execute("PRAGMA table_info(preference_events)")
+        }
+        if "suggestion_id" not in columns:
+            connection.execute(
+                "ALTER TABLE preference_events ADD COLUMN suggestion_id TEXT"
+            )
+        connection.executescript(PREFERENCE_SUGGESTION_EVENT_INDEX_V11_SQL)
 
     @staticmethod
     def _apply_migration(connection: sqlite3.Connection, version: int) -> None:
@@ -494,6 +734,129 @@ class Database:
                 raise
             finally:
                 connection.execute("PRAGMA foreign_keys = ON")
+            return
+        if version == 10:
+            connection.executescript(PREFERENCE_SCHEMA_V10_SQL)
+            return
+        if version == 11:
+            connection.executescript(PREFERENCE_SUGGESTION_SCHEMA_V11_SQL)
+            Database._ensure_v11_suggestion_event_key(connection)
+            return
+        if version == 12:
+            connection.executescript(RAG_SCHEMA_V12_SQL)
+            return
+        if version == 13:
+            existing_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            for name, declaration in PHOTO_COLUMNS_V13.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE photos ADD COLUMN {name} {declaration}"
+                    )
+            # Existing vectors predate content binding.  They intentionally remain
+            # NULL and are recomputed on their next use; current file hashes must
+            # never be attached retroactively to an unverified legacy vector.
+            return
+        if version == 14:
+            table = connection.execute(
+                "SELECT sql FROM sqlite_master "
+                "WHERE type = 'table' AND name = 'rag_runs'"
+            ).fetchone()
+            if table is None:
+                connection.executescript(RAG_SCHEMA_V12_SQL)
+                return
+            if "WITHOUT ROWID" in str(table["sql"]).upper():
+                return
+
+            columns = (
+                "id",
+                "album_id",
+                "user_id",
+                "query_text",
+                "retrieval_provider_fingerprint",
+                "generation_provider_fingerprint",
+                "candidate_digest",
+                "query_digest",
+                "evidence_digest",
+                "evidence_json",
+                "result_json",
+                "request_json",
+                "created_at",
+            )
+            connection.execute("DROP TRIGGER IF EXISTS rag_runs_no_update")
+            connection.execute("DROP TRIGGER IF EXISTS rag_runs_no_replace")
+            connection.execute("DROP TRIGGER IF EXISTS rag_runs_no_delete")
+            connection.execute("DROP INDEX IF EXISTS idx_rag_runs_context")
+            connection.execute("ALTER TABLE rag_runs RENAME TO rag_runs_v13")
+            connection.execute(
+                """
+                CREATE TABLE rag_runs (
+                    id TEXT PRIMARY KEY,
+                    album_id TEXT NOT NULL,
+                    user_id TEXT NOT NULL,
+                    query_text TEXT NOT NULL,
+                    retrieval_provider_fingerprint TEXT NOT NULL,
+                    generation_provider_fingerprint TEXT NOT NULL,
+                    candidate_digest TEXT NOT NULL,
+                    query_digest TEXT NOT NULL,
+                    evidence_digest TEXT NOT NULL,
+                    evidence_json TEXT NOT NULL,
+                    result_json TEXT NOT NULL,
+                    request_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CHECK(length(candidate_digest) = 64
+                          AND candidate_digest NOT GLOB '*[^0-9a-f]*'),
+                    CHECK(length(query_digest) = 64
+                          AND query_digest NOT GLOB '*[^0-9a-f]*'),
+                    CHECK(length(evidence_digest) = 64
+                          AND evidence_digest NOT GLOB '*[^0-9a-f]*'),
+                    CHECK(json_valid(evidence_json)),
+                    CHECK(json_valid(result_json)),
+                    CHECK(json_valid(request_json))
+                ) WITHOUT ROWID
+                """
+            )
+            column_sql = ", ".join(columns)
+            connection.execute(
+                f"INSERT INTO rag_runs({column_sql}) "
+                f"SELECT {column_sql} FROM rag_runs_v13"
+            )
+            source_count = connection.execute(
+                "SELECT COUNT(*) FROM rag_runs_v13"
+            ).fetchone()[0]
+            target_count = connection.execute(
+                "SELECT COUNT(*) FROM rag_runs"
+            ).fetchone()[0]
+            if source_count != target_count:
+                raise RuntimeError("rag_runs v14 migration lost audit rows")
+            connection.execute("DROP TABLE rag_runs_v13")
+            connection.execute(
+                """CREATE INDEX idx_rag_runs_context
+                   ON rag_runs(album_id, user_id, created_at DESC, id DESC)"""
+            )
+            connection.execute(
+                """CREATE TRIGGER rag_runs_no_update
+                   BEFORE UPDATE ON rag_runs
+                   BEGIN
+                       SELECT RAISE(ABORT, 'rag_runs are immutable');
+                   END"""
+            )
+            connection.execute(
+                """CREATE TRIGGER rag_runs_no_replace
+                   BEFORE INSERT ON rag_runs
+                   WHEN EXISTS(SELECT 1 FROM rag_runs WHERE id = NEW.id)
+                   BEGIN
+                       SELECT RAISE(ABORT, 'rag_runs are immutable');
+                   END"""
+            )
+            connection.execute(
+                """CREATE TRIGGER rag_runs_no_delete
+                   BEFORE DELETE ON rag_runs
+                   BEGIN
+                       SELECT RAISE(ABORT, 'rag_runs are immutable');
+                   END"""
+            )
             return
         raise RuntimeError(f"Missing database migration {version}")
 

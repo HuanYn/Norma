@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -7,13 +9,14 @@ class HealthResponse(BaseModel):
     service: str = "norma-ai"
     status: str
     schema_version: int
+    embedding_provider: str
     face_provider: str
 
 
 class CapabilitiesResponse(BaseModel):
     image_types: list[str] = Field(default_factory=lambda: [".jpg", ".jpeg"])
     original_policy: str = "read-only"
-    embedding_provider: str = "deterministic-fallback"
+    embedding_provider: str
     milestones: dict[str, str]
 
 
@@ -23,7 +26,11 @@ class EmbeddingProviderCapability(BaseModel):
     dimension: int
     available: bool
     model_backed: bool
+    default: bool
+    baseline: bool
+    legacy: bool
     multilingual: str
+    query_mode: str | None = None
     active: bool
     install_extra: str | None
 
@@ -159,6 +166,7 @@ class AlbumSearchRequest(BaseModel):
     reference_photo_id: str | None = None
     limit: int = Field(default=20, ge=1, le=50)
     subset_photo_ids: list[str] | None = None
+    user_id: str = Field(default="local", min_length=1, max_length=100)
 
 
 class SearchMatch(BaseModel):
@@ -169,6 +177,8 @@ class SearchMatch(BaseModel):
     quality_score: float | None
     auto_reject: bool
     similarity_group: str | None
+    semantic_score: float | None = None
+    preference_residual: float = 0.0
 
 
 class AlbumSearchResponse(BaseModel):
@@ -176,6 +186,54 @@ class AlbumSearchResponse(BaseModel):
     mode: str
     provider: str
     matches: list[SearchMatch]
+    user_id: str = "local"
+    query_text: str | None = None
+    algorithm: str = "legacy-cosine-v1"
+    preference_model_id: str | None = None
+    preference_comparisons: int = 0
+    feature_schema: str | None = None
+    projection_id: str | None = None
+    warnings: list[str] = Field(default_factory=list)
+
+
+class AlbumRAGRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=1000)
+    top_k: int = Field(default=3, ge=1, le=6)
+    user_id: str = Field(default="local", min_length=1, max_length=100)
+
+
+class RAGClaim(BaseModel):
+    claim_id: str
+    text: str
+
+
+class RAGCitation(BaseModel):
+    claim_id: str
+    photo_id: str
+
+
+class RAGProvenance(BaseModel):
+    retrieval_provider_fingerprint: str
+    generation_provider_fingerprint: str
+    query_digest: str
+    candidate_digest: str
+    evidence_digest: str
+
+
+class AlbumRAGResponse(BaseModel):
+    """Retrieval + local VLM output with referential citation enforcement only."""
+
+    run_id: str
+    album_id: str
+    user_id: str
+    query: str
+    answer: str
+    claims: list[RAGClaim]
+    citations: list[RAGCitation]
+    provenance: RAGProvenance
+    retrieval: AlbumSearchResponse
+    validation_level: Literal["citation-referential-only"] = "citation-referential-only"
+    semantic_entailment_verified: Literal[False] = False
 
 
 class EvaluationQueryCreateRequest(BaseModel):
@@ -402,6 +460,7 @@ class SelectionRequest(BaseModel):
     album_id: str = Field(min_length=1)
     prompt: str = Field(min_length=1, max_length=1000)
     subset_photo_ids: list[str] | None = None
+    user_id: str = Field(default="local", min_length=1, max_length=100)
 
 
 class SelectionConstraints(BaseModel):
@@ -423,6 +482,20 @@ class SelectedPhoto(BaseModel):
     reasons: list[str]
 
 
+class CandidateUniverseSummary(BaseModel):
+    album_photo_count: int = 0
+    subset_photo_count: int = 0
+    eligible_photo_count: int = 0
+    excluded_reject_count: int = 0
+    excluded_quality_count: int = 0
+    excluded_group_count: int = 0
+    candidate_ids_sha256: str = ""
+    source_snapshot_sha256: str = ""
+    decision_feature_snapshot_version: str | None = None
+    decision_feature_snapshot_sha256: str = ""
+    candidate_photo_ids: list[str] = Field(default_factory=list)
+
+
 class SelectionResponse(BaseModel):
     selection_id: str
     album_id: str
@@ -435,14 +508,25 @@ class SelectionResponse(BaseModel):
     duration_ms: int
     selected: list[SelectedPhoto]
     warnings: list[str] = Field(default_factory=list)
+    user_id: str = "local"
+    query_text: str | None = None
+    provider_fingerprint: str | None = None
+    preference_model_id: str | None = None
+    preference_comparisons: int = 0
+    algorithm: str = "legacy-fixed-weight-selection-v1"
+    feature_schema: str | None = None
+    projection_id: str | None = None
+    candidate_universe: CandidateUniverseSummary | None = None
 
 
 class PairwiseFeedbackRequest(BaseModel):
     album_id: str = Field(min_length=1)
     preferred_photo_id: str = Field(min_length=1)
     rejected_photo_id: str = Field(min_length=1)
-    selection_id: str | None = None
+    selection_id: str | None = Field(default=None, min_length=1)
     user_id: str = Field(default="local", min_length=1, max_length=100)
+    choice: Literal["preferred", "tie", "skip", "both_bad"] = "preferred"
+    suggestion_id: str | None = Field(default=None, min_length=1)
 
 
 class PreferenceModelResponse(BaseModel):
@@ -452,12 +536,90 @@ class PreferenceModelResponse(BaseModel):
     probability_before: float
     feature_difference: dict[str, float]
     weights: dict[str, float]
+    choice: Literal["preferred", "tie", "skip", "both_bad"] = "preferred"
+    algorithm: str | None = None
+    contextual_event_id: str | None = None
+    contextual_model_id: str | None = None
+    provider_fingerprint: str | None = None
+    feature_schema: str | None = None
+    contextual_comparisons: int | None = None
+    contextual_probability_before: float | None = None
+    contextual_trained: bool | None = None
+    contextual_diagnostics: dict[str, object] | None = None
+    legacy_audit_persisted: bool = True
 
 
 class PreferenceStateResponse(BaseModel):
     user_id: str
     comparisons: int
     weights: dict[str, float]
+    algorithm: str | None = None
+    contextual_model_id: str | None = None
+    provider_fingerprint: str | None = None
+    feature_schema: str | None = None
+    contextual_comparisons: int | None = None
+    contextual_diagnostics: dict[str, object] | None = None
+
+
+class PreferencePairSuggestionRequest(BaseModel):
+    posterior_samples: int = Field(default=64, ge=2, le=4096)
+    shortlist_size: int = Field(default=16, ge=1, le=512)
+    exhaustive: bool = False
+    seed: int = Field(default=0, ge=0, le=2_147_483_647)
+    exclude_previous: bool = True
+
+
+class PreferencePairPhoto(BaseModel):
+    photo_id: str
+    filename: str
+    thumbnail_url: str
+
+
+class PreferencePairSuggestionResponse(BaseModel):
+    suggestion_id: str
+    selection_id: str
+    album_id: str
+    user_id: str
+    query_text: str
+    left: PreferencePairPhoto
+    right: PreferencePairPhoto
+    model_id_at_display: str | None
+    algorithm: str
+    provider_fingerprint: str
+    feature_schema: str
+    projection_id: str
+    acquisition_version: str
+    constraint_solver: str
+    constraint_violation_count: int = 0
+    mode: Literal["shortlist", "exhaustive"]
+    current_photo_ids: list[str]
+    current_bayes_regret: float
+    probability_left_preferred: float
+    predictive_entropy: float
+    membership_variance: float
+    shortlist_score: float
+    pdrr: float
+    raw_pdrr_estimate: float
+    regret_if_left_preferred: float
+    regret_if_right_preferred: float
+    effective_sample_size_left: float
+    effective_sample_size_right: float
+    laplace_fallback_left: bool
+    laplace_fallback_right: bool
+    laplace_fallback_used: bool
+    voi_invariant_ok: bool
+    eligible_pair_count: int
+    evaluated_pair_count: int
+    candidate_count: int
+    candidate_digest: str
+    candidate_source_digest: str
+    candidate_feature_digest: str
+    requested_posterior_samples: int
+    posterior_samples: int
+    retry_count: int
+    shortlist_size: int
+    seed: int
+    created_at: str | None = None
 
 
 class SelectionReplacementRequest(BaseModel):

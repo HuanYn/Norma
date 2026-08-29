@@ -23,11 +23,7 @@ class EmbeddingWarmupManager:
     def submit(self) -> EmbeddingProviderStatusResponse:
         provider = self.provider_factory()
         with self.lock:
-            if provider.is_loaded:
-                self.state = "ready"
-                self.error = None
-                if self.finished_at is None:
-                    self.finished_at = _now()
+            if self.state == "ready" and provider.is_loaded:
                 return self._status_locked(provider)
             if self.state == "loading" and self.thread and self.thread.is_alive():
                 return self._status_locked(provider)
@@ -47,10 +43,6 @@ class EmbeddingWarmupManager:
     def status(self) -> EmbeddingProviderStatusResponse:
         provider = self.provider_factory()
         with self.lock:
-            if provider.is_loaded and self.state == "idle":
-                self.state = "ready"
-                self.error = None
-                self.finished_at = self.finished_at or _now()
             return self._status_locked(provider)
 
     def _run(self, provider: EmbeddingProvider) -> None:

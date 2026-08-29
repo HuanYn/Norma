@@ -21,7 +21,6 @@ from ai.library import AlbumCatalogService
 from ai.maintenance import CacheMaintenanceService
 from ai.people import PeopleIndexer, create_face_provider
 from ai.preferences import PreferenceService
-from ai.preferences.model import load_preference_model
 from ai.retrieval import RetrievalService
 from ai.schemas import (
     AlbumSearchRequest,
@@ -110,6 +109,7 @@ def build_parser() -> argparse.ArgumentParser:
     search.add_argument("album_id")
     search.add_argument("query")
     search.add_argument("--limit", type=int, default=20)
+    search.add_argument("--user-id", default="local")
 
     image_search = commands.add_parser(
         "image-search", help="Find photos like a reference"
@@ -117,6 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
     image_search.add_argument("album_id")
     image_search.add_argument("photo_id")
     image_search.add_argument("--limit", type=int, default=20)
+    image_search.add_argument("--user-id", default="local")
 
     people = commands.add_parser("people", help="Detect faces and build people groups")
     people.add_argument("album_id")
@@ -124,6 +125,7 @@ def build_parser() -> argparse.ArgumentParser:
     select = commands.add_parser("select", help="Create a constrained collection")
     select.add_argument("album_id")
     select.add_argument("prompt")
+    select.add_argument("--user-id", default="local")
 
     feedback = commands.add_parser("feedback", help="Record a pairwise preference")
     feedback.add_argument("album_id")
@@ -233,13 +235,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     database = Database(settings.database_path)
     database.initialize()
-    provider = create_embedding_provider(
-        settings.embedding_provider,
-        cache_dir=settings.model_cache_dir,
-        device=settings.embedding_device,
-        batch_size=settings.embedding_batch_size,
-    )
     try:
+        provider = create_embedding_provider(
+            settings.embedding_provider,
+            cache_dir=settings.model_cache_dir,
+            device=settings.embedding_device,
+            batch_size=settings.embedding_batch_size,
+        )
         payload = _dispatch(args, settings, database, provider)
     except (
         FileNotFoundError,
@@ -278,7 +280,9 @@ def _dispatch(
             ).fetchall()
         return [dict(row) for row in rows]
     if args.command == "providers":
-        return embedding_provider_capabilities(settings.embedding_provider)
+        return embedding_provider_capabilities(
+            settings.embedding_provider, settings.embedding_device
+        )
     if args.command == "provider-status":
         return EmbeddingProviderStatusResponse(
             provider=provider.name,
@@ -409,6 +413,7 @@ def _dispatch(
                     album_id=args.album_id,
                     query=args.query,
                     limit=args.limit,
+                    user_id=args.user_id,
                 )
             )
             .model_dump()
@@ -421,6 +426,7 @@ def _dispatch(
                     album_id=args.album_id,
                     reference_photo_id=args.photo_id,
                     limit=args.limit,
+                    user_id=args.user_id,
                 )
             )
             .model_dump()
@@ -440,7 +446,13 @@ def _dispatch(
     if args.command == "select":
         return (
             SelectionService(database, provider)
-            .select(SelectionRequest(album_id=args.album_id, prompt=args.prompt))
+            .select(
+                SelectionRequest(
+                    album_id=args.album_id,
+                    prompt=args.prompt,
+                    user_id=args.user_id,
+                )
+            )
             .model_dump()
         )
     if args.command == "feedback":
@@ -469,12 +481,9 @@ def _dispatch(
     if args.command == "show-selection":
         return SelectionService(database, provider).get(args.selection_id).model_dump()
     if args.command == "show-preferences":
-        model = load_preference_model(database, args.user_id)
-        return {
-            "user_id": model.user_id,
-            "comparisons": model.comparisons,
-            "weights": model.weights,
-        }
+        return (
+            PreferenceService(database, provider).get_state(args.user_id).model_dump()
+        )
     if args.command == "selection-history":
         if args.limit < 1 or args.limit > 200 or args.offset < 0:
             raise ValueError("limit must be 1..200 and offset must be non-negative")
