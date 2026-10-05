@@ -1,0 +1,122 @@
+{
+  "observed_at": "2026-10-05T07:14:13.139184+00:00",
+  "scope": "Known public demo image. Engineering smoke, not an independent video quality evaluation.",
+  "job": {
+    "id": "895712f3abf045e68bf07dfc15cef2af",
+    "status": "completed",
+    "stage": "completed",
+    "created_at": "2026-10-05T07:12:42.222834+00:00",
+    "started_at": "2026-10-05T07:12:42.229021+00:00",
+    "finished_at": "2026-10-05T07:14:06.071824+00:00",
+    "step": null,
+    "total_steps": null,
+    "step_percent": null,
+    "cancel_requested": false,
+    "error": null,
+    "model_id": "Wan-AI/Wan2.2-TI2V-5B-Diffusers",
+    "options": {
+      "prompt": "A slow gentle cinematic camera push toward this historic street. Preserve the building geometry and original colors, subtle parallax, natural daylight, no cuts.",
+      "negative_prompt": "blur, distorted face, deformed hands, flicker, text, watermark",
+      "width": 640,
+      "height": 384,
+      "num_frames": 49,
+      "num_inference_steps": 20,
+      "guidance_scale": 5.0,
+      "seed": 42
+    },
+    "input_sha256": "97a264dfd66e2e46648b0410604900c0360d34c7a8bafa18bdd4815dc7c052af",
+    "input_dimensions": [
+      1280,
+      853
+    ],
+    "upload_confirmed": true,
+    "metadata_removed": true,
+    "crop_mode": "center_crop",
+    "fps": 24,
+    "result": {
+      "model_id": "Wan-AI/Wan2.2-TI2V-5B-Diffusers",
+      "model_revision": "b8fff7315c768468a5333511427288870b2e9635",
+      "pipeline": "WanImageToVideoPipeline",
+      "fps": 24,
+      "frame_count": 49,
+      "duration_seconds": 2.0416666666666665,
+      "peak_cuda_allocated_bytes": 14817984000,
+      "torch_version": "2.8.0+cu128",
+      "diffusers_version": "0.35.1",
+      "offload": "model",
+      "vae_tiling": false
+    },
+    "elapsed_seconds": 83.842
+  },
+  "observed_states": [
+    {
+      "observed_at": "2026-10-05T07:13:17.212173+00:00",
+      "status": "running",
+      "stage": "encoding",
+      "step": null,
+      "total_steps": null,
+      "step_percent": null
+    },
+    {
+      "observed_at": "2026-10-05T07:13:22.301400+00:00",
+      "status": "running",
+      "stage": "denoising",
+      "step": 3,
+      "total_steps": 20,
+      "step_percent": 15.0
+    },
+    {
+      "observed_at": "2026-10-05T07:13:27.393905+00:00",
+      "status": "running",
+      "stage": "denoising",
+      "step": 6,
+      "total_steps": 20,
+      "step_percent": 30.0
+    },
+    {
+      "observed_at": "2026-10-05T07:13:32.487524+00:00",
+      "status": "running",
+      "stage": "denoising",
+      "step": 10,
+      "total_steps": 20,
+      "step_percent": 50.0
+    },
+    {
+      "observed_at": "2026-10-05T07:13:37.581157+00:00",
+      "status": "running",
+      "stage": "denoising",
+      "step": 14,
+      "total_steps": 20,
+      "step_percent": 70.0
+    },
+    {
+      "observed_at": "2026-10-05T07:13:42.673213+00:00",
+      "status": "running",
+      "stage": "denoising",
+      "step": 17,
+      "total_steps": 20,
+      "step_percent": 85.0
+    },
+    {
+      "observed_at": "2026-10-05T07:13:47.705796+00:00",
+      "status": "running",
+      "stage": "decoding",
+      "step": null,
+      "total_steps": null,
+      "step_percent": null
+    },
+    {
+      "observed_at": "2026-10-05T07:14:13.139146+00:00",
+      "status": "completed",
+      "stage": "completed",
+      "step": null,
+      "total_steps": null,
+      "step_percent": null
+    }
+  ],
+  "artifact": {
+    "file": "895712f3abf045e68bf07dfc15cef2af.mp4",
+    "bytes": 439152,
+    "sha256": "1db7ecb208b272a06ba9b32447f5e1f9bc400a3bc367d58bafee79df21c1f57c"
+  }
+}

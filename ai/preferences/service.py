@@ -6,7 +6,7 @@ import math
 import sqlite3
 import threading
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Mapping, Sequence
 
 import numpy as np
@@ -38,6 +38,7 @@ from ai.preferences.model import (
     photo_features,
     save_preference_model,
 )
+from ai.preferences.memory import MemoryEvidenceUnavailableError, build_memory_evidence
 from ai.preferences.repository import (
     PreferenceEvent,
     PreferenceModelRecord,
@@ -194,6 +195,22 @@ class PreferenceService:
                     request,
                     display_model_id,
                 )
+            )
+            # Evidence is captured only for a new event, never backfilled onto
+            # historical feedback. Recording remains training-free by default.
+            try:
+                memory_context = {
+                    "memory_evidence": build_memory_evidence(
+                        self.provider, query_vector, preferred_row, rejected_row
+                    )
+                }
+            except MemoryEvidenceUnavailableError as error:
+                # An optional memory capability must not suppress otherwise
+                # valid feedback. Source-content drift still fails closed.
+                memory_context = {"memory_evidence_unavailable": str(error)}
+            contextual_pair = replace(
+                contextual_pair,
+                context={**contextual_pair.context, **memory_context},
             )
 
         feedback_id = uuid.uuid4().hex

@@ -17,7 +17,7 @@ from ai.config import Settings
 from ai.index import AlbumIndexer, IndexingCancelledError
 from ai.index.scanner import ScannedPhoto
 from ai.library import AlbumCatalogService
-from ai.storage import Database
+from ai.storage import Database, SCHEMA_VERSION
 
 
 def _jpeg(path: Path, color: tuple[int, int, int], *, blurred: bool = False) -> None:
@@ -95,7 +95,7 @@ def test_indexes_jpgs_without_touching_originals(tmp_path: Path, monkeypatch) ->
             connection.execute("SELECT MAX(version) FROM schema_migrations").fetchone()[
                 0
             ]
-            == 14
+            == SCHEMA_VERSION
         )
 
 
@@ -342,7 +342,19 @@ def test_failed_rescan_preserves_photo_but_invalidates_unverifiable_derived_rows
     assert stored["embedding_provider"] is None
     assert stored["face_processed"] == 0
     assert stored["face_count"] == 0
-    assert counts == (0, 0, 1)
+    # Keep identity history for review, but never keep usable face evidence.
+    assert counts == (0, 1, 1)
+    with database.connect() as connection:
+        cluster = connection.execute(
+            "SELECT label, label_status FROM person_clusters WHERE id = 'cluster'"
+        ).fetchone()
+        assert tuple(cluster) == ("Unknown", "needs_review")
+        assert (
+            connection.execute(
+                "SELECT COUNT(*) FROM person_label_events WHERE reason = 'album_source_invalidated'"
+            ).fetchone()[0]
+            >= 1
+        )
 
 
 def test_same_size_restored_mtime_content_change_invalidates_embedding_cache(

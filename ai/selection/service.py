@@ -16,6 +16,7 @@ from ai.index.embedding import (
     normalize_embedding,
 )
 from ai.preferences.model import default_preference_model, load_preference_model
+from ai.preferences.memory import MemoryReranker, MemoryRerankResult
 from ai.preferences.contextual import (
     FEATURE_DIMENSION,
     FEATURE_SCHEMA,
@@ -38,13 +39,20 @@ from ai.schemas import (
     SelectionResponse,
 )
 from ai.selection.optimizer import OptimizationCandidate, optimize_collection
-from ai.selection.parser import has_semantic_content, parse_selection_prompt
+from ai.selection.parser import (
+    SelectionIntent,
+    has_semantic_content,
+    parse_selection_prompt,
+    person_key,
+)
+from ai.selection.people_constraints import load_people_constraint_evidence
 from ai.selection.scoring import (
     grounded_reasons,
     score_contextual_photo,
     score_photo,
 )
 from ai.storage import Database
+from ai.selection import learned_quality
 
 
 DECISION_FEATURE_SNAPSHOT_VERSION = "capu-candidate-67d-group-v1"
@@ -57,14 +65,36 @@ class SelectionService:
         provider: EmbeddingProvider,
         *,
         preference_mode: PreferenceMode = "record-only",
+        aesthetics_service=None,
     ) -> None:
         self.database = database
         self.provider = provider
         self.preference_mode = validate_preference_mode(preference_mode)
+        self.aesthetics_service = aesthetics_service
 
-    def select(self, request: SelectionRequest) -> SelectionResponse:
+    def select(
+        self,
+        request: SelectionRequest,
+        *,
+        intent: SelectionIntent | None = None,
+        semantic_query: str | None = None,
+        intent_provenance: dict[str, object] | None = None,
+    ) -> SelectionResponse:
         started = time.perf_counter()
-        intent = parse_selection_prompt(request.prompt)
+        if request.allow_proxy_memory and not request.use_preference_memory:
+            raise ValueError("Proxy memory requires explicit case-memory opt-in")
+        if request.use_learned_quality and self.preference_mode != "record-only":
+            raise ValueError("Learned quality fusion requires record-only mode; legacy adaptive weights are not mixed")
+        assessment = learned_quality.snapshot(self.aesthetics_service, request.album_id) if request.use_learned_quality else None
+        if request.use_preference_memory and self.preference_mode != "record-only":
+            raise ValueError(
+                "Case memory cannot be combined with the legacy adaptive training mode"
+            )
+        intent = intent or parse_selection_prompt(request.prompt)
+        person_minimums = dict(intent.person_minimums)
+        for label, minimum in request.person_minimums.items():
+            key = person_key(label)
+            person_minimums[key] = max(person_minimums.get(key, 0), minimum)
         with self.database.connect() as connection:
             rows = connection.execute(
                 """
@@ -101,9 +131,21 @@ class SelectionService:
         subset_photo_count = len(rows)
 
         warnings: list[str] = []
-        semantic_requested = has_semantic_content(request.prompt)
+        people_evidence = (
+            load_people_constraint_evidence(
+                self.database, request.album_id, person_minimums
+            )
+            if person_minimums
+            else None
+        )
+        ranking_query = request.prompt if semantic_query is None else semantic_query
+        semantic_requested = (
+            has_semantic_content(request.prompt)
+            if semantic_query is None
+            else bool(semantic_query.strip())
+        )
         if semantic_requested:
-            query_vector: np.ndarray | None = self.provider.embed_text(request.prompt)
+            query_vector: np.ndarray | None = self.provider.embed_text(ranking_query)
         else:
             query_vector = None
             warnings.append(
@@ -186,6 +228,8 @@ class SelectionService:
                     self.provider.dimension,
                     preference_model,
                 )
+            if assessment:
+                score = learned_quality.fuse(score, assessment["items"][row["id"]], query_vector is not None)
             scored.append(
                 {
                     "row": row,
@@ -194,19 +238,70 @@ class SelectionService:
                 }
             )
 
+        memory = None
+        if request.use_preference_memory:
+            if query_vector is None:
+                memory = MemoryRerankResult(
+                    enabled=True,
+                    deltas={str(item["row"]["id"]): 0.0 for item in scored},
+                    warnings=[
+                        "Case memory needs a semantic query; quality-only selection remains unchanged."
+                    ],
+                )
+                warnings.extend(memory.warnings)
+            else:
+                if any(
+                    not embedding_cache_is_current(
+                        item["row"],
+                        self.provider.name,
+                        strict_source_hash=True,
+                    )
+                    for item in scored
+                ):
+                    raise ValueError(
+                        "Case memory requires current content-verified embeddings; reindex and embed first"
+                    )
+                memory = MemoryReranker(
+                    self.database, self.provider, enabled=True,
+                    **({"allow_proxy": True} if request.allow_proxy_memory else {})
+                ).rerank(
+                    request.user_id,
+                    query_vector,
+                    {
+                        str(item["row"]["id"]): _load_vector(
+                            str(item["row"]["embedding_path"]),
+                            self.provider.dimension,
+                        )
+                        for item in scored
+                    },
+                )
+                warnings.extend(memory.warnings)
+                for item in scored:
+                    item["total"] = float(item["total"]) + memory.deltas.get(
+                        str(item["row"]["id"]), 0.0
+                    )
+
         optimization_candidates = []
         for index, item in enumerate(scored):
             row = item["row"]
             group = row["similarity_group"] or f"photo:{row['id']}"
             optimization_candidates.append(
                 OptimizationCandidate(
-                    index=index, score=float(item["total"]), group_key=group
+                    index=index,
+                    score=float(item["total"]),
+                    group_key=group,
+                    person_labels=(
+                        people_evidence.labels_by_photo[row["id"]]
+                        if people_evidence
+                        else frozenset()
+                    ),
                 )
             )
         optimized = optimize_collection(
             optimization_candidates,
             intent.target_count,
             intent.max_per_similarity_group,
+            person_minimums,
         )
         feasible = len(optimized.indices) == intent.target_count
         selected: list[SelectedPhoto] = []
@@ -233,16 +328,29 @@ class SelectionService:
                         preference_score=round(item["score"].preference, 6),
                         quality_score=round(item["score"].quality, 3),
                         similarity_group=row["similarity_group"],
+                        learned_quality=assessment["items"][row["id"]] if assessment else None,
+                        memory_delta=memory.deltas.get(str(row["id"]), 0.0)
+                        if memory
+                        else 0.0,
                         reasons=grounded_reasons(
                             item["score"],
                             query_vector is not None,
                             contextual_utility=runtime is not None,
+                        )
+                        + learned_quality.reasons(assessment["items"][row["id"]] if assessment else None)
+                        + (
+                            [
+                                f"case memory {memory.deltas.get(str(row['id']), 0.0):+.3f}; no model training"
+                            ]
+                            if memory and memory.applied
+                            else []
                         ),
                     )
                 )
         else:
             warnings.append(
-                f"Hard constraints allow fewer than {intent.target_count} photos; no partial selection returned."
+                f"Hard constraints could not be jointly satisfied or verified by the solver "
+                f"({optimized.status}); no partial selection returned."
             )
 
         constraints = SelectionConstraints(
@@ -250,6 +358,7 @@ class SelectionService:
             min_quality=intent.min_quality,
             exclude_rejects=intent.exclude_rejects,
             max_per_similarity_group=intent.max_per_similarity_group,
+            person_minimums=person_minimums,
         )
         selection_id = uuid.uuid4().hex
         universe = _candidate_universe_summary(
@@ -282,7 +391,10 @@ class SelectionService:
             selected=selected,
             warnings=warnings,
             user_id=request.user_id,
-            query_text=request.prompt if query_vector is not None else None,
+            query_text=ranking_query if query_vector is not None else None,
+            intent_provenance=intent_provenance,
+            preference_memory=memory.as_dict() if memory else None,
+            learned_quality=assessment,
             provider_fingerprint=self.provider.name,
             preference_model_id=runtime.model_id if runtime else None,
             preference_comparisons=(
@@ -290,12 +402,27 @@ class SelectionService:
                 if runtime is not None
                 else preference_model.comparisons
             ),
-            algorithm=algorithm,
+            algorithm=(learned_quality.ALGORITHM if assessment else algorithm)
+            + ("+case-memory-v1" if memory and memory.applied else ""),
             feature_schema=runtime.feature_schema if runtime else None,
             projection_id=runtime.projection_id if runtime else None,
             candidate_universe=universe,
+            people_snapshot_sha256=people_evidence.snapshot_sha256
+            if people_evidence
+            else None,
+            subset_photo_ids=request.subset_photo_ids,
         )
         with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            learned_quality.verify(self.aesthetics_service, request.album_id, assessment)
+            if (
+                people_evidence
+                and load_people_constraint_evidence(
+                    self.database, request.album_id, person_minimums
+                ).snapshot_sha256
+                != people_evidence.snapshot_sha256
+            ):
+                raise ValueError("人物证据在选片过程中发生变化；请重新选片。")
             connection.execute(
                 """
                 INSERT INTO selections(id, album_id, raw_prompt, parse_json, result_json)

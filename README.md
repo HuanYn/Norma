@@ -1,16 +1,33 @@
 # Norma
 
+Photo-first demo: open `http://127.0.0.1:8767/` after `python scripts/start_demo.py`.
+Import → explicit aesthetic assessment / near-duplicate best-of-group → text-guided
+selection → two independent WASD/arrow-controlled worlds. See
+[usage, actual algorithms and validation limits](docs/photo-workflow-20261005.md).
+Default text selection uses pretrained multilingual OpenCLIP + MUSIQ, not a
+generative LLM. Each world currently supports seven actions / 10.3125 seconds.
+
 Norma is a local-first photo intelligence website. A Python service reads a
 local JPG/JPEG folder, creates disposable thumbnails and indexes, and serves a
 Vue web interface in the browser. Original files are never moved or deleted.
 Retrieval stays local; explicit cloud analysis sends only selected, resized
 image copies and the query to the configured vision service.
 
-The current MVP supports:
+The original goal remains a personalized multimodal photo agent, followed by
+15-second video, finite photo exploration, and a simple share page. The core
+selection/personalization acceptance is not yet complete. See
+[the product roadmap and acceptance checklist](docs/roadmap.md); model-first
+deployment changes the implementation route, not these product goals.
+
+The current implementation supports:
 
 - fast recursive album cataloging with metadata and local thumbnails;
 - on-demand quality/similarity analysis, semantic retrieval indexes, and conservative people grouping;
-- bilingual natural-language selection with explicit hard constraints;
+- evidence-bound person naming (Me/custom/Unknown), conservative reindex retention,
+  review states and revision-protected edits;
+- bounded bilingual selection with count, quality, reject, similarity-group and
+  confirmed-person minimum-photo constraints; free-form parsing and category/selfie
+  evidence remain roadmap work;
 - OR-Tools CP-SAT optimization, auditable reasons, and locked replacement;
 - record-only preference feedback by default, without fitting or applying
   personal preference models;
@@ -28,6 +45,37 @@ The current MVP supports:
 - dry-run-first derived-cache cleanup and background embedding-model warmup;
 - persisted maintenance audits and conservative disk-budget enforcement.
 
+See [person naming and selection usage](docs/person-selection.md) and the
+[controlled before/after regression](docs/benchmarks/person-milestone-20261005.md).
+The [eight authorized proxy preference pairs](docs/proxy-preferences.md) are
+development data, excluded from preference memory by default. Frozen-embedding
+case memory is opt-in; proxy use requires an additional explicit API opt-in and
+is not evidence of independently measured personal-preference improvement.
+
+## Three-day demo sprint (2026-10-05)
+
+An isolated preview reuses the existing backend without changing the primary
+library: [sprint scope](docs/demo-sprint-3days.md),
+[actual results and limitations](docs/benchmarks/demo-sprint-20261005.md).
+It adds real pretrained MUSIQ technical/aesthetic scores, an opt-in frozen
+OpenCLIP preference-case reranker, and a private Wan video worker. Learned
+scores are currently displayed separately from the existing selection threshold.
+Local 2B structured parsing remains experimental: its first two real checks
+failed strict validation, with no silent fallback or paid cloud retry.
+
+With the documented models/dependencies prepared, build and start the preview:
+
+```powershell
+pnpm exec vite build --outDir .norma/demo-web-dist
+python scripts/start_demo.py
+```
+
+Open [http://127.0.0.1:8767](http://127.0.0.1:8767), using a small public or
+authorized album. Analysis starts only after clicking its button. Video requires
+the separately configured [private worker and SSH tunnel](docs/video-worker.md),
+then explicit confirmation for the selected photo. Worker health alone does not
+prove that video inference has passed. The primary service on 8765 is unaffected.
+
 ## Run the website
 
 The default workflow directly runs pretrained models. Set
@@ -37,6 +85,8 @@ training either preference model or applying historical learned weights.
 See [the model-first plan and annotation protocol](docs/model-first.md) for the
 current direction, automatic-label limitations, and optional post-training.
 Configure cloud vision using [docs/cloud-analysis.md](docs/cloud-analysis.md).
+For DeepSeek, run `python scripts/start_deepseek.py` after setup and enter an
+API key in the hidden local prompt; do not paste keys into chat or source files.
 
 Requirements: Python 3.11+ and Node.js/pnpm for the one-time frontend build.
 

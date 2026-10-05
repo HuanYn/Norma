@@ -79,6 +79,10 @@ class PreferenceSuggestionService:
                 "Bayesian preference experiment."
             )
         selection = self._load_selection(selection_id)
+        if selection.constraints.person_minimums:
+            raise PreferenceSuggestionConflictError(
+                "Legacy PDRR does not support person quotas; manual feedback remains available."
+            )
         if not selection.feasible:
             raise PreferenceSuggestionConflictError(
                 "cannot suggest a preference pair for an infeasible selection"

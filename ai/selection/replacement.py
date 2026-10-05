@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 import uuid
 from collections import Counter
+from dataclasses import replace as replace_score
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,7 @@ from ai.index.embedding import (
 )
 from ai.preferences.model import default_preference_model, load_preference_model
 from ai.preferences.contextual import contextual_features
+from ai.preferences.memory import MemoryReranker, MemoryRerankResult
 from ai.preferences.runtime import (
     IncompatiblePreferenceModelError,
     PreferenceRuntime,
@@ -29,6 +31,7 @@ from ai.schemas import (
     SelectionResponse,
 )
 from ai.selection.parser import has_semantic_content
+from ai.selection.people_constraints import load_people_constraint_evidence
 from ai.selection.scoring import (
     ScoreBreakdown,
     grounded_reasons,
@@ -37,6 +40,7 @@ from ai.selection.scoring import (
 )
 from ai.selection.service import _candidate_universe_summary, _load_vector
 from ai.storage import Database
+from ai.selection import learned_quality
 
 
 class ReplacementService:
@@ -46,10 +50,12 @@ class ReplacementService:
         provider: EmbeddingProvider,
         *,
         preference_mode: PreferenceMode = "record-only",
+        aesthetics_service=None,
     ) -> None:
         self.database = database
         self.provider = provider
         self.preference_mode = validate_preference_mode(preference_mode)
+        self.aesthetics_service = aesthetics_service
 
     def replace(
         self, selection_id: str, request: SelectionReplacementRequest
@@ -63,6 +69,34 @@ class ReplacementService:
         if stored is None or not stored["result_json"]:
             raise KeyError(f"selection not found: {selection_id}")
         original = SelectionResponse.model_validate_json(stored["result_json"])
+        assessment = None
+        if original.learned_quality:
+            if self.preference_mode != "record-only":
+                raise ValueError("Learned quality fusion requires record-only mode")
+            assessment = learned_quality.snapshot(self.aesthetics_service, original.album_id)
+            if assessment["snapshot_sha256"] != original.learned_quality["snapshot_sha256"]:
+                raise ValueError("模型美学证据已变化；请重新选片后再替换。")
+        memory_enabled = bool(
+            original.preference_memory
+            and original.preference_memory.get("enabled") is True
+        )
+        if memory_enabled and self.preference_mode != "record-only":
+            raise ValueError(
+                "Case memory cannot be combined with the legacy adaptive training mode"
+            )
+        person_minimums = original.constraints.person_minimums
+        people_evidence = (
+            load_people_constraint_evidence(
+                self.database, original.album_id, person_minimums
+            )
+            if person_minimums
+            else None
+        )
+        if (
+            people_evidence
+            and people_evidence.snapshot_sha256 != original.people_snapshot_sha256
+        ):
+            raise ValueError("人物命名或证据已变化；请重新选片后再替换。")
         selected_by_id = {photo.photo_id: photo for photo in original.selected}
         if request.remove_photo_id not in selected_by_id:
             raise ValueError("remove_photo_id is not part of the selection")
@@ -73,15 +107,10 @@ class ReplacementService:
             if photo.photo_id != request.remove_photo_id
         ]
         excluded_ids = set(selected_by_id)
-        group_counts = Counter(
-            photo.similarity_group
-            for photo in locked
-            if photo.similarity_group is not None
-        )
 
         warnings: list[str] = []
-        semantic_requested = original.query_text is not None or has_semantic_content(
-            original.prompt
+        semantic_requested = original.query_text is not None or (
+            original.intent_provenance is None and has_semantic_content(original.prompt)
         )
         query_text = original.query_text or (
             original.prompt if semantic_requested else None
@@ -185,6 +214,7 @@ class ReplacementService:
                 "album quality analysis is incomplete; run quality analysis first"
             )
 
+        album_photo_count = len(rows)
         by_id = {str(row["id"]): row for row in rows}
         missing_locked = [
             photo.photo_id for photo in locked if photo.photo_id not in by_id
@@ -194,6 +224,31 @@ class ReplacementService:
                 "locked selection photos no longer exist in the album: "
                 + ", ".join(missing_locked)
             )
+        if len(locked) + 1 != original.constraints.target_count:
+            raise ValueError("selection count is inconsistent; create a new selection")
+        for photo in locked:
+            row = by_id[photo.photo_id]
+            if (
+                original.constraints.exclude_rejects and bool(row["auto_reject"])
+            ) or float(row["quality_score"] or 0.0) < original.constraints.min_quality:
+                raise ValueError("locked photo quality changed; create a new selection")
+        group_counts = Counter(
+            by_id[photo.photo_id]["similarity_group"]
+            for photo in locked
+            if by_id[photo.photo_id]["similarity_group"] is not None
+        )
+        if any(
+            count > original.constraints.max_per_similarity_group
+            for count in group_counts.values()
+        ):
+            raise ValueError(
+                "locked photo similarity groups changed; create a new selection"
+            )
+        if original.subset_photo_ids is not None:
+            allowed = set(original.subset_photo_ids)
+            if any(photo.photo_id not in allowed for photo in locked):
+                raise ValueError("locked photos are outside the original subset")
+            rows = [row for row in rows if row["id"] in allowed]
 
         decision_features_by_id: dict[str, np.ndarray] | None = (
             {} if runtime is not None and query_vector is not None else None
@@ -222,9 +277,11 @@ class ReplacementService:
                 decision_features_by_id[photo_id],
             )
 
-        def compute_score(row: object) -> ScoreBreakdown:
+        def compute_base_score(row: object) -> ScoreBreakdown:
             if query_vector is not None:
-                if not embedding_cache_is_current(row, self.provider.name):
+                if not embedding_cache_is_current(
+                    row, self.provider.name, strict_source_hash=memory_enabled
+                ):
                     drift = " after provider drift" if provider_drift else ""
                     raise KeyError(
                         "album has no complete semantic cache for provider "
@@ -258,6 +315,10 @@ class ReplacementService:
                 preference_model,
             )
 
+        def compute_score(row):
+            score = compute_base_score(row)
+            return learned_quality.fuse(score, assessment["items"][row["id"]], query_vector is not None) if assessment else score
+
         eligible: list[tuple[object, ScoreBreakdown]] = []
         decision_universe_rows: list[object] = []
         excluded_reject_count = 0
@@ -279,6 +340,16 @@ class ReplacementService:
                 and group_counts[group] >= original.constraints.max_per_similarity_group
             ):
                 continue
+            if people_evidence and any(
+                sum(
+                    label in people_evidence.labels_by_photo.get(photo.photo_id, ())
+                    for photo in locked
+                )
+                + int(label in people_evidence.labels_by_photo[row["id"]])
+                < minimum
+                for label, minimum in person_minimums.items()
+            ):
+                continue
             score = compute_score(row)
             eligible.append((row, score))
 
@@ -289,12 +360,77 @@ class ReplacementService:
 
         if decision_features_by_id is not None:
             for candidate_row in decision_universe_rows:
-                if not embedding_cache_is_current(candidate_row, self.provider.name):
+                if not embedding_cache_is_current(
+                    candidate_row,
+                    self.provider.name,
+                    strict_source_hash=memory_enabled,
+                ):
                     raise KeyError(
                         "album has no complete semantic cache for provider "
                         f"{self.provider.name}; call the embed endpoint first"
                     )
                 load_contextual_decision(candidate_row)
+
+        memory: MemoryRerankResult | None = None
+        if memory_enabled:
+            # Recompute locked and genuinely feasible replacement candidates in
+            # one call. Old deltas/citations must not survive a changed memory
+            # snapshot, and memory cannot reintroduce a hard-excluded candidate.
+            memory_rows = [row for row, _ in [*locked_scored, *eligible]]
+            memory = MemoryRerankResult(
+                enabled=True,
+                deltas={str(row["id"]): 0.0 for row in memory_rows},
+            )
+            if query_vector is None:
+                memory.warnings.append(
+                    "Case memory needs a semantic query; quality-only replacement "
+                    "remains unchanged."
+                )
+            elif provider_fallback:
+                memory.warnings.append(
+                    "Case memory was not applied because the original embedding "
+                    "provider is unknown or changed; replacement memory deltas are zero."
+                )
+            else:
+                vectors: dict[str, np.ndarray] = {}
+                for memory_row in memory_rows:
+                    photo_id = str(memory_row["id"])
+                    if not embedding_cache_is_current(
+                        memory_row, self.provider.name, strict_source_hash=True
+                    ):
+                        raise KeyError(
+                            "album has no complete content-verified semantic cache "
+                            f"for provider {self.provider.name}; call the embed endpoint first"
+                        )
+                    # Reuse the exact vectors already used in contextual scores.
+                    vectors[photo_id] = (
+                        decision_vectors_by_id[photo_id]
+                        if photo_id in decision_vectors_by_id
+                        else _load_vector(
+                            str(memory_row["embedding_path"]), self.provider.dimension
+                        )
+                    )
+                memory = MemoryReranker(
+                    self.database, self.provider, enabled=True,
+                    **({"allow_proxy": True} if original.preference_memory.get("allow_proxy") is True else {})
+                ).rerank(user_id, query_vector, vectors)
+            warnings.extend(memory.warnings)
+
+            def with_memory(items):
+                return [
+                    (
+                        item_row,
+                        replace_score(
+                            item_score,
+                            total=item_score.total
+                            + memory.deltas.get(str(item_row["id"]), 0.0),
+                        ),
+                    )
+                    for item_row, item_score in items
+                ]
+
+            eligible = with_memory(eligible)
+            locked_scored = with_memory(locked_scored)
 
         eligible.sort(key=lambda item: (-item[1].total, item[0]["id"]))
         if not eligible:
@@ -319,6 +455,9 @@ class ReplacementService:
             album_id=original.album_id,
             semantic_enabled=query_vector is not None,
             contextual_utility=runtime is not None,
+            memory_delta=memory.deltas.get(str(row["id"]), 0.0) if memory else 0.0,
+            memory_applied=bool(memory and memory.applied),
+            assessment=assessment["items"][row["id"]] if assessment else None,
         )
         rescored_locked = [
             _selected_photo(
@@ -327,6 +466,11 @@ class ReplacementService:
                 album_id=original.album_id,
                 semantic_enabled=query_vector is not None,
                 contextual_utility=runtime is not None,
+                memory_delta=memory.deltas.get(str(locked_row["id"]), 0.0)
+                if memory
+                else 0.0,
+                memory_applied=bool(memory and memory.applied),
+                assessment=assessment["items"][locked_row["id"]] if assessment else None,
             )
             for locked_row, locked_score in locked_scored
         ]
@@ -336,6 +480,9 @@ class ReplacementService:
         )
         replacement_selection_id = uuid.uuid4().hex
         updated = SelectionResponse(
+            intent_provenance=original.intent_provenance,
+            preference_memory=memory.as_dict() if memory else None,
+            learned_quality=assessment,
             selection_id=replacement_selection_id,
             album_id=original.album_id,
             prompt=original.prompt,
@@ -371,16 +518,32 @@ class ReplacementService:
             ),
             feature_schema=runtime.feature_schema if runtime else None,
             projection_id=runtime.projection_id if runtime else None,
+            people_snapshot_sha256=people_evidence.snapshot_sha256
+            if people_evidence
+            else None,
+            subset_photo_ids=original.subset_photo_ids,
             candidate_universe=_candidate_universe_summary(
                 rows=decision_universe_rows,
-                album_photo_count=len(rows),
+                album_photo_count=album_photo_count,
                 subset_photo_count=len(rows),
                 excluded_reject_count=excluded_reject_count,
                 excluded_quality_count=excluded_quality_count,
                 decision_features_by_id=decision_features_by_id,
             ),
         )
+        if assessment:
+            updated.algorithm = learned_quality.ALGORITHM + ("+case-memory-v1" if memory and memory.applied else "")
         with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            learned_quality.verify(self.aesthetics_service, original.album_id, assessment)
+            if (
+                people_evidence
+                and load_people_constraint_evidence(
+                    self.database, original.album_id, person_minimums
+                ).snapshot_sha256
+                != people_evidence.snapshot_sha256
+            ):
+                raise ValueError("人物证据在替换过程中发生变化；请重新选片。")
             connection.execute(
                 """
                 INSERT INTO selections(id, album_id, raw_prompt, parse_json, result_json)
@@ -419,6 +582,9 @@ def _selected_photo(
     album_id: str,
     semantic_enabled: bool,
     contextual_utility: bool,
+    memory_delta: float = 0.0,
+    memory_applied: bool = False,
+    assessment: dict | None = None,
 ) -> SelectedPhoto:
     return SelectedPhoto(
         photo_id=row["id"],
@@ -431,9 +597,17 @@ def _selected_photo(
         preference_score=round(score.preference, 6),
         quality_score=round(score.quality, 3),
         similarity_group=row["similarity_group"],
+        memory_delta=memory_delta,
+        learned_quality=assessment,
         reasons=grounded_reasons(
             score,
             semantic_enabled,
             contextual_utility=contextual_utility,
+        )
+        + learned_quality.reasons(assessment)
+        + (
+            [f"case memory {memory_delta:+.3f}; no model training"]
+            if memory_applied
+            else []
         ),
     )

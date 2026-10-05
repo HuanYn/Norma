@@ -1,0 +1,225 @@
+{
+  "schema": "norma-real-video-browser-smoke-v1",
+  "date": "2026-10-05T07:12:45.885Z",
+  "origin": "http://127.0.0.1:8767",
+  "album_id": "54a2e3cf1d605ab8a5682cbeab1b2885",
+  "context": "One public-image job submitted via explicit UI consent to the user-owned server. No VLM or paid API calls. Engineering generation/playback smoke, not a video-quality improvement study.",
+  "viewport": {
+    "width": 1440,
+    "height": 1100
+  },
+  "checks": {
+    "unchecked_consent_blocks_submit": true,
+    "html_video": {
+      "metadata": {
+        "duration": 2.041667,
+        "width": 640,
+        "height": 384,
+        "readyState": 4,
+        "currentTime": 0,
+        "error": null
+      },
+      "playback": {
+        "currentTime": 0.809413,
+        "paused": true,
+        "error": null
+      }
+    },
+    "download": {
+      "file": "docs/benchmarks/assets/demo-sprint-20261005/video/895712f3abf045e68bf07dfc15cef2af-ui-download.mp4",
+      "bytes": 439152,
+      "sha256": "1db7ecb208b272a06ba9b32447f5e1f9bc400a3bc367d58bafee79df21c1f57c"
+    }
+  },
+  "observed_states": [
+    {
+      "at": "2026-10-05T07:12:48.640Z",
+      "status": "running",
+      "stage": "encoding",
+      "step": null,
+      "step_percent": null
+    },
+    {
+      "at": "2026-10-05T07:13:19.733Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 1,
+      "step_percent": 5
+    },
+    {
+      "at": "2026-10-05T07:13:21.765Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 2,
+      "step_percent": 10
+    },
+    {
+      "at": "2026-10-05T07:13:23.855Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 4,
+      "step_percent": 20
+    },
+    {
+      "at": "2026-10-05T07:13:25.947Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 5,
+      "step_percent": 25
+    },
+    {
+      "at": "2026-10-05T07:13:28.030Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 7,
+      "step_percent": 35
+    },
+    {
+      "at": "2026-10-05T07:13:30.116Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 8,
+      "step_percent": 40
+    },
+    {
+      "at": "2026-10-05T07:13:32.206Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 10,
+      "step_percent": 50
+    },
+    {
+      "at": "2026-10-05T07:13:34.298Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 11,
+      "step_percent": 55
+    },
+    {
+      "at": "2026-10-05T07:13:36.379Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 13,
+      "step_percent": 65
+    },
+    {
+      "at": "2026-10-05T07:13:38.419Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 14,
+      "step_percent": 70
+    },
+    {
+      "at": "2026-10-05T07:13:40.501Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 16,
+      "step_percent": 80
+    },
+    {
+      "at": "2026-10-05T07:13:42.582Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 17,
+      "step_percent": 85
+    },
+    {
+      "at": "2026-10-05T07:13:44.628Z",
+      "status": "running",
+      "stage": "denoising",
+      "step": 19,
+      "step_percent": 95
+    },
+    {
+      "at": "2026-10-05T07:13:46.668Z",
+      "status": "running",
+      "stage": "decoding",
+      "step": null,
+      "step_percent": null
+    },
+    {
+      "at": "2026-10-05T07:14:11.648Z",
+      "status": "running",
+      "stage": "exporting",
+      "step": null,
+      "step_percent": null
+    },
+    {
+      "at": "2026-10-05T07:14:13.736Z",
+      "status": "completed",
+      "stage": "completed",
+      "step": null,
+      "step_percent": null
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_responses": [],
+  "blocked_requests": [],
+  "video_post_count": 1,
+  "photo": {
+    "id": "9c23d237d2cb505f9ed9a3d1c20ad9d6",
+    "filename": "005_1839d30785cb.jpg",
+    "width": 1920,
+    "height": 1280
+  },
+  "selection_id": "9b17b6170e6341d7b81e38f5d79ed618",
+  "submitted_request": {
+    "album_id": "54a2e3cf1d605ab8a5682cbeab1b2885",
+    "photo_id": "9c23d237d2cb505f9ed9a3d1c20ad9d6",
+    "upload_confirmed": true,
+    "options": {
+      "prompt": "A slow gentle cinematic camera push toward this historic street. Preserve the building geometry and original colors, subtle parallax, natural daylight, no cuts."
+    }
+  },
+  "job_id": "895712f3abf045e68bf07dfc15cef2af",
+  "final_job": {
+    "id": "895712f3abf045e68bf07dfc15cef2af",
+    "status": "completed",
+    "stage": "completed",
+    "created_at": "2026-10-05T07:12:42.222834+00:00",
+    "started_at": "2026-10-05T07:12:42.229021+00:00",
+    "finished_at": "2026-10-05T07:14:06.071824+00:00",
+    "step": null,
+    "total_steps": null,
+    "step_percent": null,
+    "cancel_requested": false,
+    "error": null,
+    "model_id": "Wan-AI/Wan2.2-TI2V-5B-Diffusers",
+    "options": {
+      "prompt": "A slow gentle cinematic camera push toward this historic street. Preserve the building geometry and original colors, subtle parallax, natural daylight, no cuts.",
+      "negative_prompt": "blur, distorted face, deformed hands, flicker, text, watermark",
+      "width": 640,
+      "height": 384,
+      "num_frames": 49,
+      "num_inference_steps": 20,
+      "guidance_scale": 5,
+      "seed": 42
+    },
+    "input_sha256": "97a264dfd66e2e46648b0410604900c0360d34c7a8bafa18bdd4815dc7c052af",
+    "input_dimensions": [
+      1280,
+      853
+    ],
+    "upload_confirmed": true,
+    "metadata_removed": true,
+    "crop_mode": "center_crop",
+    "fps": 24,
+    "result": {
+      "model_id": "Wan-AI/Wan2.2-TI2V-5B-Diffusers",
+      "model_revision": "b8fff7315c768468a5333511427288870b2e9635",
+      "pipeline": "WanImageToVideoPipeline",
+      "fps": 24,
+      "frame_count": 49,
+      "duration_seconds": 2.0416666666666665,
+      "peak_cuda_allocated_bytes": 14817984000,
+      "torch_version": "2.8.0+cu128",
+      "diffusers_version": "0.35.1",
+      "offload": "model",
+      "vae_tiling": false
+    },
+    "elapsed_seconds": 83.842
+  },
+  "submit_to_terminal_seconds": 86.947,
+  "passed": true
+}

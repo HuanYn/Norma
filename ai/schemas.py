@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ai.config import PreferenceMode, VLMProviderMode
 
@@ -422,6 +422,13 @@ class PersonClusterSummary(BaseModel):
     cluster_id: str
     label: str
     faces: list[FaceSummary]
+    label_status: Literal["unlabeled", "confirmed", "needs_review"] = "unlabeled"
+    label_revision: int = 0
+
+
+class PersonLabelRequest(BaseModel):
+    label: str = Field(min_length=1, max_length=80)
+    expected_revision: int | None = Field(default=None, ge=0)
 
 
 class PeopleIndexResponse(BaseModel):
@@ -471,6 +478,21 @@ class SelectionRequest(BaseModel):
     prompt: str = Field(min_length=1, max_length=1000)
     subset_photo_ids: list[str] | None = None
     user_id: str = Field(default="local", min_length=1, max_length=100)
+    use_preference_memory: bool = Field(default=False, strict=True)
+    use_learned_quality: bool = Field(default=False, strict=True)
+    allow_proxy_memory: bool = Field(default=False, strict=True)
+    person_minimums: dict[str, Annotated[int, Field(strict=True)]] = Field(
+        default_factory=dict, max_length=10
+    )
+
+    @field_validator("person_minimums")
+    @classmethod
+    def validate_person_minimums(cls, value: dict[str, int]) -> dict[str, int]:
+        if any(not label.strip() or len(label) > 80 for label in value):
+            raise ValueError("person names must contain 1 to 80 characters")
+        if any(not 1 <= minimum <= 50 for minimum in value.values()):
+            raise ValueError("person minimums must be between 1 and 50")
+        return value
 
 
 class SelectionConstraints(BaseModel):
@@ -478,6 +500,7 @@ class SelectionConstraints(BaseModel):
     min_quality: float
     exclude_rejects: bool
     max_per_similarity_group: int
+    person_minimums: dict[str, int] = Field(default_factory=dict)
 
 
 class SelectedPhoto(BaseModel):
@@ -490,6 +513,8 @@ class SelectedPhoto(BaseModel):
     quality_score: float
     similarity_group: str | None
     reasons: list[str]
+    memory_delta: float = 0.0
+    learned_quality: dict[str, object] | None = None
 
 
 class CandidateUniverseSummary(BaseModel):
@@ -527,6 +552,11 @@ class SelectionResponse(BaseModel):
     feature_schema: str | None = None
     projection_id: str | None = None
     candidate_universe: CandidateUniverseSummary | None = None
+    people_snapshot_sha256: str | None = None
+    subset_photo_ids: list[str] | None = None
+    intent_provenance: dict[str, object] | None = None
+    preference_memory: dict[str, object] | None = None
+    learned_quality: dict[str, object] | None = None
 
 
 class PairwiseFeedbackRequest(BaseModel):

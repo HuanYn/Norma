@@ -4,6 +4,29 @@ Norma 先在本机用预训练 OpenCLIP 检索照片，再调用配置的云端�
 
 ## 配置
 
+### DeepSeek：在本机隐藏输入 Key 启动
+
+2026-10-05 核对官方文档：`deepseek-flash` 支持图片输入，Base URL 为 `https://api.deepseek.com`。不是所有 DeepSeek 型号都能看图，请不要把纯文本型号用于这里。[官方视觉说明](https://api-docs.deepseek.com/guides/vision/)
+
+如果 Key 曾贴到聊天、截图或公开页面，建议在服务商控制台撤销并重新生成。程序不会替你撤销或强制轮换，也可以使用你明确确认继续使用的有效 Key；不要再把 Key 发回聊天。停止旧的 Norma 服务后，在本机 PowerShell 中执行：
+
+```powershell
+cd E:\Norma
+python scripts/start_deepseek.py
+```
+
+按提示粘贴 **API Key**，输入不会回显；按回车启动网站。脚本只将 Key 放入本次后端子进程的环境，不写文件、不修改持久系统环境，也不把 Key 放进启动命令参数。无法隐藏输入时会拒绝启动，不降级成明文输入。它不能保证进程内存被安全擦除，也不能保护已被他人控制的电脑。
+
+启动预设：`record-only`、本机回环地址、`deepseek-flash`、JSON 输出、关闭思考、最大输出 1024 tokens。启动本身不测试 Key，不发起云端推理；只有网页点击“云端看图分析”才发送候选图片并可能计费。Key 正确性、余额和实际模型效果仍需真实调用验证。
+
+显式关闭思考是为了先验证短结构化回答，不是证明效果更好。DeepSeek 当前默认开启思考，仅填 Base URL 与模型名不会自动关闭它；JSON 模式仍需现有 claims/citations 校验，不能替代事实核对。[思考模式](https://api-docs.deepseek.com/guides/thinking_mode/)、[JSON 输出](https://api-docs.deepseek.com/guides/json_mode/)
+
+如手动配置，可设置 `NORMA_VLM_THINKING_MODE=disabled` 与 `NORMA_VLM_JSON_RESPONSE_FORMAT=1`。默认 `provider-default` 不传 `thinking` 字段，JSON 开关默认关闭，避免影响其他兼容服务。这些请求选项进入 provider 指纹，切换选项会改变运行身份；不代表云端权重已固定。
+
+验证分为两个阶段：先完成模拟专项 143 项通过（21.81 秒，1 个已有弃用 warning）；随后按用户明确授权，真实 `/models` 鉴权和一次合成图视觉请求成功，严格引用校验通过。真实测试没有上传私人照片，也未执行完整 OpenCLIP 检索链路，不能作为相册效果 benchmark。详见 [真实 smoke 记录](benchmarks/deepseek-live-smoke-20261005.md)。密钥仅在运行进程中使用，不写入 Obsidian 或 Git。
+
+### 其他兼容服务或手动配置
+
 在启动 Python 的同一个 PowerShell 终端设置环境变量：
 
 ```powershell
@@ -19,6 +42,7 @@ python -m ai web
 把示例地址、模型名、Key 替换为供应商控制台中同一区域/工作空间的配置。Key 留在本机；不要提交到 Git 或复制到公开笔记。项目不会自动读取 `.env`；`.env.example` 是配置说明。修改环境变量后重启后端。
 
 - 百炼/通义千问：从控制台复制当前 OpenAI-compatible Base URL 与支持图片的模型 ID。[官方接入文档](https://help.aliyun.com/en/model-studio/qwen-vl-compatible-with-openai)
+- DeepSeek：使用上面的本机隐藏输入启动方式，或按控制台和官方视觉文档配置。
 - OpenAI：Base URL 为 `https://api.openai.com/v1`，选择支持 Chat Completions 图像输入与这里所用参数的模型。[官方图像输入文档](https://developers.openai.com/api/docs/guides/images-vision)
 - 其他兼容服务：使用对应 Base URL 和视觉模型 ID；仅文本模型不能看图。
 
@@ -68,4 +92,4 @@ python -m ai web
 
 ## 验证状态
 
-此轮使用模拟 HTTP 传输验证调用协议与错误边界；没有可用云端凭据，因此没有运行付费调用，也没有新的云端效果、费用或延迟结果。历史本地 Qwen smoke 与半合成偏好实验不能被改称为云端实验。
+通用适配最初使用模拟 HTTP 验证。后续 DeepSeek 已完成一次真实合成图 smoke，调用与校验耗时 582 ms，包含模型列表获取的脚本总耗时 2853 ms；仅一次小图观测，不是稳定延迟或完整相册性能。账单未读取，不能报告实际费用。真实相册、多图及独立效果评测仍未完成。历史本地 Qwen smoke 与半合成偏好实验不能被改称为云端实验。

@@ -8,6 +8,7 @@ class OptimizationCandidate:
     index: int
     score: float
     group_key: str
+    person_labels: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,7 +22,15 @@ def optimize_collection(
     candidates: list[OptimizationCandidate],
     target_count: int,
     max_per_group: int,
+    person_minimums: dict[str, int] | None = None,
 ) -> OptimizationResult:
+    person_minimums = person_minimums or {}
+    if any(
+        minimum > target_count
+        or sum(label in item.person_labels for item in candidates) < minimum
+        for label, minimum in person_minimums.items()
+    ):
+        return OptimizationResult([], _solver_name(), "infeasible")
     capacities = _capacity(candidates, max_per_group)
     if sum(capacities.values()) < target_count:
         return OptimizationResult([], _solver_name(), "infeasible")
@@ -29,6 +38,10 @@ def optimize_collection(
     try:
         from ortools.sat.python import cp_model
     except ImportError:
+        if person_minimums:
+            return OptimizationResult(
+                [], "unavailable", "person_quota_solver_unavailable"
+            )
         return _greedy(candidates, target_count, max_per_group)
 
     model = cp_model.CpModel()
@@ -36,6 +49,15 @@ def optimize_collection(
         model.new_bool_var(f"photo_{candidate.index}") for candidate in candidates
     ]
     model.add(sum(variables) == target_count)
+    for label, minimum in person_minimums.items():
+        model.add(
+            sum(
+                variables[position]
+                for position, candidate in enumerate(candidates)
+                if label in candidate.person_labels
+            )
+            >= minimum
+        )
     groups: dict[str, list[int]] = {}
     for position, candidate in enumerate(candidates):
         groups.setdefault(candidate.group_key, []).append(position)

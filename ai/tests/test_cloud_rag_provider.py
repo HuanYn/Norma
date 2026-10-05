@@ -161,6 +161,7 @@ def test_only_allowlisted_resized_metadata_free_images_leave_machine(png):
     assert body["stream"] is False
     assert body["max_tokens"] == 256
     assert "response_format" not in body
+    assert "thinking" not in body
     content = body["messages"][1]["content"]
     assert content[0]["text"] == _request(bundle).user_prompt
     images = [
@@ -193,12 +194,22 @@ def test_fingerprint_includes_contract_but_no_secret_or_endpoint():
         "https://second.example.test/v1", "example-vl", API_KEY
     )
     changed_format = _provider(json_response_format=True)
+    thinking_enabled = _provider(thinking_mode="enabled")
+    thinking_disabled = _provider(thinking_mode="disabled")
     assert first.name == changed_key.name
+    assert first.name == _provider(thinking_mode="provider-default").name
     assert (
         len(
-            {first.name, changed_model.name, changed_endpoint.name, changed_format.name}
+            {
+                first.name,
+                changed_model.name,
+                changed_endpoint.name,
+                changed_format.name,
+                thinking_enabled.name,
+                thinking_disabled.name,
+            }
         )
-        == 4
+        == 6
     )
     assert "remote_weights=unverified" in first.name
     for value in (first.name, repr(first), repr(first.runtime)):
@@ -212,6 +223,54 @@ def test_json_object_mode_is_explicitly_opt_in():
     assert json.loads(transport.calls[0][1]["payload"])["response_format"] == {
         "type": "json_object"
     }
+
+
+@pytest.mark.parametrize("thinking_mode", ["provider-default", "enabled", "disabled"])
+@pytest.mark.parametrize("json_response_format", [False, True])
+def test_optional_request_fields_match_explicit_configuration(
+    thinking_mode, json_response_format
+):
+    transport = RecordingTransport()
+    provider = _provider(
+        transport,
+        thinking_mode=thinking_mode,
+        json_response_format=json_response_format,
+    )
+    images = _request().images
+    provider.runtime.generate_json(
+        system_prompt="Return JSON claims and citations.",
+        user_prompt="Which photo is blue?",
+        images=images,
+        max_new_tokens=256,
+        temperature=0.0,
+    )
+    content = [{"type": "text", "text": "Which photo is blue?"}]
+    for item in images:
+        content.extend(
+            [
+                {"type": "text", "text": f"EVIDENCE_IMAGE photo_id={item.photo_id}"},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": cloud._jpeg_data_url(item)},
+                },
+            ]
+        )
+    expected = {
+        "model": "example-vl",
+        "messages": [
+            {"role": "system", "content": "Return JSON claims and citations."},
+            {"role": "user", "content": content},
+        ],
+        "max_tokens": 256,
+        "temperature": 0.0,
+        "stream": False,
+    }
+    if thinking_mode != "provider-default":
+        expected["thinking"] = {"type": thinking_mode}
+    if json_response_format:
+        expected["response_format"] = {"type": "json_object"}
+    assert len(transport.calls) == 1
+    assert json.loads(transport.calls[0][1]["payload"]) == expected
 
 
 def test_prompt_secret_is_redacted_and_secret_photo_id_is_not_uploaded():
@@ -268,11 +327,22 @@ def test_invalid_endpoints_fail_before_network(url):
         {"timeout_seconds": 0},
         {"timeout_seconds": float("nan")},
         {"timeout_seconds": True},
+        {"json_response_format": "true"},
+        {"json_response_format": 1},
+        {"json_response_format": None},
+        {"thinking_mode": "auto"},
+        {"thinking_mode": "Enabled"},
+        {"thinking_mode": " disabled "},
+        {"thinking_mode": True},
+        {"thinking_mode": None},
+        {"thinking_mode": []},
     ],
 )
 def test_invalid_generation_settings_fail_without_network(option):
+    transport = RecordingTransport()
     with pytest.raises(cloud.CloudVLMUnavailableError, match="configuration"):
-        _provider(**option)
+        _provider(transport, **option)
+    assert transport.calls == []
 
 
 @pytest.mark.parametrize(

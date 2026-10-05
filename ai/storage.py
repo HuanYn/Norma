@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterator
 
 
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 
 PREFERENCE_SCHEMA_V10_SQL = """
@@ -856,6 +856,65 @@ class Database:
                    BEGIN
                        SELECT RAISE(ABORT, 'rag_runs are immutable');
                    END"""
+            )
+            return
+        if version == 15:
+            photo_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(photos)")
+            }
+            if "face_source_sha256" not in photo_columns:
+                connection.execute(
+                    "ALTER TABLE photos ADD COLUMN face_source_sha256 TEXT"
+                )
+            existing_columns = {
+                row["name"]
+                for row in connection.execute("PRAGMA table_info(person_clusters)")
+            }
+            columns = {
+                "label_status": "TEXT NOT NULL DEFAULT 'unlabeled' CHECK(label_status IN ('unlabeled', 'confirmed', 'needs_review'))",
+                "label_revision": "INTEGER NOT NULL DEFAULT 0",
+                "identity_evidence_json": "TEXT NOT NULL DEFAULT '{}'",
+            }
+            for name, declaration in columns.items():
+                if name not in existing_columns:
+                    connection.execute(
+                        f"ALTER TABLE person_clusters ADD COLUMN {name} {declaration}"
+                    )
+            # Legacy names have no verified identity binding; retain the text for
+            # review but never treat them as confirmed person-constraint evidence.
+            connection.execute(
+                "UPDATE person_clusters SET label_status = 'needs_review' "
+                "WHERE label <> 'Unknown' AND label_status = 'unlabeled'"
+            )
+            connection.execute(
+                """CREATE TABLE IF NOT EXISTS person_label_events (
+                    id TEXT PRIMARY KEY,
+                    album_id TEXT NOT NULL,
+                    cluster_id TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    label_status TEXT NOT NULL CHECK(label_status IN
+                        ('unlabeled', 'confirmed', 'needs_review')),
+                    revision INTEGER NOT NULL,
+                    reason TEXT NOT NULL,
+                    evidence_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                ) WITHOUT ROWID"""
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_person_label_events_album "
+                "ON person_label_events(album_id, cluster_id, created_at, id)"
+            )
+            for action in ("UPDATE", "DELETE"):
+                connection.execute(
+                    f"CREATE TRIGGER IF NOT EXISTS person_label_events_no_{action.lower()} "
+                    f"BEFORE {action} ON person_label_events BEGIN "
+                    "SELECT RAISE(ABORT, 'person label events are immutable'); END"
+                )
+            connection.execute(
+                """CREATE TRIGGER IF NOT EXISTS person_label_events_no_replace
+                BEFORE INSERT ON person_label_events
+                WHEN EXISTS(SELECT 1 FROM person_label_events WHERE id = NEW.id)
+                BEGIN SELECT RAISE(ABORT, 'person label events are immutable'); END"""
             )
             return
         raise RuntimeError(f"Missing database migration {version}")

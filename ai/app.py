@@ -20,6 +20,11 @@ from ai.index.embedding import (
     embedding_provider_capabilities,
 )
 from ai.jobs import PrepareJobManager
+from ai.aesthetics.api import create_aesthetics_router
+from ai.aesthetics.jobs import AestheticsJobManager
+from ai.aesthetics.provider import PyiqaMusiqProvider
+from ai.aesthetics.service import AestheticsService
+from ai.demo_api import create_demo_router
 from ai.library import AlbumCatalogService
 from ai.maintenance import CacheMaintenanceService
 from ai.people import (
@@ -102,12 +107,15 @@ from ai.schemas import (
     SelectionResponse,
 )
 from ai.storage import Database
+from ai.people.labels import PersonLabelService
+from ai.schemas import PersonClusterSummary, PersonLabelRequest
 
 
 settings = load_settings()
 database = Database(settings.database_path)
 prepare_jobs: PrepareJobManager | None = None
 embedding_warmup: EmbeddingWarmupManager | None = None
+aesthetics_jobs: AestheticsJobManager | None = None
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level, logging.INFO),
@@ -118,7 +126,7 @@ logger = logging.getLogger("norma.ai")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    global embedding_warmup, prepare_jobs
+    global embedding_warmup, prepare_jobs, aesthetics_jobs
     database.initialize()
     prepare_jobs = PrepareJobManager(
         database,
@@ -130,6 +138,15 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         settings.model_cache_dir,
     )
     prepare_jobs.start()
+    aesthetics_jobs = AestheticsJobManager(
+        AestheticsService(
+            database,
+            PyiqaMusiqProvider(
+                settings.aesthetics_model_dir, device=settings.aesthetics_device
+            ),
+        )
+    )
+    aesthetics_jobs.start()
     embedding_warmup = EmbeddingWarmupManager(embedding_provider)
     if settings.prewarm_embedding:
         embedding_warmup.submit()
@@ -137,6 +154,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     try:
         yield
     finally:
+        aesthetics_jobs.shutdown()
+        aesthetics_jobs = None
         prepare_jobs.shutdown()
         prepare_jobs = None
         embedding_warmup = None
@@ -147,6 +166,20 @@ app = FastAPI(
     version="0.1.0",
     description="Local domain API for multimodal photo understanding and selection.",
     lifespan=lifespan,
+)
+
+
+def get_aesthetics_jobs() -> AestheticsJobManager:
+    if aesthetics_jobs is None:
+        raise HTTPException(503, "Assessment worker has not started")
+    return aesthetics_jobs
+
+
+app.include_router(
+    create_aesthetics_router(
+        lambda: get_aesthetics_jobs().service,
+        get_aesthetics_jobs,
+    )
 )
 
 _MEDIA_COMPONENT_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,254}\Z")
@@ -227,6 +260,11 @@ def capabilities() -> CapabilitiesResponse:
             "library": "cpu-fallback-indexer",
             "multimodal_index": embedding_provider().name,
             "people": "opencv-yunet-sface-constrained-prototype-clustering-v2",
+            "person_labels": "explicit-evidence-bound-labels-v1",
+            "person_selection": "confirmed-person-lower-bounds-cp-sat-v1",
+            "aesthetics": "optional-musiq-koniq+ava-on-demand-v1",
+            "selection_intent": "opt-in-model-parse+source-constraint-validation-v1",
+            "preference_memory": "opt-in-frozen-openclip-case-memory-v1",
             "selection": (
                 "contextual-utility+structured-cp-sat-or-greedy-v1"
                 if settings.preference_mode == "adaptive"
@@ -246,7 +284,7 @@ def capabilities() -> CapabilitiesResponse:
                 if settings.vlm_provider == "openai-compatible"
                 else "learned-openclip-retrieval+local-qwen3vl+citation-enforcement-v1"
             ),
-            "video": "deferred",
+            "video": "remote-wan-i2v-client-v1" if settings.video_base_url else "deferred",
             "world": "deferred",
         },
     )
@@ -476,6 +514,8 @@ def rag_generation_provider() -> GroundedGenerationProvider:
             settings.vlm_api_key,
             max_new_tokens=settings.vlm_max_new_tokens,
             timeout_seconds=settings.vlm_timeout_seconds,
+            thinking_mode=settings.vlm_thinking_mode,
+            json_response_format=settings.vlm_json_response_format,
         )
     return create_local_qwen3vl_provider(
         settings.local_vlm_model_dir,
@@ -510,7 +550,17 @@ def selection_service() -> SelectionService:
         database,
         embedding_provider(),
         preference_mode=settings.preference_mode,
+        aesthetics_service=aesthetics_jobs.service if aesthetics_jobs else None,
     )
+
+
+app.include_router(
+    create_demo_router(
+        lambda: database,
+        lambda: settings,
+        selection_service,
+    )
+)
 
 
 def preference_service() -> PreferenceService:
@@ -534,6 +584,7 @@ def replacement_service() -> ReplacementService:
         database,
         embedding_provider(),
         preference_mode=settings.preference_mode,
+        aesthetics_service=aesthetics_jobs.service if aesthetics_jobs else None,
     )
 
 
@@ -693,6 +744,43 @@ def get_people(album_id: str) -> PeopleIndexResponse:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
 
+@app.patch(
+    "/albums/{album_id}/people/{cluster_id}", response_model=PersonClusterSummary
+)
+def set_person_label(
+    album_id: str, cluster_id: str, request: PersonLabelRequest
+) -> PersonClusterSummary:
+    try:
+        cluster = next(
+            (
+                item
+                for item in people_indexer().get(album_id).clusters
+                if item.cluster_id == cluster_id
+            ),
+            None,
+        )
+        if cluster is None:
+            raise KeyError("person cluster not found in this album")
+        state = PersonLabelService(database).set(
+            album_id,
+            cluster_id,
+            request.label,
+            expected_revision=request.expected_revision,
+        )
+        # set() validates exact current evidence and revision before committing.
+        return cluster.model_copy(
+            update={
+                "label": state.label,
+                "label_status": state.label_status,
+                "label_revision": state.label_revision,
+            }
+        )
+    except KeyError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+
 @app.post("/albums/{album_id}/people/index", response_model=PeopleIndexResponse)
 def index_people(album_id: str) -> PeopleIndexResponse:
     try:
@@ -786,7 +874,24 @@ def replace_selection_photo(
         raise HTTPException(status_code=503, detail=str(error)) from error
 
 
-web_dist = Path(__file__).resolve().parent / "web_dist"
+from ai.workflow import create_workflow_router  # noqa: E402
+from ai.exploration.web import create_web as create_world_web  # noqa: E402
+
+app.include_router(create_workflow_router(lambda: database, lambda: get_aesthetics_jobs().service,
+                                         selection_service, lambda: settings))
+
+def workflow_world_token():
+    path = settings.video_worker_token_file
+    if not path or not path.is_file() or path.stat().st_size > 1024:
+        return ""
+    value = path.read_text(encoding="utf-8").strip()
+    return value if value.isascii() and len(value) >= 24 else ""
+
+app.mount("/demo/world", create_world_web(workflow_world_token, Path(__file__).resolve().parents[1],
+    port=None, workers=("http://127.0.0.1:8769", "http://127.0.0.1:8770"),
+    cookie_name="norma_workflow_world_browser"))
+
+web_dist = settings.web_dist_path or Path(__file__).resolve().parent / "web_dist"
 if web_dist.joinpath("index.html").is_file():
     # Keep this mount last so API routes continue to take precedence.
     app.mount("/", StaticFiles(directory=web_dist, html=True), name="web")

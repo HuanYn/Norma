@@ -23,6 +23,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from PIL import Image, ImageOps, __version__ as pillow_version
 
+from ai.config import VLMThinkingMode
 from ai.rag.image_safety import (
     MAX_EVIDENCE_IMAGE_PIXELS,
     MAX_EVIDENCE_TOTAL_PIXELS,
@@ -181,6 +182,7 @@ class OpenAICompatibleVisionRuntime:
         api_key: str,
         timeout_seconds: float = 60,
         json_response_format: bool = False,
+        thinking_mode: VLMThinkingMode = "provider-default",
         transport: CloudTransport | None = None,
     ) -> None:
         self._endpoint = _endpoint(base_url)
@@ -198,12 +200,15 @@ class OpenAICompatibleVisionRuntime:
             or not math.isfinite(timeout_seconds)
             or not 1 <= timeout_seconds <= 300
             or not isinstance(json_response_format, bool)
+            or not isinstance(thinking_mode, str)
+            or thinking_mode not in {"provider-default", "enabled", "disabled"}
         ):
             raise CloudVLMUnavailableError("configuration")
         self._model = model
         self._api_key = api_key
         self._timeout_seconds = float(timeout_seconds)
         self._json_response_format = json_response_format
+        self._thinking_mode = thinking_mode
         self._transport = transport or _https_transport
         contract = {
             "endpoint": self._endpoint,
@@ -216,6 +221,7 @@ class OpenAICompatibleVisionRuntime:
             "prompt_sanitization": PROMPT_SANITIZATION_VERSION,
             "output_contract": OUTPUT_CONTRACT_VERSION,
             "json_response_format": json_response_format,
+            "thinking_mode": thinking_mode,
             "temperature": 0.0,
             "timeout_seconds": self._timeout_seconds,
             "preprocess": PREPROCESS_VERSION,
@@ -288,6 +294,8 @@ class OpenAICompatibleVisionRuntime:
         }
         if self._json_response_format:
             document["response_format"] = {"type": "json_object"}
+        if self._thinking_mode != "provider-default":
+            document["thinking"] = {"type": self._thinking_mode}
         payload = _json_bytes(document)
         if len(payload) > MAX_REQUEST_BYTES:
             raise VLMInputBudgetError("cloud request exceeds the upload size limit")
@@ -376,6 +384,7 @@ def create_cloud_vlm_provider(
     max_new_tokens: int = 256,
     timeout_seconds: float = 60,
     json_response_format: bool = False,
+    thinking_mode: VLMThinkingMode = "provider-default",
     transport: CloudTransport | None = None,
 ) -> CloudVLMProvider:
     if (
@@ -390,6 +399,7 @@ def create_cloud_vlm_provider(
         api_key=api_key,
         timeout_seconds=timeout_seconds,
         json_response_format=json_response_format,
+        thinking_mode=thinking_mode,
         transport=transport,
     )
     return CloudVLMProvider(

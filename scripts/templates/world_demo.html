@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="data:,">
+  <title>Norma · 两张照片的探索演示</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#111410;color:#e8ebe4;font:14px system-ui,sans-serif}
+    header{max-width:1100px;margin:auto;padding:22px 24px 14px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+    header a{color:#bac5ad;text-decoration:none}h1{font-size:19px;font-weight:500;margin:0}header p{color:#a7b09f;margin:0;font-size:12px}
+    main{max-width:1100px;margin:auto;padding:0 24px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    article{min-width:0}.media{height:72vh;min-height:280px;position:relative;background:#090b08;border:1px solid #293025;border-radius:10px;overflow:hidden}
+    video,.original{width:100%;height:100%;object-fit:contain;display:block}.original{position:absolute;inset:0;background:#090b08;pointer-events:none}
+    [hidden]{display:none!important}.bar{display:flex;gap:8px;align-items:center;margin:12px 0 6px;flex-wrap:wrap}
+    h2{font-size:15px;font-weight:500;margin:0 auto 0 0}button,.download{color:#e8ebe4;background:#242c20;border:1px solid #45523d;padding:7px 10px;border-radius:6px;font:inherit;cursor:pointer;text-decoration:none}
+    button[aria-pressed=true]{background:#516445}.stats{font-size:12px;color:#a7b09f;line-height:1.6;margin:5px 0}.notice{max-width:1100px;margin:0 auto;padding:0 24px 25px;color:#a7b09f;font-size:12px;line-height:1.7}
+    @media(max-width:650px){main{grid-template-columns:1fr}.media{height:70vh}header{gap:8px}}
+  </style>
+</head>
+<body>
+<header><a href="/">NORMA</a><h1>两张照片，两个探索片段</h1><p>LingBot World v2 · 真实模型生成 · 每段至少10秒</p></header>
+<main>
+  <article data-name="mountain">
+    <div class="media"><video controls playsinline preload="metadata" poster="mountain.png" src="mountain.mp4"></video><img class="original" src="mountain.png" alt="雪山输入，完整竖幅" hidden></div>
+    <div class="bar"><h2>雪山 · 向前探索</h2><button type="button" aria-pressed="false">对照输入</button><a class="download" href="mountain.mp4" download="Norma-雪山探索.mp4">下载</a></div>
+    <p class="stats">正在读取实际生成记录…</p>
+  </article>
+  <article data-name="temple">
+    <div class="media"><video controls playsinline preload="metadata" poster="temple.png" src="temple.mp4"></video><img class="original" src="temple.png" alt="建筑输入，完整竖幅" hidden></div>
+    <div class="bar"><h2>建筑 · 侧向探索</h2><button type="button" aria-pressed="false">对照输入</button><a class="download" href="temple.mp4" download="Norma-建筑探索.mp4">下载</a></div>
+    <p class="stats">正在读取实际生成记录…</p>
+  </article>
+</main>
+<p class="notice">这是预设轨迹的离线生成演示，不是已完成的自由交互网页。没有循环、补帧或慢放凑时长；两段都可正常播放、拖动和下载。新视角由模型推测，不能视为真实三维重建。模型可能改变山体、建筑与细节。此页仅在本机展示；LingBot v2 使用非商业许可。</p>
+<script>
+  for(const article of document.querySelectorAll('article')){
+    const button=article.querySelector('button'),original=article.querySelector('.original'),video=article.querySelector('video');
+    button.addEventListener('click',()=>{const show=original.hidden;original.hidden=!show;button.setAttribute('aria-pressed',String(show));button.textContent=show?'返回视频':'对照输入';if(show)video.pause()});
+    video.addEventListener('play',()=>{for(const other of document.querySelectorAll('video'))if(other!==video)other.pause()});
+    video.addEventListener('error',()=>{article.querySelector('.stats').textContent='视频读取失败，请勿将旧画面当作新结果。'});
+  }
+  fetch('manifest.json').then(r=>{if(!r.ok)throw new Error('manifest');return r.json()}).then(data=>{
+    for(const article of document.querySelectorAll('article')){const s=data[article.dataset.name];article.querySelector('.stats').textContent=`${s.width} × ${s.height} · ${s.frames} 帧 · ${s.duration.toFixed(2)} 秒 · 本次整段生成 ${s.generation_seconds.toFixed(1)} 秒（不含首次加载）`}
+  }).catch(()=>{for(const s of document.querySelectorAll('.stats'))s.textContent='生成记录暂不可读；不显示未经确认的耗时。'});
+</script>
+</body></html>

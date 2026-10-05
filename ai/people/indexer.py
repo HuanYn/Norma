@@ -10,6 +10,14 @@ from typing import Callable, Mapping
 import numpy as np
 
 from ai.people.provider import FaceClusterPolicy, FaceProvider
+from ai.people.labels import (
+    LabelStatus,
+    canonical_json,
+    hash_file,
+    parse_evidence,
+    provider_fingerprint,
+    reconcile_labels,
+)
 from ai.schemas import FaceSummary, PeopleIndexResponse, PersonClusterSummary
 from ai.storage import Database
 
@@ -50,7 +58,7 @@ class PeopleIndexer:
                 """
                 SELECT id, absolute_path, file_size, source_mtime_ns,
                        face_provider, face_source_size, face_source_mtime_ns,
-                       face_processed, face_count
+                       face_source_sha256, face_processed, face_count
                 FROM photos WHERE album_id = ? ORDER BY id
                 """,
                 (album_id,),
@@ -61,6 +69,10 @@ class PeopleIndexer:
                 FROM faces f JOIN photos p ON p.id = f.photo_id
                 WHERE p.album_id = ? ORDER BY f.photo_id, f.id
                 """,
+                (album_id,),
+            ).fetchall()
+            stored_clusters = connection.execute(
+                "SELECT identity_evidence_json FROM person_clusters WHERE album_id = ?",
                 (album_id,),
             ).fetchall()
         if not rows:
@@ -75,18 +87,44 @@ class PeopleIndexer:
         stored_by_photo: dict[str, list[object]] = {}
         for stored in stored_faces:
             stored_by_photo.setdefault(stored["photo_id"], []).append(stored)
+        previous_source_hashes: dict[str, set[str]] = {}
+        previous_descriptor_hashes: dict[str, str] = {}
+        for cluster in stored_clusters:
+            evidence = parse_evidence(cluster["identity_evidence_json"])
+            if evidence is not None:
+                for member in evidence["members"]:
+                    previous_source_hashes.setdefault(member["photo_id"], set()).add(
+                        member["source_sha256"]
+                    )
+                    previous_descriptor_hashes[member["face_id"]] = member[
+                        "descriptor_sha256"
+                    ]
 
         faces: list[IndexedFace] = []
+        source_hashes: dict[str, str] = {}
         stale_rows = []
         reused_count = 0
         for row in rows:
             _ensure_source_matches_index(row)
+            source_hashes[row["id"]] = hash_file(Path(row["absolute_path"]))
             try:
                 cached = self._load_cached_faces(
                     row,
                     stored_by_photo.get(row["id"], []),
                     thumbnail_dir,
+                    source_hashes[row["id"]],
                 )
+                if cached is not None and (
+                    previous_source_hashes.get(row["id"], {source_hashes[row["id"]]})
+                    != {source_hashes[row["id"]]}
+                    or any(
+                        face.id in previous_descriptor_hashes
+                        and hash_file(face.descriptor_path)
+                        != previous_descriptor_hashes[face.id]
+                        for face in cached
+                    )
+                ):
+                    cached = None
             # A derived descriptor is disposable. Interrupted writes can make
             # ``np.load`` raise EOFError, while legacy or damaged rows may have
             # a NULL path and make ``Path`` raise TypeError. Treat both exactly
@@ -154,6 +192,8 @@ class PeopleIndexer:
 
         for row in rows:
             _ensure_source_matches_index(row)
+            if hash_file(Path(row["absolute_path"])) != source_hashes[row["id"]]:
+                raise ValueError("photo content changed during people indexing; retry")
         if should_cancel is not None and should_cancel():
             raise PeopleCancelledError("people indexing cancelled before commit")
 
@@ -173,7 +213,9 @@ class PeopleIndexer:
             for index in component:
                 faces[index].cluster_id = cluster_id
 
-        self._persist(album_id, rows, faces, cluster_ids, computed_faces)
+        label_states = self._persist(
+            album_id, rows, faces, cluster_ids, computed_faces, source_hashes
+        )
         summaries_by_cluster: dict[str, list[FaceSummary]] = {
             cluster_id: [] for cluster_id in cluster_ids
         }
@@ -192,7 +234,13 @@ class PeopleIndexer:
                 )
             )
         clusters = [
-            PersonClusterSummary(cluster_id=cluster_id, label="Unknown", faces=items)
+            PersonClusterSummary(
+                cluster_id=cluster_id,
+                label=label_states[cluster_id][0],
+                label_status=label_states[cluster_id][1],
+                label_revision=label_states[cluster_id][2],
+                faces=items,
+            )
             for cluster_id, items in summaries_by_cluster.items()
         ]
         clusters.sort(key=lambda cluster: (-len(cluster.faces), cluster.cluster_id))
@@ -221,18 +269,22 @@ class PeopleIndexer:
                        SUM(CASE WHEN face_processed = 1
                                  AND face_source_size = file_size
                                  AND face_source_mtime_ns = source_mtime_ns
+                                 AND face_source_sha256 IS NOT NULL
                                 THEN 1 ELSE 0 END) AS processed_count,
                        COUNT(DISTINCT CASE WHEN face_processed = 1
                                             AND face_source_size = file_size
                                             AND face_source_mtime_ns = source_mtime_ns
+                                            AND face_source_sha256 IS NOT NULL
                                            THEN face_provider END) AS provider_count,
                        MAX(CASE WHEN face_processed = 1
                                  AND face_source_size = file_size
                                  AND face_source_mtime_ns = source_mtime_ns
+                                 AND face_source_sha256 IS NOT NULL
                                 THEN face_provider END) AS provider,
                        SUM(CASE WHEN face_processed = 1
                                  AND face_source_size = file_size
                                  AND face_source_mtime_ns = source_mtime_ns
+                                 AND face_source_sha256 IS NOT NULL
                                 THEN face_count ELSE 0 END) AS expected_face_count
                 FROM photos WHERE album_id = ?
                 """,
@@ -240,7 +292,8 @@ class PeopleIndexer:
             ).fetchone()
             rows = connection.execute(
                 """
-                SELECT pc.id AS cluster_id, pc.label, f.id AS face_id,
+                SELECT pc.id AS cluster_id, pc.label, pc.label_status,
+                       pc.label_revision, f.id AS face_id,
                        f.photo_id, f.box_json
                 FROM person_clusters pc
                 JOIN faces f ON f.cluster_id = pc.id
@@ -249,9 +302,14 @@ class PeopleIndexer:
                   AND p.face_processed = 1
                   AND p.face_source_size = p.file_size
                   AND p.face_source_mtime_ns = p.source_mtime_ns
+                  AND p.face_source_sha256 IS NOT NULL
                 ORDER BY pc.id, f.photo_id, f.id
                 """,
                 (album_id, album_id),
+            ).fetchall()
+            cluster_snapshots = connection.execute(
+                "SELECT id, identity_evidence_json FROM person_clusters WHERE album_id = ?",
+                (album_id,),
             ).fetchall()
         if album is None:
             raise KeyError(f"album not found: {album_id}")
@@ -275,6 +333,17 @@ class PeopleIndexer:
             raise ValueError(
                 "persisted people analysis is inconsistent; run the people index again"
             )
+        current_members: dict[str, set[str]] = {}
+        for row in rows:
+            current_members.setdefault(row["cluster_id"], set()).add(row["face_id"])
+        for cluster in cluster_snapshots:
+            evidence = parse_evidence(cluster["identity_evidence_json"])
+            if evidence is not None and current_members.get(cluster["id"], set()) != {
+                member["face_id"] for member in evidence["members"]
+            }:
+                raise ValueError(
+                    "persisted people snapshot changed; run the people index again"
+                )
 
         provider = str(photo_state["provider"])
         by_cluster: dict[str, PersonClusterSummary] = {}
@@ -285,6 +354,8 @@ class PeopleIndexer:
                 PersonClusterSummary(
                     cluster_id=cluster_id,
                     label=str(row["label"]),
+                    label_status=row["label_status"],
+                    label_revision=int(row["label_revision"]),
                     faces=[],
                 ),
             )
@@ -323,12 +394,14 @@ class PeopleIndexer:
         photo: Mapping[str, object],
         stored_faces: list[object],
         thumbnail_dir: Path,
+        source_sha256: str,
     ) -> list[IndexedFace] | None:
         if (
             not photo["face_processed"]
             or photo["face_provider"] != self.provider.name
             or photo["face_source_size"] != photo["file_size"]
             or photo["face_source_mtime_ns"] != photo["source_mtime_ns"]
+            or photo["face_source_sha256"] != source_sha256
             or int(photo["face_count"] or 0) != len(stored_faces)
         ):
             return None
@@ -366,8 +439,57 @@ class PeopleIndexer:
         faces: list[IndexedFace],
         cluster_ids: list[str],
         computed_faces: dict[str, list[IndexedFace]],
-    ) -> None:
+        source_hashes: dict[str, str],
+    ) -> dict[str, tuple[str, LabelStatus, int]]:
+        photos_by_id = {photo["id"]: photo for photo in photos}
+        members_by_cluster: dict[str, list[dict[str, object]]] = {
+            cluster_id: [] for cluster_id in cluster_ids
+        }
+        for face in faces:
+            photo = photos_by_id[face.photo_id]
+            members_by_cluster[face.cluster_id].append(
+                {
+                    "face_id": face.id,
+                    "photo_id": face.photo_id,
+                    "box": list(face.box),
+                    "source_size": photo["file_size"],
+                    "source_mtime_ns": photo["source_mtime_ns"],
+                    "source_sha256": source_hashes[face.photo_id],
+                    "descriptor_sha256": hash_file(face.descriptor_path),
+                }
+            )
+        fingerprint = provider_fingerprint(self.provider)
+        evidence_by_cluster = {
+            cluster_id: canonical_json(
+                {
+                    "version": 1,
+                    "provider_name": self.provider.name,
+                    "provider_fingerprint": fingerprint,
+                    "members": sorted(members, key=lambda item: item["face_id"]),
+                }
+            )
+            for cluster_id, members in members_by_cluster.items()
+        }
         with self.database.connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            current_photos = connection.execute(
+                "SELECT id, file_size, source_mtime_ns FROM photos WHERE album_id = ?",
+                (album_id,),
+            ).fetchall()
+            if len(current_photos) != len(photos) or any(
+                photo["id"] not in photos_by_id
+                or photo["file_size"] != photos_by_id[photo["id"]]["file_size"]
+                or photo["source_mtime_ns"]
+                != photos_by_id[photo["id"]]["source_mtime_ns"]
+                for photo in current_photos
+            ):
+                raise RuntimeError("album changed while committing people analysis")
+            label_states = reconcile_labels(
+                connection,
+                album_id=album_id,
+                evidence_by_cluster=evidence_by_cluster,
+                computed_photo_ids=set(computed_faces),
+            )
             connection.execute(
                 "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
             )
@@ -376,8 +498,21 @@ class PeopleIndexer:
                 [(photo_id,) for photo_id in computed_faces],
             )
             connection.executemany(
-                "INSERT INTO person_clusters(id, album_id, label) VALUES (?, ?, 'Unknown')",
-                [(cluster_id, album_id) for cluster_id in cluster_ids],
+                """
+                INSERT INTO person_clusters
+                    (id, album_id, label, label_status, label_revision,
+                     identity_evidence_json)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    (
+                        cluster_id,
+                        album_id,
+                        *label_states[cluster_id],
+                        evidence_by_cluster[cluster_id],
+                    )
+                    for cluster_id in cluster_ids
+                ],
             )
             connection.executemany(
                 """
@@ -400,19 +535,20 @@ class PeopleIndexer:
                     for face in faces
                 ],
             )
-            photos_by_id = {photo["id"]: photo for photo in photos}
             for photo_id, photo_faces in computed_faces.items():
                 photo = photos_by_id[photo_id]
                 cursor = connection.execute(
                     """
                     UPDATE photos SET face_provider = ?, face_source_size = ?,
-                        face_source_mtime_ns = ?, face_processed = 1, face_count = ?
+                        face_source_mtime_ns = ?, face_source_sha256 = ?,
+                        face_processed = 1, face_count = ?
                     WHERE id = ? AND file_size = ? AND source_mtime_ns = ?
                     """,
                     (
                         self.provider.name,
                         photo["file_size"],
                         photo["source_mtime_ns"],
+                        source_hashes[photo_id],
                         len(photo_faces),
                         photo_id,
                         photo["file_size"],
@@ -423,6 +559,7 @@ class PeopleIndexer:
                     raise RuntimeError(
                         f"photo changed while committing face cache: {photo_id}"
                     )
+        return label_states
 
 
 def _ensure_source_matches_index(row: Mapping[str, object]) -> None:

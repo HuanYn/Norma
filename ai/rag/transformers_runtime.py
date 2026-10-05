@@ -167,6 +167,72 @@ class TransformersQwen3VLRuntime:
                 max_new_tokens=max_new_tokens,
             )
 
+    def generate_text_json(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        max_new_tokens: int,
+        temperature: float,
+    ) -> str:
+        """Bounded text-only generation on the same pinned, lazy CPU runtime.
+
+        Unlike generate_json this does not require or fabricate evidence images.
+        It shares the generation lock and model-integrity checks. Token limits
+        are checked after tokenization and before any model forward pass.
+        """
+        if (
+            temperature != 0.0
+            or type(max_new_tokens) is not int
+            or not 64 <= max_new_tokens <= 1024
+        ):
+            raise ValueError("text generation requires 64-1024 tokens and temperature 0")
+        if any(not isinstance(value, str) for value in (system_prompt, user_prompt)):
+            raise VLMInputBudgetError("text prompts must be strings")
+        if sum(len(value.encode("utf-8")) for value in (system_prompt, user_prompt)) > 64 * 1024:
+            raise VLMInputBudgetError("text prompts exceed 64 KiB")
+        self._assert_model_snapshot_unchanged()
+        self._ensure_loaded()
+        with self._generation_lock:
+            assert self._processor is not None and self._model is not None
+            model_inputs = self._processor.apply_chat_template(
+                [
+                    {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
+                    {"role": "user", "content": [{"type": "text", "text": user_prompt}]},
+                ],
+                tokenize=True, add_generation_prompt=True,
+                return_dict=True, return_tensors="pt",
+            )
+            input_ids = model_inputs["input_ids"]
+            if len(input_ids) != 1 or len(input_ids[0]) > 4096:
+                raise VLMInputBudgetError("text input exceeds the 4096-token budget")
+            if hasattr(model_inputs, "to"):
+                model_inputs = model_inputs.to("cpu")
+            elif isinstance(model_inputs, Mapping):
+                model_inputs = {
+                    key: value.to("cpu") if hasattr(value, "to") else value
+                    for key, value in model_inputs.items()
+                }
+            inference_mode = getattr(self._torch, "inference_mode", nullcontext)
+            with inference_mode():
+                generated = self._model.generate(
+                    **model_inputs, max_new_tokens=max_new_tokens, do_sample=False,
+                )
+            trimmed = [
+                output_ids[len(source_ids):]
+                for source_ids, output_ids in zip(model_inputs["input_ids"], generated, strict=True)
+            ]
+            decoded = self._processor.batch_decode(
+                trimmed, skip_special_tokens=True,
+                clean_up_tokenization_spaces=False,
+            )
+            self._assert_model_snapshot_unchanged()
+            if not decoded or not isinstance(decoded[0], str):
+                raise RuntimeError("local Qwen3-VL returned no decodable text")
+            if len(decoded[0].encode("utf-8")) > 32 * 1024:
+                raise VLMInputBudgetError("text output exceeds 32 KiB")
+            return decoded[0].strip()
+
     def _generate_loaded(
         self,
         *,

@@ -11,7 +11,7 @@ from ai.preferences.repository import (
     PreferenceModelRecord,
     PreferenceRepository,
 )
-from ai.storage import Database
+from ai.storage import Database, SCHEMA_VERSION
 
 
 def _database(tmp_path: Path) -> Database:
@@ -100,7 +100,7 @@ def test_fresh_schema_has_v10_preference_tables_and_no_history_fks(
             "PRAGMA foreign_key_list(preference_events)"
         ).fetchall()
 
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert {"preference_events", "preference_models"} <= tables
     assert active_index is not None
     assert "WHERE active = 1" in active_index["sql"]
@@ -318,7 +318,7 @@ def test_v9_upgrade_preserves_legacy_user_preferences(tmp_path: Path) -> None:
         migrated = connection.execute(
             "SELECT 1 FROM preference_events LIMIT 1"
         ).fetchone()
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert legacy["parameters_json"] == '{"version":1,"comparisons":2}'
     assert migrated is None
 
@@ -383,7 +383,7 @@ def test_v10_upgrade_adds_one_shot_suggestion_key_without_mutating_events(
             "SELECT suggestion_id FROM preference_events WHERE id = 'legacy-event'"
         ).fetchone()
 
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert "suggestion_id" in columns
     assert index is not None
     assert "WHERE suggestion_id IS NOT NULL" in index["sql"]

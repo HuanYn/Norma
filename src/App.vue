@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import PhotoAnalysis from "./components/PhotoAnalysis.vue";
+import DemoWorkbench from "./components/DemoWorkbench.vue";
+import PhotoWorkflow from "./components/PhotoWorkflow.vue";
 
-type Workspace = "Library" | "AI Selection" | "About";
+type Workspace = "Demo" | "Library" | "AI Selection" | "About";
 
 interface WorkerStatus {
   running: boolean;
@@ -113,6 +115,8 @@ interface FaceSummary {
 interface PersonClusterSummary {
   cluster_id: string;
   label: string;
+  label_status: "unlabeled" | "confirmed" | "needs_review";
+  label_revision: number;
   faces: FaceSummary[];
 }
 
@@ -187,6 +191,7 @@ interface SelectionConstraints {
   min_quality: number;
   exclude_rejects: boolean;
   max_per_similarity_group: number;
+  person_minimums?: Record<string, number>;
 }
 
 interface SelectedPhoto {
@@ -231,8 +236,8 @@ interface PreferenceModelResponse {
   weights: Record<string, number>;
 }
 
-const workspaces: Workspace[] = ["Library", "AI Selection", "About"];
-const activeWorkspace = ref<Workspace>("Library");
+const workspaces: Workspace[] = ["Demo", "Library", "AI Selection", "About"];
+const activeWorkspace = ref<Workspace>("Demo");
 const developerMode = ref(false);
 const selectedFolder = ref("");
 const worker = ref<WorkerStatus>({
@@ -251,9 +256,19 @@ const embedding = ref<AlbumEmbeddingResponse | null>(null);
 const embeddingProviderStatus = ref<EmbeddingProviderStatus | null>(null);
 const warmingEmbedding = ref(false);
 const people = ref<PeopleIndexResponse | null>(null);
+const personLabelDrafts = ref<Record<string, string>>({});
+const personLabelBusy = ref<Record<string, boolean>>({});
+const personLabelErrors = ref<Record<string, string>>({});
 const peopleSummary = ref<PreparePeopleSummary | null>(null);
 const searchResult = ref<AlbumSearchResponse | null>(null);
 const selectionResult = ref<SelectionResponse | null>(null);
+const useModelParser = ref(false);
+const allowCloudParsing = ref(false);
+const selectionContextRevision = ref(0);
+const selectionContextSession = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+const selectionContextId = computed(() => `${selectionContextSession}:${selectionContextRevision.value}`);
+const usePreferenceMemory = ref(false);
+const useLearnedQuality = ref(false);
 const indexing = ref(false);
 const prepareJob = ref<PrepareJobResponse | null>(null);
 const cancellingPrepare = ref(false);
@@ -279,6 +294,36 @@ let preparePollGeneration = 0;
 let photoLoadGeneration = 0;
 let embeddingWarmupGeneration = 0;
 let embeddingWarmupPromise: Promise<void> | null = null;
+let peopleContextGeneration = 0;
+let peopleLoadGeneration = 0;
+const savingPersonLabel = computed(() => Object.values(personLabelBusy.value).some(Boolean));
+
+watch(
+  [() => worker.value.vlm_provider, () => worker.value.vlm_configured],
+  () => {
+    // Configured/local is not consent to send a later request to the cloud.
+    useModelParser.value = false;
+    allowCloudParsing.value = false;
+  },
+  { flush: "sync" },
+);
+watch(useModelParser, enabled => {
+  if (!enabled) allowCloudParsing.value = false;
+}, { flush: "sync" });
+watch(command, () => { allowCloudParsing.value = false; }, { flush: "sync" });
+
+watch(
+  () => album.value?.album_id,
+  () => {
+    peopleContextGeneration += 1;
+    peopleLoadGeneration += 1;
+    people.value = null;
+    personLabelDrafts.value = {};
+    personLabelBusy.value = {};
+    personLabelErrors.value = {};
+  },
+  { flush: "sync" },
+);
 
 const statusLabel = computed(() =>
   worker.value.healthy ? "AI worker ready" : "AI worker unavailable",
@@ -310,12 +355,14 @@ const embeddingProviderMatches = computed(
     album.value?.embedding_provider === worker.value.embedding_provider,
 );
 
-const embeddingRuntimeReady = computed(() => {
-  const status = embeddingProviderStatus.value;
+function embeddingIsUsable(status: EmbeddingProviderStatus | null) {
   return Boolean(
-    status && (!status.model_backed || (status.loaded && status.warmup_state === "ready")),
+    status && (!status.model_backed || (status.loaded && !status.error
+      && (status.warmup_state === "ready" || status.warmup_state === "idle"))),
   );
-});
+}
+
+const embeddingRuntimeReady = computed(() => embeddingIsUsable(embeddingProviderStatus.value));
 
 const peopleProviderMatches = computed(
   () =>
@@ -528,6 +575,8 @@ async function pollEmbeddingWarmup(
   let restartRetries = 0;
   while (generation === embeddingWarmupGeneration) {
     embeddingProviderStatus.value = status;
+    // A prepare job can load the shared model without going through warmup.
+    if (embeddingIsUsable(status)) return;
     if (!status.model_backed) return;
     if (status.warmup_state === "ready") {
       if (!status.loaded) throw new Error("多模态模型状态异常：ready 但模型未加载");
@@ -569,7 +618,7 @@ async function pollEmbeddingWarmup(
 async function ensureEmbeddingProviderReady() {
   await beginEmbeddingWarmup();
   const status = embeddingProviderStatus.value;
-  if (status?.model_backed && !(status.warmup_state === "ready" && status.loaded)) {
+  if (status?.model_backed && !embeddingIsUsable(status)) {
     throw new Error(status.error || "多模态模型没有完成加载");
   }
 }
@@ -618,6 +667,7 @@ async function indexFolder() {
 
 async function startAnalysis(kind: Exclude<AnalysisKind, "import">) {
   if (!album.value || indexing.value || warmingEmbedding.value || searching.value || feedbackBusy.value) return;
+  if (kind === "people" && savingPersonLabel.value) return;
   if (kind === "embedding") {
     indexingError.value = null;
     try {
@@ -629,7 +679,7 @@ async function startAnalysis(kind: Exclude<AnalysisKind, "import">) {
     const providerStatus = embeddingProviderStatus.value;
     if (
       providerStatus?.model_backed &&
-      !(providerStatus.warmup_state === "ready" && providerStatus.loaded)
+      !embeddingIsUsable(providerStatus)
     ) {
       indexingError.value = providerStatus.error || "多模态模型没有完成加载";
       return;
@@ -823,16 +873,65 @@ async function loadPeopleGroups(albumId = album.value?.album_id) {
     if (album.value?.album_id === albumId) people.value = null;
     return;
   }
+  if (savingPersonLabel.value) return;
+  const generation = ++peopleLoadGeneration;
+  const context = peopleContextGeneration;
   try {
     const result = await api<PeopleIndexResponse>(`/albums/${albumId}/people`);
+    if (generation !== peopleLoadGeneration || context !== peopleContextGeneration) return;
     if (album.value?.album_id === albumId && result.provider === worker.value.face_provider) {
+      const previousLabels = new Map(people.value?.clusters.map((cluster) => [cluster.cluster_id, cluster.label]));
+      for (const cluster of result.clusters) {
+        const draft = personLabelDrafts.value[cluster.cluster_id];
+        if (draft === undefined || draft === previousLabels.get(cluster.cluster_id)) {
+          personLabelDrafts.value[cluster.cluster_id] = cluster.label;
+        }
+      }
       people.value = result;
     } else if (album.value?.album_id === albumId) {
       people.value = null;
     }
   } catch (error) {
-    if (album.value?.album_id === albumId) {
+    if (generation === peopleLoadGeneration && context === peopleContextGeneration && album.value?.album_id === albumId) {
       indexingError.value = `People analysis is ready, but groups could not be loaded: ${String(error)}`;
+    }
+  }
+}
+
+async function savePersonLabel(cluster: PersonClusterSummary, requestedLabel?: string) {
+  const albumId = album.value?.album_id;
+  const clusterId = cluster.cluster_id;
+  if (!albumId || people.value?.album_id !== albumId || indexing.value || personLabelBusy.value[clusterId]) return;
+  const label = (requestedLabel ?? personLabelDrafts.value[clusterId] ?? cluster.label).trim();
+  if (!label || label.length > 80) {
+    personLabelErrors.value[clusterId] = "请输入 1–80 个字符的名字；取消命名请点“重置”。";
+    return;
+  }
+  const context = peopleContextGeneration;
+  peopleLoadGeneration += 1;
+  personLabelBusy.value[clusterId] = true;
+  delete personLabelErrors.value[clusterId];
+  try {
+    const updated = await api<PersonClusterSummary>(
+      `/albums/${encodeURIComponent(albumId)}/people/${encodeURIComponent(clusterId)}`,
+      { method: "PATCH", body: JSON.stringify({ label, expected_revision: cluster.label_revision }) },
+    );
+    if (context !== peopleContextGeneration || album.value?.album_id !== albumId || people.value?.album_id !== albumId) return;
+    if (updated.cluster_id !== clusterId) throw new Error("人物响应不匹配，请刷新后重试。");
+    const current = people.value.clusters.find((item) => item.cluster_id === clusterId);
+    if (!current) return;
+    current.label = updated.label;
+    current.label_status = updated.label_status;
+    current.label_revision = updated.label_revision;
+    personLabelDrafts.value[clusterId] = updated.label;
+  } catch (error) {
+    if (context === peopleContextGeneration && album.value?.album_id === albumId) {
+      personLabelErrors.value[clusterId] = String(error);
+    }
+  } finally {
+    if (context === peopleContextGeneration && album.value?.album_id === albumId) {
+      personLabelBusy.value[clusterId] = false;
+      peopleLoadGeneration += 1;
     }
   }
 }
@@ -946,30 +1045,57 @@ async function restorePrepareJob() {
 async function runSearch() {
   const query = command.value.trim();
   if (!album.value || !embeddingReady.value || !query || searching.value || indexing.value) return;
+  const modelParserRequested = useModelParser.value;
+  const cloudParserRequested = modelParserRequested && worker.value.vlm_provider === "openai-compatible";
+  const cloudConsent = cloudParserRequested && allowCloudParsing.value;
+  const requestedAlbumId = album.value.album_id;
+  // A new submission owns a new result context, including when it fails.
+  selectionContextRevision.value += 1;
+  const requestContext = selectionContextId.value;
+  selectionResult.value = null;
+  searchResult.value = null;
+  resetPreferenceCompare();
+  interactionMessage.value = null;
+  allowCloudParsing.value = false;
   searching.value = true;
   searchError.value = null;
   try {
-    if (looksLikeSelection(query)) {
+    if (modelParserRequested && !worker.value.vlm_configured) {
+      throw new Error("模型解析尚未配置；本次未调用模型，也未切换为规则选片。");
+    }
+    if (cloudParserRequested && !cloudConsent) {
+      throw new Error("请先明确同意发送本次文字到云端；未发送请求，也未切换为规则选片。");
+    }
+    if (modelParserRequested || looksLikeSelection(query)) {
       if (!qualityReady.value) {
         throw new Error("智能选片需要质量与相似度数据；请先在 Library 点击“质量与相似”。");
       }
-      selectionResult.value = await api<SelectionResponse>("/selections", {
+      const selected = await api<SelectionResponse>(modelParserRequested ? "/selections/structured" : "/selections", {
         method: "POST",
-        body: JSON.stringify({ album_id: album.value.album_id, prompt: query }),
+        body: JSON.stringify({ album_id: requestedAlbumId, prompt: query,
+          use_preference_memory: usePreferenceMemory.value,
+          use_learned_quality: useLearnedQuality.value,
+          ...(modelParserRequested ? { allow_cloud: cloudConsent } : {}) }),
       });
+      if (requestContext !== selectionContextId.value || requestedAlbumId !== album.value?.album_id) return;
+      selectionResult.value = selected;
       searchResult.value = null;
       resetPreferenceCompare();
       interactionMessage.value = null;
     } else {
-      searchResult.value = await api<AlbumSearchResponse>("/albums/search", {
+      const found = await api<AlbumSearchResponse>("/albums/search", {
         method: "POST",
-        body: JSON.stringify({ album_id: album.value.album_id, query, limit: 20 }),
+        body: JSON.stringify({ album_id: requestedAlbumId, query, limit: 20 }),
       });
+      if (requestContext !== selectionContextId.value || requestedAlbumId !== album.value?.album_id) return;
+      searchResult.value = found;
       selectionResult.value = null;
       resetPreferenceCompare();
     }
   } catch (error) {
-    searchError.value = String(error);
+    if (requestContext === selectionContextId.value && requestedAlbumId === album.value?.album_id) {
+      searchError.value = String(error);
+    }
   } finally {
     searching.value = false;
   }
@@ -1110,7 +1236,8 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload.detail ?? payload.error ?? `Request failed: ${response.status}`);
+    const detail = payload.detail ?? payload.error ?? `Request failed: ${response.status}`;
+    throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
   }
   return payload as T;
 }
@@ -1127,6 +1254,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearPreparePoll();
   embeddingWarmupGeneration += 1;
+  peopleContextGeneration += 1;
+  peopleLoadGeneration += 1;
   window.removeEventListener("keydown", handleCompareKeydown);
 });
 </script>
@@ -1167,8 +1296,9 @@ onBeforeUnmount(() => {
     </aside>
 
     <main>
+      <PhotoWorkflow v-if="activeWorkspace === 'Demo'" />
       <section
-        v-if="activeWorkspace === 'Library'"
+        v-else-if="activeWorkspace === 'Library'"
         class="workspace library"
         :class="{ 'has-album': album }"
       >
@@ -1275,7 +1405,7 @@ onBeforeUnmount(() => {
             <div class="analysis-item" :class="{ running: activeJobKind === 'people', ready: peopleReady }">
               <button
                 class="analysis-main"
-                :disabled="indexing || warmingEmbedding || searching || feedbackBusy || !worker.healthy"
+                :disabled="indexing || warmingEmbedding || searching || feedbackBusy || savingPersonLabel || !worker.healthy"
                 @click="startAnalysis('people')"
               >
                 <span><strong>人脸分组</strong><small>{{ analysisDetail('people') }}</small></span>
@@ -1358,7 +1488,35 @@ onBeforeUnmount(() => {
             >{{ searching ? "…" : "Search" }}</button>
           </div>
         </div>
+        <label class="selection-warning">
+          <input v-model="usePreferenceMemory" type="checkbox" :disabled="searching" />
+          参考我的偏好记录（无需训练；无相关记录时排序不变）
+        </label>
+        <label class="selection-warning">
+          <input v-model="useLearnedQuality" type="checkbox" :disabled="searching" />
+          使用模型美学与质量排序（先完成下方模型评估；不完整时停止，不用规则分数冒充）
+        </label>
+        <p class="selection-warning"><a href="http://127.0.0.1:8768/" target="_blank" rel="noopener">打开非实时交互探索</a> · 每次动作完成后可继续转向</p>
+        <label class="selection-warning">
+          <input v-model="useModelParser" type="checkbox" :disabled="searching || !worker.vlm_configured" />
+          实验性模型解析（失败会停止，不自动切换为规则选片）
+        </label>
+        <p class="selection-warning">
+          {{ worker.vlm_provider === 'local'
+            ? '本地 Qwen3-VL-2B 两次实测均未通过严格解析校验；当前不能视为已可用。'
+            : '云端模型已配置不代表解析能力已验证；仅在明确同意后发送本次文字。' }}
+        </p>
+        <label v-if="useModelParser && worker.vlm_provider === 'openai-compatible'" class="selection-warning">
+          <input v-model="allowCloudParsing" type="checkbox" :disabled="searching || !worker.vlm_configured" />
+          我同意将本次输入的文字发送到已配置云端，不发送图片（每次提交需确认）
+        </label>
         <p v-if="searchError" class="error-message">{{ searchError }}</p>
+        <DemoWorkbench
+          :selection-context-id="selectionContextId"
+          :album-id="album?.album_id"
+          :selected-photos="selectionResult?.selected ?? []"
+          :busy="searching || indexing || warmingEmbedding || feedbackBusy"
+        />
         <PhotoAnalysis
           :album-id="album?.album_id"
           :query="command"
@@ -1387,10 +1545,13 @@ onBeforeUnmount(() => {
             <span>quality ≥ {{ selectionResult.constraints.min_quality }}</span>
             <span>similar group ≤ {{ selectionResult.constraints.max_per_similarity_group }}</span>
             <span>{{ selectionResult.constraints.exclude_rejects ? "rejects excluded" : "rejects allowed" }}</span>
+            <span v-for="(minimum, label) in selectionResult.constraints.person_minimums" :key="`person-${label}`">{{ label === 'Me' ? '有我' : label }} ≥ {{ minimum }} 张</span>
             <span v-if="learnedComparisonCount !== null">{{ learnedComparisonCount }} preferences recorded</span>
           </div>
           <p v-for="warning in selectionResult.warnings" :key="warning" class="selection-warning">{{ warning }}</p>
           <p v-if="interactionMessage" class="interaction-message" role="status" aria-live="polite">{{ interactionMessage }}</p>
+          <button v-if="compareCompleted && !compareMode" :disabled="searching || feedbackBusy"
+            @click="usePreferenceMemory = true; command = selectionResult.prompt; runSearch()">按刚才的偏好重新选片</button>
 
           <section
             v-if="compareMode && compareLeft && compareRight"
@@ -1480,20 +1641,47 @@ onBeforeUnmount(() => {
         </div>
         <section v-if="people?.clusters.length" class="people-surface" aria-label="People groups">
           <div class="search-summary">
-            <p>People in this album</p>
+            <p>人物 · 标记 Me 后可要求“至少 2 张有我”</p>
             <small>
               {{ people.provider }} · {{ people.total_faces }} faces ·
               {{ people.computed_count }} new / {{ people.reused_count }} reused
             </small>
           </div>
           <div class="people-grid">
-            <article v-for="cluster in people.clusters" :key="cluster.cluster_id" class="person-card">
+            <article v-for="cluster in people.clusters" :key="cluster.cluster_id" class="person-card" :aria-busy="personLabelBusy[cluster.cluster_id] || false">
               <img
+                v-if="cluster.faces.length"
                 :src="cluster.faces[0].thumbnail_url"
                 :alt="cluster.label"
               />
-              <span>{{ cluster.label }}</span>
-              <small>{{ cluster.faces.length }} photo{{ cluster.faces.length === 1 ? "" : "s" }}</small>
+              <form class="person-label-editor" @submit.prevent="savePersonLabel(cluster)">
+                <label :for="`person-label-${cluster.cluster_id}`">人物名字</label>
+                <input
+                  :id="`person-label-${cluster.cluster_id}`"
+                  v-model="personLabelDrafts[cluster.cluster_id]"
+                  maxlength="80"
+                  placeholder="Unknown / 名字"
+                  :disabled="indexing || personLabelBusy[cluster.cluster_id]"
+                  :aria-describedby="cluster.label_status === 'needs_review' ? `person-review-${cluster.cluster_id}` : undefined"
+                />
+                <div class="person-label-actions">
+                  <button type="submit" :disabled="indexing || personLabelBusy[cluster.cluster_id]">{{ personLabelBusy[cluster.cluster_id] ? '保存中…' : cluster.label_status === 'needs_review' ? '确认' : '保存' }}</button>
+                  <button type="button" :disabled="indexing || personLabelBusy[cluster.cluster_id]" @click="savePersonLabel(cluster, 'Me')">是我</button>
+                  <button type="button" :disabled="indexing || personLabelBusy[cluster.cluster_id] || cluster.label === 'Unknown'" @click="savePersonLabel(cluster, 'Unknown')">重置</button>
+                </div>
+              </form>
+              <small>{{ cluster.faces.length }} 张人脸 · {{ cluster.label_status === 'confirmed' ? '已确认' : cluster.label_status === 'needs_review' ? '待复核' : '未命名' }}</small>
+              <p v-if="cluster.label_status === 'needs_review'" :id="`person-review-${cluster.cluster_id}`" class="person-label-warning">分组有变化，请复核后确认名字。</p>
+              <details v-if="cluster.faces.length > 1" class="person-face-details">
+                <summary>查看组内人脸</summary>
+                <div class="person-face-previews">
+                  <img v-for="face in cluster.faces" :key="face.face_id" :src="face.thumbnail_url" :alt="`${cluster.label} · 人脸 ${face.face_id}`" loading="lazy" />
+                </div>
+              </details>
+              <div v-if="personLabelErrors[cluster.cluster_id]" class="person-label-error" role="alert">
+                <p>{{ personLabelErrors[cluster.cluster_id] }}</p>
+                <button type="button" :disabled="savingPersonLabel || indexing" @click="loadPeopleGroups()">刷新分组后重试</button>
+              </div>
             </article>
           </div>
         </section>

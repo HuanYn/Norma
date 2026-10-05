@@ -1,0 +1,15 @@
+# Install CUDA-compatible torch separately for the server driver.
+# Separate from Norma's local photo environment; no FlashAttention build required.
+diffusers==0.35.1
+transformers>=4.45,<5
+accelerate>=1,<2
+huggingface-hub>=0.34,<1
+safetensors>=0.4
+sentencepiece>=0.2
+ftfy>=6
+imageio>=2.34
+imageio-ffmpeg>=0.5
+fastapi>=0.115,<1
+pydantic>=2.10,<3
+pillow>=11,<13
+uvicorn>=0.34,<1

@@ -8,12 +8,32 @@ from typing import Literal
 
 PreferenceMode = Literal["record-only", "adaptive"]
 VLMProviderMode = Literal["openai-compatible", "local"]
+VLMThinkingMode = Literal["provider-default", "enabled", "disabled"]
 
 
 def validate_preference_mode(value: str) -> PreferenceMode:
     if value not in {"record-only", "adaptive"}:
         raise ValueError("NORMA_PREFERENCE_MODE must be 'record-only' or 'adaptive'")
     return value  # type: ignore[return-value]
+
+
+def validate_vlm_thinking_mode(value: str) -> VLMThinkingMode:
+    if not isinstance(value, str) or value not in {
+        "provider-default",
+        "enabled",
+        "disabled",
+    }:
+        raise ValueError(
+            "NORMA_VLM_THINKING_MODE must be 'provider-default', 'enabled', or 'disabled'"
+        )
+    return value  # type: ignore[return-value]
+
+
+def _vlm_json_response_format_from_environment() -> bool:
+    value = os.getenv("NORMA_VLM_JSON_RESPONSE_FORMAT", "0").strip().casefold()
+    if value not in {"0", "1", "false", "true"}:
+        raise ValueError("NORMA_VLM_JSON_RESPONSE_FORMAT must be 0, 1, false, or true")
+    return value in {"1", "true"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +57,13 @@ class Settings:
     vlm_model: str = ""
     vlm_api_key: str = field(default="", repr=False)
     vlm_timeout_seconds: int = 60
+    vlm_thinking_mode: VLMThinkingMode = "provider-default"
+    vlm_json_response_format: bool = False
+    aesthetics_model_path: Path | None = None
+    aesthetics_device: str = "cpu"
+    video_base_url: str = ""
+    video_worker_token_file: Path | None = None
+    web_dist_path: Path | None = None
 
     def __post_init__(self) -> None:
         validate_preference_mode(self.preference_mode)
@@ -46,6 +73,11 @@ class Settings:
             )
         if not 1 <= self.vlm_timeout_seconds <= 180:
             raise ValueError("NORMA_VLM_TIMEOUT_SECONDS must be between 1 and 180")
+        validate_vlm_thinking_mode(self.vlm_thinking_mode)
+        if not isinstance(self.vlm_json_response_format, bool):
+            raise ValueError("NORMA_VLM_JSON_RESPONSE_FORMAT must be a boolean")
+        if self.aesthetics_device not in {"cpu", "cuda", "cuda:0"}:
+            raise ValueError("NORMA_AESTHETICS_DEVICE must be cpu, cuda, or cuda:0")
 
     @property
     def vlm_configured(self) -> bool:
@@ -72,10 +104,17 @@ class Settings:
             or self.data_dir / "models" / "qwen3-vl" / "Qwen3-VL-2B-Instruct-modelscope"
         ).resolve()
 
+    @property
+    def aesthetics_model_dir(self) -> Path:
+        return (self.aesthetics_model_path or self.model_cache_dir / "musiq").resolve()
+
 
 def load_settings() -> Settings:
     model_cache = os.getenv("NORMA_MODEL_CACHE_DIR")
     vlm_model_path = os.getenv("NORMA_VLM_MODEL_PATH")
+    aesthetics_path = os.getenv("NORMA_AESTHETICS_MODEL_DIR")
+    video_token_file = os.getenv("NORMA_VIDEO_TOKEN_FILE")
+    web_dist_path = os.getenv("NORMA_WEB_DIST")
     vlm_max_new_tokens = int(os.getenv("NORMA_VLM_MAX_NEW_TOKENS", "256"))
     if not 64 <= vlm_max_new_tokens <= 1024:
         raise ValueError("NORMA_VLM_MAX_NEW_TOKENS must be between 64 and 1024")
@@ -111,4 +150,17 @@ def load_settings() -> Settings:
         vlm_model=os.getenv("NORMA_VLM_MODEL", ""),
         vlm_api_key=os.getenv("NORMA_VLM_API_KEY", ""),
         vlm_timeout_seconds=int(os.getenv("NORMA_VLM_TIMEOUT_SECONDS", "60")),
+        vlm_thinking_mode=validate_vlm_thinking_mode(
+            os.getenv("NORMA_VLM_THINKING_MODE", "provider-default")
+        ),
+        vlm_json_response_format=_vlm_json_response_format_from_environment(),
+        aesthetics_model_path=Path(aesthetics_path).resolve()
+        if aesthetics_path
+        else None,
+        aesthetics_device=os.getenv("NORMA_AESTHETICS_DEVICE", "cpu"),
+        video_base_url=os.getenv("NORMA_VIDEO_BASE_URL", ""),
+        video_worker_token_file=Path(video_token_file).resolve()
+        if video_token_file
+        else None,
+        web_dist_path=Path(web_dist_path).resolve() if web_dist_path else None,
     )

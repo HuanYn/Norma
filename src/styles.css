@@ -383,10 +383,25 @@ main { min-height: 100vh; padding-top: 58px; }
 .result-surface small { font-size: 10px; }
 .people-surface { margin: 18px 14px 0; }
 .people-grid { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
-.person-card { position: relative; flex: 0 0 78px; margin: 0; overflow: hidden; background: var(--panel); }
-.person-card img { display: block; width: 78px; height: 78px; object-fit: cover; filter: saturate(0.82); }
-.person-card span { display: block; padding: 5px 6px 0; overflow: hidden; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
-.person-card small { display: block; padding: 2px 6px 6px; color: var(--muted); font-size: 7px; }
+.person-card { position: relative; flex: 0 0 140px; align-self: flex-start; margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); }
+.person-card > img { display: block; width: 100%; height: 140px; object-fit: cover; filter: saturate(0.82); }
+.person-card small { display: block; padding: 2px 6px 6px; color: var(--muted); font-size: 9px; }
+.person-label-editor { display: grid; gap: 5px; padding: 6px; }
+.person-label-editor label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.person-label-editor input { min-width: 0; width: 100%; padding: 5px; border: 1px solid var(--line); border-radius: 3px; color: inherit; background: rgba(0, 0, 0, 0.16); font: inherit; font-size: 11px; }
+.person-label-editor input:focus-visible, .person-card button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.person-label-actions { display: flex; gap: 4px; }
+.person-card button { min-width: 0; padding: 4px 5px; border: 1px solid var(--line); border-radius: 3px; color: inherit; background: transparent; font: inherit; font-size: 10px; cursor: pointer; }
+.person-label-actions button:first-child { flex: 1; border-color: var(--accent); }
+.person-card button:disabled, .person-label-editor input:disabled { opacity: 0.5; cursor: default; }
+.person-label-warning, .person-label-error { margin: 0; padding: 0 6px 6px; font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+.person-label-warning { color: #edc18e; }
+.person-label-error { color: #ffac9a; }
+.person-label-error p { margin: 0 0 5px; }
+.person-face-details { padding: 0 6px 6px; font-size: 10px; color: var(--muted); }
+.person-face-details summary { cursor: pointer; }
+.person-face-previews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; max-height: 180px; margin-top: 5px; overflow-y: auto; }
+.person-face-previews img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
 
 .create { padding: 7vh 7vw; display: grid; align-content: start; gap: 28px; }
 .selection-heading h3 { max-width: 760px; margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 70px); font-weight: 400; line-height: 0.98; letter-spacing: -0.04em; }

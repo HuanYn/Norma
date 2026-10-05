@@ -54,7 +54,18 @@ development server and proxies API/media routes to `python -m ai serve`.
 - No vector database is needed for album-sized data. Normalized NumPy embeddings
   are cached and searched with exact cosine similarity.
 
-## Delivered milestones
+## Product roadmap versus historical engineering batches
+
+The original product's Core MVP is **not complete**. People naming, the full
+hard/soft selection schema, and inference-only personalized reranking still
+need implementation and end-to-end acceptance. See [roadmap.md](roadmap.md)
+for the original M0–M9 targets under the user's later web-only/model-first rules.
+
+The M0–M15 labels below are historical engineering batch numbers, not proof
+that the corresponding original product milestones have passed. Keep those
+two numbering systems separate; cloud connectivity does not complete M4.
+
+### Historical engineering deliveries (legacy batch numbering)
 
 1. **M0:** local Python service, SQLite schema, health/capability contract, web shell.
 2. **M1:** fast JPG catalog/thumbnails plus on-demand quality signals, similarity groups, and reject fold.
@@ -230,6 +241,16 @@ worker provider. The browser loads a saved people snapshot only when every
 photo is current and those fingerprints match. A previous Haar/DCT result or a
 result from any older model, alignment, or clustering revision therefore
 requires a new people run.
+
+Schema 15 adds explicit person labels, evidence-bound identity snapshots,
+monotonic label revisions and immutable person-label events. Exact unchanged
+members retain confirmed names; growth, split/merge, content or model changes
+require review. Album refresh invalidates only affected sources. A face-specific
+content digest also binds zero-face results. Confirmed names can supply minimum
+photo-count constraints to CP-SAT; replacement verifies the identity snapshot
+and original subset, quality and group constraints. See
+[person naming and quota selection](person-selection.md). This is not a change
+to the face recognition model, nor evidence of improved recognition accuracy.
 
 `opencv-haar` remains available only as an explicit lower-quality fallback via
 `NORMA_FACE_PROVIDER=opencv-haar`; it is no longer the default.

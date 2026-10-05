@@ -260,22 +260,22 @@ def test_people_index_clusters_conservatively_and_persists(
     _photo(album / "person-a-1.jpg", "red")
     AlbumIndexer(database, data_dir).index(album)
     with database.connect() as connection:
-        assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM faces").fetchone()[0] == 2
         assert (
             connection.execute("SELECT COUNT(*) FROM person_clusters").fetchone()[0]
-            == 0
+            == 2
         )
 
     refreshed = service.index(indexed.album_id)
     assert refreshed.total_faces == 3
     assert refreshed.cluster_count == 2
-    assert refreshed.computed_count == 4
-    assert refreshed.reused_count == 0
-    assert len(service.provider.calls) == 8
+    assert refreshed.computed_count == 1
+    assert refreshed.reused_count == 3
+    assert len(service.provider.calls) == 5
 
 
 @pytest.mark.parametrize("change", ["add", "delete", "modify"])
-def test_album_change_invalidates_the_entire_people_snapshot(
+def test_album_change_invalidates_snapshot_but_retains_unaffected_face_cache(
     tmp_path: Path,
     change: str,
 ) -> None:
@@ -317,9 +317,13 @@ def test_album_change_invalidates_the_entire_people_snapshot(
             (indexed.album_id,),
         ).fetchone()[0]
     assert states
-    assert all(tuple(state) == (None, None, None, 0, 0) for state in states)
-    assert face_count == 0
-    assert cluster_count == 0
+    assert sum(state["face_processed"] for state in states) == (
+        2 if change == "add" else 1
+    )
+    assert face_count == (2 if change == "add" else 1)
+    assert cluster_count == 2
+    with pytest.raises((KeyError, ValueError)):
+        PeopleIndexer(database, data_dir, FakeFaceProvider()).get(indexed.album_id)
 
 
 def test_people_index_rejects_missing_album(tmp_path: Path) -> None:

@@ -45,6 +45,8 @@ def _environment(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         "NORMA_VLM_API_KEY": SECRET,
         "NORMA_VLM_MAX_NEW_TOKENS": "384",
         "NORMA_VLM_TIMEOUT_SECONDS": "45",
+        "NORMA_VLM_THINKING_MODE": "disabled",
+        "NORMA_VLM_JSON_RESPONSE_FORMAT": "1",
         "NORMA_PREFERENCE_MODE": "record-only",
     }
     for key, value in values.items():
@@ -66,6 +68,8 @@ def test_cloud_environment_configuration_and_repr(tmp_path, monkeypatch):
     assert settings.vlm_api_key == SECRET
     assert settings.vlm_timeout_seconds == 45
     assert settings.vlm_max_new_tokens == 384
+    assert settings.vlm_thinking_mode == "disabled"
+    assert settings.vlm_json_response_format is True
     assert settings.vlm_configured is True
     assert settings.preference_mode == "record-only"
     assert SECRET not in repr(settings)
@@ -80,6 +84,8 @@ def test_defaults_require_explicit_cloud_configuration(tmp_path, monkeypatch):
         "NORMA_VLM_API_KEY",
         "NORMA_VLM_MAX_NEW_TOKENS",
         "NORMA_VLM_TIMEOUT_SECONDS",
+        "NORMA_VLM_THINKING_MODE",
+        "NORMA_VLM_JSON_RESPONSE_FORMAT",
         "NORMA_PREFERENCE_MODE",
     ):
         monkeypatch.delenv(key, raising=False)
@@ -87,6 +93,8 @@ def test_defaults_require_explicit_cloud_configuration(tmp_path, monkeypatch):
     assert settings.vlm_provider == "openai-compatible"
     assert settings.vlm_configured is False
     assert settings.vlm_api_key == ""
+    assert settings.vlm_thinking_mode == "provider-default"
+    assert settings.vlm_json_response_format is False
     assert settings.preference_mode == "record-only"
 
 
@@ -102,6 +110,13 @@ def test_cloud_configuration_presence_requires_all_three_fields(tmp_path, missin
         ("NORMA_VLM_TIMEOUT_SECONDS", "0"),
         ("NORMA_VLM_TIMEOUT_SECONDS", "181"),
         ("NORMA_VLM_MAX_NEW_TOKENS", "1025"),
+        ("NORMA_VLM_THINKING_MODE", "auto"),
+        ("NORMA_VLM_THINKING_MODE", "Disabled"),
+        ("NORMA_VLM_THINKING_MODE", " disabled "),
+        ("NORMA_VLM_THINKING_MODE", ""),
+        ("NORMA_VLM_JSON_RESPONSE_FORMAT", "2"),
+        ("NORMA_VLM_JSON_RESPONSE_FORMAT", "typo"),
+        ("NORMA_VLM_JSON_RESPONSE_FORMAT", ""),
     ],
 )
 def test_cloud_environment_rejects_invalid_options(
@@ -111,6 +126,41 @@ def test_cloud_environment_rejects_invalid_options(
     monkeypatch.setenv(variable, value)
     with pytest.raises(ValueError):
         load_settings()
+
+
+@pytest.mark.parametrize("mode", ["provider-default", "enabled", "disabled"])
+def test_thinking_environment_preserves_explicit_mode(tmp_path, monkeypatch, mode):
+    _environment(monkeypatch, tmp_path)
+    monkeypatch.setenv("NORMA_VLM_THINKING_MODE", mode)
+    assert load_settings().vlm_thinking_mode == mode
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("0", False), ("1", True), ("false", False), ("true", True), (" TRUE ", True)],
+)
+def test_json_response_format_environment_boolean(
+    tmp_path, monkeypatch, value, expected
+):
+    _environment(monkeypatch, tmp_path)
+    monkeypatch.setenv("NORMA_VLM_JSON_RESPONSE_FORMAT", value)
+    assert load_settings().vlm_json_response_format is expected
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"vlm_thinking_mode": "auto"},
+        {"vlm_thinking_mode": None},
+        {"vlm_thinking_mode": []},
+        {"vlm_json_response_format": "false"},
+        {"vlm_json_response_format": 1},
+        {"vlm_json_response_format": None},
+    ],
+)
+def test_settings_reject_invalid_request_options(tmp_path, changes):
+    with pytest.raises(ValueError):
+        _settings(tmp_path, **changes)
 
 
 def test_cli_data_directory_override_preserves_cloud_and_preference_settings(
@@ -127,8 +177,19 @@ def test_cli_data_directory_override_preserves_cloud_and_preference_settings(
 
 
 @pytest.mark.parametrize("mode", ["openai-compatible", "local"])
-def test_factory_chooses_only_configured_generation_mode(tmp_path, monkeypatch, mode):
-    settings = _settings(tmp_path, vlm_provider=mode)
+@pytest.mark.parametrize(
+    ("thinking_mode", "json_response_format"),
+    [("provider-default", False), ("disabled", True), ("enabled", False)],
+)
+def test_factory_chooses_only_configured_generation_mode(
+    tmp_path, monkeypatch, mode, thinking_mode, json_response_format
+):
+    settings = _settings(
+        tmp_path,
+        vlm_provider=mode,
+        vlm_thinking_mode=thinking_mode,
+        vlm_json_response_format=json_response_format,
+    )
     monkeypatch.setattr(app_module, "settings", settings)
     calls = []
     sentinel = object()
@@ -149,7 +210,12 @@ def test_factory_chooses_only_configured_generation_mode(tmp_path, monkeypatch, 
     assert chosen == mode
     if mode == "openai-compatible":
         assert args == (ENDPOINT, MODEL, SECRET)
-        assert kwargs == {"max_new_tokens": 384, "timeout_seconds": 45}
+        assert kwargs == {
+            "max_new_tokens": 384,
+            "timeout_seconds": 45,
+            "thinking_mode": thinking_mode,
+            "json_response_format": json_response_format,
+        }
     else:
         assert args == (settings.local_vlm_model_dir,)
         assert kwargs == {"max_new_tokens": 384}
@@ -180,11 +246,17 @@ def test_health_and_capabilities_report_mode_without_keys_or_network(
                 assert private not in response.text
 
 
+@pytest.mark.parametrize("use_deepseek_options", [False, True])
 def test_http_cloud_rag_persists_only_validated_result_without_training(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, use_deepseek_options
 ):
     database, data_dir, album_id, _, embedding_provider = _album(tmp_path)
-    _configure(monkeypatch, database, _settings(data_dir), embedding_provider)
+    settings = _settings(
+        data_dir,
+        vlm_thinking_mode="disabled" if use_deepseek_options else "provider-default",
+        vlm_json_response_format=use_deepseek_options,
+    )
+    _configure(monkeypatch, database, settings, embedding_provider)
     calls = []
 
     def transport(url, **kwargs):
@@ -198,6 +270,12 @@ def test_http_cloud_rag_persists_only_validated_result_without_training(
         ]
         assert len(photo_ids) == 2
         assert payload["model"] == MODEL
+        if use_deepseek_options:
+            assert payload["thinking"] == {"type": "disabled"}
+            assert payload["response_format"] == {"type": "json_object"}
+        else:
+            assert "thinking" not in payload
+            assert "response_format" not in payload
         assert kwargs["headers"]["Authorization"] == "Bearer " + SECRET
         content = json.dumps(
             {

@@ -37,7 +37,7 @@ from ai.schemas import (
     SelectionRequest,
 )
 from ai.selection import SelectionService
-from ai.storage import Database
+from ai.storage import Database, SCHEMA_VERSION
 
 
 # PDRR is an optional adaptive-mode experiment, never the default workflow.
@@ -149,7 +149,7 @@ def test_zero_feedback_suggestion_is_audited_and_constraint_feasible(
         database, SuggestionOpenClipProvider()
     ).suggest(selection.selection_id, PreferencePairSuggestionRequest())
 
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert response.model_id_at_display is None
     assert response.provider_fingerprint == SuggestionOpenClipProvider.name
     assert response.feature_schema == FEATURE_SCHEMA

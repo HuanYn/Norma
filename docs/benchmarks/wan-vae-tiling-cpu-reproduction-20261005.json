@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-10-05T15:02:02+08:00",
+  "experiment": "Actual installed Diffusers 0.35.1 patchified Wan VAE CPU reproduction",
+  "kind": "dependency_correctness_reproduction_not_video_quality_benchmark",
+  "environment": {
+    "python": "/home/yinhuan/Norma-demo/env/bin/python",
+    "torch": "2.8.0+cu128",
+    "diffusers": "0.35.1",
+    "transformers": "4.57.6",
+    "device": "cpu",
+    "torch_threads": 1,
+    "checkpoint_loaded": false,
+    "gpu_used": false,
+    "remote_files_modified": false
+  },
+  "source_evidence": {
+    "installed_vae_source": "/home/yinhuan/Norma-demo/env/lib/python3.11/site-packages/diffusers/models/autoencoders/autoencoder_kl_wan.py",
+    "installed_vae_source_sha256": "2b4ab9e71a221ecc538d196b8dd3bf312972cc2affee5cc3ae1c09b24ffec571",
+    "official_checkpoint_vae_config_sha256": "d996c340fe9a7df5d7371f76a7d8d6956f6c98256080074d8434fa5eeac11360",
+    "checkpoint_patch_size": 2,
+    "checkpoint_in_channels": 12,
+    "checkpoint_out_channels": 12,
+    "encode_tiled_early_return_lines": [1148, 1149],
+    "non_tiled_patchify_lines": [1152, 1153],
+    "tiled_encoder_call_line": 1313,
+    "non_tiled_unpatchify_lines": [1218, 1219]
+  },
+  "probe": {
+    "implementation": "diffusers.AutoencoderKLWan, actual library class; random tiny architecture, not a stub",
+    "parameter_count": 672608,
+    "input_shape": [1, 3, 1, 32, 32],
+    "input_dtype": "torch.float32",
+    "constructor": {
+      "base_dim": 8,
+      "decoder_base_dim": 8,
+      "z_dim": 4,
+      "dim_mult": [1, 2, 4, 4],
+      "num_res_blocks": 1,
+      "in_channels": 12,
+      "out_channels": 12,
+      "is_residual": true,
+      "patch_size": 2,
+      "scale_factor_temporal": 4,
+      "scale_factor_spatial": 16,
+      "latents_mean": [0.0, 0.0, 0.0, 0.0],
+      "latents_std": [1.0, 1.0, 1.0, 1.0]
+    },
+    "tile_settings": {
+      "tile_sample_min_height": 16,
+      "tile_sample_min_width": 16,
+      "tile_sample_stride_height": 16,
+      "tile_sample_stride_width": 16
+    }
+  },
+  "observations": [
+    {
+      "use_tiling": true,
+      "outcome": "RuntimeError",
+      "message": "Given groups=1, weight of size [8, 12, 3, 3, 3], expected input[1, 3, 3, 18, 18] to have 12 channels, but got 3 channels instead",
+      "elapsed_seconds": 0.006
+    },
+    {
+      "use_tiling": false,
+      "outcome": "success",
+      "encoded_shape": [1, 4, 1, 2, 2],
+      "elapsed_seconds": 0.0454
+    }
+  ],
+  "interpretation_limits": [
+    "The encoder was run on CPU using random tiny weights, not the complete 5B checkpoint.",
+    "Timing numbers are single-run reproduction timings, not 3090 inference speed or performance improvements.",
+    "The first full job 1ade68dd8d1d458e8b8c16042e272870 did not preserve its exception traceback; this reproduction proves a deterministic incompatible path, not the historical job's unseen exception.",
+    "Disabling tiling removes this channel-mismatch path but increases possible VAE peak memory; complete video generation still requires its own verification.",
+    "No claim is made that transformers 4.57.6, FP32 VAE or absent CLIP image processor caused the failure."
+  ]
+}

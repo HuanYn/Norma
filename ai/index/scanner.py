@@ -492,27 +492,26 @@ class AlbumIndexer:
                     != photo.source_sha256
                 )
             ]
-            added = [photo.id for photo in photos if photo.id not in existing_by_id]
-            if stale or changed or added:
-                # Clusters are album-wide. Once membership or any source changes,
-                # retaining only the unaffected face rows would make the album look
-                # ready while its clusters describe an obsolete snapshot.
-                connection.execute(
-                    """DELETE FROM faces WHERE photo_id IN
-                       (SELECT id FROM photos WHERE album_id = ?)""",
-                    (album_id,),
+            if stale or changed:
+                from ai.people.labels import invalidate_photo_labels
+
+                invalidate_photo_labels(connection, album_id, set(stale + changed))
+            if changed:
+                # Keep unaffected descriptors and cluster identity snapshots for
+                # exact label reconciliation. People reads check completeness and
+                # snapshot membership, so a partial cache is never a ready album.
+                connection.executemany(
+                    "DELETE FROM faces WHERE photo_id = ?",
+                    [(photo_id,) for photo_id in changed],
                 )
-                connection.execute(
-                    "DELETE FROM person_clusters WHERE album_id = ?", (album_id,)
-                )
-                connection.execute(
+                connection.executemany(
                     """
                     UPDATE photos SET face_provider = NULL,
                         face_source_size = NULL, face_source_mtime_ns = NULL,
-                        face_processed = 0, face_count = 0
-                    WHERE album_id = ?
+                        face_source_sha256 = NULL, face_processed = 0, face_count = 0
+                    WHERE id = ?
                     """,
-                    (album_id,),
+                    [(photo_id,) for photo_id in changed],
                 )
             if stale:
                 connection.executemany(

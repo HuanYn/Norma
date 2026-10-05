@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-05T07:07:34.906Z",
+  "origin": "http://127.0.0.1:8767",
+  "album_id": "54a2e3cf1d605ab8a5682cbeab1b2885",
+  "context": "Real staging UI and real public-image model scores. before-open.png and after.png show the SAME implementation with its panel collapsed/expanded; not an old-version or accuracy improvement comparison.",
+  "viewport": {
+    "width": 1440,
+    "height": 1100
+  },
+  "checks": {
+    "real_album_restored": true,
+    "rule_baseline_selection": {
+      "query": "选3张建筑",
+      "selected_count": 3,
+      "provider": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-cpu-v3-m2db38e9efa07b63f-if3fb2abc8eb5bff4454c1095",
+      "model_parser": false,
+      "preference_memory": false,
+      "photo_ids": [
+        "35337ff1ae6a50f68cfae4a9da034c9b",
+        "22911d2972d95c9580ee82933254a589",
+        "9c23d237d2cb505f9ed9a3d1c20ad9d6"
+      ]
+    },
+    "real_learned_scores": {
+      "total": 8,
+      "selected_scored": 3,
+      "selected_mean_technical": "73.01",
+      "selected_mean_aesthetic": "5.24",
+      "accuracy_claim": false
+    },
+    "video_requires_explicit_consent": true,
+    "no_video_or_vlm_submission": true,
+    "image_load_failures": [],
+    "horizontal_overflow": false
+  },
+  "console_errors": [],
+  "page_errors": [],
+  "failed_responses": [],
+  "blocked_requests": [],
+  "passed": true
+}

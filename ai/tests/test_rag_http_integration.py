@@ -52,7 +52,7 @@ from ai.schemas import (
     SelectionRequest,
 )
 from ai.selection import SelectionService
-from ai.storage import Database
+from ai.storage import Database, SCHEMA_VERSION
 
 
 # Existing learned-retrieval provenance tests explicitly exercise adaptive mode.
@@ -1350,7 +1350,7 @@ def test_v11_to_v14_migration_creates_immutable_rag_runs(tmp_path: Path) -> None
                 "AND tbl_name = 'rag_runs'"
             )
         }
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert table is not None
     assert "WITHOUT ROWID" in table["sql"].upper()
     assert triggers == {
@@ -1384,7 +1384,7 @@ def test_v13_to_v14_preserves_audit_rows_and_removes_rowid(tmp_path: Path) -> No
         connection.execute("CREATE TABLE rag_runs_v13 AS SELECT * FROM rag_runs")
         connection.execute("DROP TABLE rag_runs")
         connection.execute("ALTER TABLE rag_runs_v13 RENAME TO rag_runs")
-        connection.execute("DELETE FROM schema_migrations WHERE version = 14")
+        connection.execute("DELETE FROM schema_migrations WHERE version >= 14")
 
     database.initialize()
 
@@ -1398,7 +1398,7 @@ def test_v13_to_v14_preserves_audit_rows_and_removes_rowid(tmp_path: Path) -> No
         with pytest.raises(sqlite3.OperationalError, match="rowid"):
             connection.execute("SELECT rowid FROM rag_runs")
 
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert "WITHOUT ROWID" in table_sql.upper()
     assert tuple(row) == ("run-old", "query", "a" * 64)
 
@@ -1436,7 +1436,7 @@ def test_v12_to_v13_preserves_photos_but_invalidates_legacy_vector_binding(
                       embedding_source_sha256
                FROM photos WHERE id = 'p'"""
         ).fetchone()
-    assert database.current_version() == 14
+    assert database.current_version() == SCHEMA_VERSION
     assert tuple(row) == ("p", "vector.npy", "openclip-test", 10, 20, None)
 
 

@@ -1,0 +1,22 @@
+# Linux x86_64 / CPython 3.11 only. Install in a NEW isolated world-env.
+# Do not install in Norma's existing local or video environment.
+# Upstream source: Robbyant/lingbot-world-v2@1895d300d8ac936401689b26389f51cbd36530eb
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.8.0+cu128
+torchvision==0.23.0+cu128
+torchaudio==2.8.0+cu128
+numpy==1.26.4
+transformers==4.51.3
+tokenizers==0.21.4
+diffusers==0.35.1
+huggingface-hub==0.34.4
+accelerate==1.10.1
+scipy==1.16.1
+opencv-python==4.11.0.86
+einops==0.8.1
+easydict==1.13
+ftfy==6.3.1
+imageio[ffmpeg]==2.37.0
+imageio-ffmpeg==0.6.0
+tqdm==4.67.1
+flash-attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3%2Bcu12torch2.8cxx11abiTRUE-cp311-cp311-linux_x86_64.whl#sha256=3d41b2fc55753faa7f45d6568ea73a96b96afb48b82994ab9b49bcbcb6c87588

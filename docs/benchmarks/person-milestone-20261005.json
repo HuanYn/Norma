@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "report_type": "controlled_engineering_regression_not_model_benchmark",
+  "executed_at_utc": "2026-10-05T05:25:01.222258+00:00",
+  "python_version": "3.13.5",
+  "baseline_commit": "5a28460a2f72c80c0b5460351242018ed5e42328",
+  "baseline_module_sha256": {
+    "ai/people/indexer.py": "5301cec1ca9bd51a8fe61fe6090dcededf348e05027f735085ed9a0dc27699d1",
+    "ai/selection/parser.py": "722c4ad611db851571e87c51d5e3f6397995f52d89923e4fda041eff44480dcd",
+    "ai/selection/optimizer.py": "cf55e859aa5f9d953240647cd48adf49802a0c673044eac997f7847d1dbe058d",
+    "ai/selection/service.py": "af9c7529b87ed7bd74984be0c4c1fcb9ac83e41317ff7346a64a6684aedf4df5"
+  },
+  "current_module_sha256": {
+    "ai/people/indexer.py": "3bb1f6c56f80c06bd537534bf3efaeacc9a6d82dc18586bbfd88c92c8c3b849f",
+    "ai/selection/parser.py": "d586b5f86eac55c336f0e69b35fdcee74a1ca14ff116038441ecc95df022c2b6",
+    "ai/selection/optimizer.py": "cdab84c1564555a1355a38edeff13d9a1883fe8ad5c6bb415e266aecd7c88efa",
+    "ai/selection/service.py": "6cc8c7926011f805983a9d6a56d68e2f9251e33b250964a05c0c0939aa4b0f30",
+    "ai/people/labels.py": "627603d8b8bd1e8df88af71cd5a3a7ca59041643f4d1dce257c4c75d997b3612",
+    "ai/selection/people_constraints.py": "c7f214c7be63160c19abea4717b800e2059df5832a8f869d98ff3b8ab19d5066",
+    "ai/storage.py": "3039f2e3f1e53e70fee9307fef1934fbe1ff816502ee52c7716a8714cadfb263",
+    "ai/schemas.py": "bbddc756ba3b37469e92092c06bdc99d5804ee5e11ba247def3c1294a74e5224"
+  },
+  "fixture_module_sha256": {
+    "ai/tests/test_people_labels.py": "1923a27bfd7854f54fc03194b012477a39dfaf132e7954b93e6346907442da40",
+    "ai/tests/test_person_selection.py": "aebc16d72ad660f0b241a79166044ff0605d53b108b93dc5617db64d899d91a5",
+    "ai/tests/test_selection.py": "e86710954ffb5d7faa4a3a4c45b9df9b7168c1224b623a8332f9150232e6b013"
+  },
+  "isolation": "TemporaryDirectory; separate lifecycle databases; one shared isolated quota fixture; removed after run",
+  "fixture_source": "deterministic synthetic JPEGs and fake providers from ai/tests; no real faces, private photos, cloud calls or model training",
+  "method_limits": [
+    "Historical selected modules execute against current shared schema/storage/dependencies, not a full historical environment reconstruction.",
+    "Before naming is seeded with direct SQL because the baseline had no naming API; after naming uses PersonLabelService.",
+    "Quota probe passes a current typed request carrying an explicit person_minimums field into both services; the historical service does not consume that field. It is not a claim that the old public API supported person quotas.",
+    "Only two engineering cases are compared. These are not face accuracy, generalization, aesthetic quality, preference learning or latency benchmarks.",
+    "The exclusion and face identity are synthetic fixtures, not automatically annotated real people."
+  ],
+  "cases": {
+    "unchanged_reindex_preserves_named_identity": {
+      "before": {
+        "source_image_sha256": {
+          "a1.jpg": "ac89131b7d52dddccacc76c83d176b7148db84371b13f6f7787e72838aa0040e",
+          "a2.jpg": "ac89131b7d52dddccacc76c83d176b7148db84371b13f6f7787e72838aa0040e"
+        },
+        "label_before_reindex": "Me",
+        "label_after_reindex": "Unknown",
+        "confirmed_status_available": false,
+        "label_status_after": null,
+        "photos": 2,
+        "faces_after": 2,
+        "clusters_after": 1,
+        "computed_after": 0,
+        "reused_after": 2,
+        "named_clusters_preserved": 0,
+        "named_clusters_expected": 1
+      },
+      "after": {
+        "source_image_sha256": {
+          "a1.jpg": "ac89131b7d52dddccacc76c83d176b7148db84371b13f6f7787e72838aa0040e",
+          "a2.jpg": "ac89131b7d52dddccacc76c83d176b7148db84371b13f6f7787e72838aa0040e"
+        },
+        "label_before_reindex": "Me",
+        "label_after_reindex": "Me",
+        "confirmed_status_available": true,
+        "label_status_after": "confirmed",
+        "photos": 2,
+        "faces_after": 2,
+        "clusters_after": 1,
+        "computed_after": 0,
+        "reused_after": 2,
+        "named_clusters_preserved": 1,
+        "named_clusters_expected": 1
+      }
+    },
+    "person_quota_two_of_two": {
+      "shared_candidates": [
+        {
+          "filename": "a.jpg",
+          "quality_score": 90,
+          "auto_reject": false,
+          "similarity_group": "group-1",
+          "contains_me": false,
+          "source_sha256": "c5b5eb6ea32af8045509fabba82423350326b8a08c45e194bb87508731064ea9"
+        },
+        {
+          "filename": "b.jpg",
+          "quality_score": 95,
+          "auto_reject": false,
+          "similarity_group": "group-1",
+          "contains_me": false,
+          "source_sha256": "84b42592014ff7ef606623c3d5db29309d3a9fd0b4e87261191ec9b86946d156"
+        },
+        {
+          "filename": "c.jpg",
+          "quality_score": 80,
+          "auto_reject": false,
+          "similarity_group": null,
+          "contains_me": true,
+          "source_sha256": "1528662b49d93ffed00c72b66b1bf9f75363ceb3751ecb4047fc27b75cc42229"
+        },
+        {
+          "filename": "d.jpg",
+          "quality_score": 70,
+          "auto_reject": true,
+          "similarity_group": null,
+          "contains_me": false,
+          "source_sha256": "5ba13c5d6073d886068c1eb2417dd34277ef2f3b29fb2cab2277b8c2ec0d7d77"
+        },
+        {
+          "filename": "e.jpg",
+          "quality_score": 40,
+          "auto_reject": false,
+          "similarity_group": null,
+          "contains_me": true,
+          "source_sha256": "4f37ccaed0878cf4716ff6ed211d61e8f3e0b98fae06b9f6d07c14ebe1bc64e3"
+        },
+        {
+          "filename": "f.jpg",
+          "quality_score": 90,
+          "auto_reject": false,
+          "similarity_group": null,
+          "contains_me": true,
+          "source_sha256": "c5471e578ae6228e8ee873ed928dbfd7f5fda89261141d57b90949dfc51842fe"
+        }
+      ],
+      "before": {
+        "selected": [
+          {
+            "filename": "b.jpg",
+            "score": 0.95,
+            "contains_me": false
+          },
+          {
+            "filename": "f.jpg",
+            "score": 0.9,
+            "contains_me": true
+          }
+        ],
+        "selected_count": 2,
+        "person_photo_count": 1,
+        "person_photo_minimum": 2,
+        "person_quota_satisfied": false,
+        "requested_person_minimums": {
+          "Me": 2
+        },
+        "returned_person_minimums": {},
+        "feasible_flag": true,
+        "solver": "ortools-cp-sat",
+        "solver_status": "optimal"
+      },
+      "after": {
+        "selected": [
+          {
+            "filename": "f.jpg",
+            "score": 0.9,
+            "contains_me": true
+          },
+          {
+            "filename": "c.jpg",
+            "score": 0.8,
+            "contains_me": true
+          }
+        ],
+        "selected_count": 2,
+        "person_photo_count": 2,
+        "person_photo_minimum": 2,
+        "person_quota_satisfied": true,
+        "requested_person_minimums": {
+          "Me": 2
+        },
+        "returned_person_minimums": {
+          "me": 2
+        },
+        "feasible_flag": true,
+        "solver": "ortools-cp-sat",
+        "solver_status": "optimal"
+      }
+    }
+  },
+  "parser_probe": {
+    "prompt": "选2张，至少2张有我",
+    "before_person_minimums": {},
+    "after_person_minimums": {
+      "me": 2
+    }
+  },
+  "assertions_passed": true
+}

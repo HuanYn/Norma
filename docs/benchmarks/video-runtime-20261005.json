@@ -1,0 +1,28 @@
+{
+  "scope": "Directly observed package metadata from the isolated user-owned RTX 3090 worker; not a full transitive dependency lock",
+  "observed_date": "2026-10-05",
+  "python": "3.11.16",
+  "gpu_model": "NVIDIA GeForce RTX 3090",
+  "gpu_count_used": 1,
+  "torch_runtime_version": "2.8.0+cu128",
+  "packages": {
+    "torch": "2.8.0",
+    "diffusers": "0.35.1",
+    "transformers": "4.57.6",
+    "accelerate": "1.15.0",
+    "safetensors": "0.8.0",
+    "huggingface-hub": "0.36.2",
+    "numpy": "2.4.6",
+    "Pillow": "12.3.0",
+    "imageio": "2.38.0",
+    "imageio-ffmpeg": "0.6.0",
+    "fastapi": "0.142.2",
+    "uvicorn": "0.54.0"
+  },
+  "model": "Wan-AI/Wan2.2-TI2V-5B-Diffusers",
+  "model_revision": "b8fff7315c768468a5333511427288870b2e9635",
+  "offload": "model",
+  "vae_tiling": false,
+  "vae_dtype": "float32",
+  "transformer_dtype": "bfloat16"
+}

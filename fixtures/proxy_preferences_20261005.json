@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "dataset_id": "norma-proxy-preferences-20261005-v1",
+  "created_on": "2026-10-05",
+  "source": "assistant_proxy",
+  "authorized_by_user": true,
+  "human_observed": false,
+  "authorization_scope": "用户授权助手按自己的审美代标，作为初始偏好代理；不冒充用户亲手逐对选择，不代表已验证的真实用户偏好。",
+  "usage": "development_proxy_only",
+  "rubric": {
+    "version": "cinematic-travel-v1",
+    "criteria": [
+      "先满足该对照片的文字任务，再判断风格。",
+      "主体清楚、框景或引导线、前中后景分明。",
+      "本次代理倾向电影感、较克制色彩；安静或热闹由具体任务决定。",
+      "视觉优势接近或情绪不同且任务未限定时保留 tie。",
+      "不推断身份、个性或敏感属性；不对未观察到的表情作评价。"
+    ],
+    "confidence_semantics": "助手对该对主观判断稳定性的自评，非校准概率或真人一致率。"
+  },
+  "public_source_manifest": {
+    "file": "contextual_preference_wikimedia_20260814.json",
+    "sha256": "991a0ebe0a2e66454ec7e85decd667a9bb2b81284278542f7cde5a64d3c72d12"
+  },
+  "evaluation": {
+    "eligible_as_ground_truth": false,
+    "exclude_entire_source_corpus": true,
+    "reason": "复用了历史受控实验公开图像；本批及源清单全部 72 张不能作为后续个性化调参后的独立留出测试。历史报告不改写为本批验证结果。"
+  },
+  "claim_boundary": "8 对助手代理标注（6 对 preferred、2 对 tie），15 张公开照片；仅为可审计开发数据。未训练，未写入真实用户反馈，未接入线上个性化，未测量偏好预测或选片提升。",
+  "assets": [
+    {
+      "file": "003_97b4ada6b34a.jpg",
+      "sha256": "c1e25976d967ad847b93de564ab8de8947c49063acf4309d934d6bc1774eb0b1",
+      "byte_size": 1056825,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Architecture_Antiquity_Old_Travel_Arch_Monastery.jpg",
+      "license_name": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "fietzfotos",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "004_9a3b0cbbe3ff.jpg",
+      "sha256": "b31caab7aa7ad9ba5ff9c81376c0ac7a64fd273389eb8c0802055b0c6c9c999d",
+      "byte_size": 425718,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Piazza_Del_Duomo_Lecce_Italy_Travel_Photography_%28171395721%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "005_1839d30785cb.jpg",
+      "sha256": "09a40b4d4eed427842199bdf3a1316a080f60808c847d9f4c6be99bc562f6df3",
+      "byte_size": 841032,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Architecture_Travel_City_Street_Tourism_Cuba.jpg",
+      "license_name": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "SweetMellowChill",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "009_490655e9e2e7.jpg",
+      "sha256": "90fe00b12101c23cb11867e8786518c5d6afd24eeecde645ac3025923d307e82",
+      "byte_size": 519127,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sydney_%28AU%29%2C_Darling_Harbour_--_2019_--_3193-5.jpg",
+      "license_name": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Dietmar Rabich",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "023_53eabe29deee.jpg",
+      "sha256": "5005bd9026bf2907cde38cda6bdf9c06325268dec0ad3f9c1b6d6f7dcfef2e25",
+      "byte_size": 159440,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Wellington_City_Night.jpg",
+      "license_name": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "artist": "Donovan Govan.",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "027_0fe667ea27f9.jpg",
+      "sha256": "6e8a23a0cae05c14ddf0d71c828bc9e4548ac6477bc898e982dfda705f9a72b0",
+      "byte_size": 212604,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Pont_de_Brooklyn_de_nuit_-_Octobre_2008_edit.jpg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Martin St-Amant (S23678)",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "031_652aa3111696.jpg",
+      "sha256": "3103720dada9d8d55f488ece5e799406341a9f2029335ff183cb05b12728ed88",
+      "byte_size": 565359,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sz%C3%A9chenyi_Chain_Bridge_in_Budapest_at_night.jpg",
+      "license_name": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "artist": "Wilfredor",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "056_eb029c859755.jpg",
+      "sha256": "809cc2d2c0bce662448a72cc95a30fe8e83eb687dd59bbae4671f49ca7f70a4c",
+      "byte_size": 588225,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Untersberg_Mountain_Salzburg_Austria_Landscape_Photography_%28256594075%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "057_bcb5c3f99d47.jpg",
+      "sha256": "8b8651fc8c44413613d7e43619fb44b0c71ab6bf1ef0faf6d822aa701a89c1d0",
+      "byte_size": 1140914,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Kirkjufell_Mountain_Iceland_Travel_Photography_%28227214943%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "058_8f397f811d13.jpg",
+      "sha256": "70f66103570a4d85758cbbe98b960233a730206f4f7fa19fcb252a2be714e367",
+      "byte_size": 326881,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Sligachan_Scotland_Landscape_Travel_Photography_%28121036503%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "059_8ac9419f4801.jpg",
+      "sha256": "3ef2f0ec9765907dc05b13225bc1a70a0ba81c0c03f7239d4ac6b5158ae5beeb",
+      "byte_size": 284104,
+      "source_page": "https://commons.wikimedia.org/wiki/File:The_Highlands_Scotland_Travel_Landscape_Photography_%28123275593%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "060_6f6d80358091.jpg",
+      "sha256": "f39a89d8d0eb6b01a33b3e03c73b083a85f0b39efc8d20bb172dc71ccfab9111",
+      "byte_size": 463726,
+      "source_page": "https://commons.wikimedia.org/wiki/File:The_House_Alta_Badia_Italy_Travel_Landscape_Photography_%28122696751%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "061_34bf86f3afc9.jpg",
+      "sha256": "ccbd130e321aba6f1190610eb20db4f81d4f770042e893679920b1854ae60634",
+      "byte_size": 172653,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Lysefjord_Norway_Landscape_Travel_Photography_%28122226717%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "062_9d19a272280c.jpg",
+      "sha256": "ea5ef467089a88437143cc74341f5ffe2129d133c188bf9fe6c4f0133397a3d3",
+      "byte_size": 252764,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Myrkdalsvatnet_Myrkdalen_Norway_Landscape_Travel_Photography_%28120472613%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    },
+    {
+      "file": "063_8707c5776037.jpg",
+      "sha256": "b40fd4cfdaf16fc382f8cf56fd39be0735fe87e2174047466543d09705b38c04",
+      "byte_size": 533850,
+      "source_page": "https://commons.wikimedia.org/wiki/File:San_Cassiano_Alta_Badia_Italy_Travel_Landscape_Photography_%28131834241%29.jpeg",
+      "license_name": "CC BY 3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0",
+      "artist": "Giuseppe Milo",
+      "inspection": "assistant visually inspected local image with view_image on 2026-10-05"
+    }
+  ],
+  "pairs": [
+    {
+      "id": "proxy-20261005-001",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "旅行建筑开场照，偏电影感、空间层次清楚。",
+      "left_file": "003_97b4ada6b34a.jpg",
+      "right_file": "004_9a3b0cbbe3ff.jpg",
+      "choice": "preferred",
+      "preferred_file": "004_9a3b0cbbe3ff.jpg",
+      "rejected_file": "003_97b4ada6b34a.jpg",
+      "confidence": 0.8,
+      "rationale": "004 的广场、两侧立面和钟塔构成清楚的纵深，冷灰天空与暖色石墙比较统一；003 的拱门也有框景，但近处石墙和树叶占比大，主体教堂部分被遮挡。",
+      "limitation": "在这对照片与这个任务下更偏好完整空间，不表示所有广角都优于近景。"
+    },
+    {
+      "id": "proxy-20261005-002",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "旅行建筑照片，保留地点特点和生活感。",
+      "left_file": "005_1839d30785cb.jpg",
+      "right_file": "063_8707c5776037.jpg",
+      "choice": "tie",
+      "preferred_file": null,
+      "rejected_file": null,
+      "confidence": 0.55,
+      "rationale": "005 的彩色立面、老车和街上行人更有街头生活感；063 的木屋、桥和山体层次更完整。两张表现的是不同旅行体验，在没有城市或乡村偏好的前提下不强行分胜负。",
+      "limitation": "tie 保留，不转换成二元训练正负例；不推断图中人物身份或心情。"
+    },
+    {
+      "id": "proxy-20261005-003",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "挑一张夜景建筑照片，主体清楚、灯光与水面形成层次。",
+      "left_file": "009_490655e9e2e7.jpg",
+      "right_file": "023_53eabe29deee.jpg",
+      "choice": "preferred",
+      "preferred_file": "009_490655e9e2e7.jpg",
+      "rejected_file": "023_53eabe29deee.jpg",
+      "confidence": 0.88,
+      "rationale": "009 能清楚看到高楼、低层建筑、摩天轮和倒影，主体尺度适合普通相册浏览；023 是很窄的全景，城市被压缩为密集灯点，作为单张主图细节和焦点较弱。",
+      "limitation": "不是认定全景质量差；超宽画幅展示任务下偏好可能反转。"
+    },
+    {
+      "id": "proxy-20261005-004",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "挑一张桥梁夜景，偏冷静、克制、有引导线。",
+      "left_file": "027_0fe667ea27f9.jpg",
+      "right_file": "031_652aa3111696.jpg",
+      "choice": "preferred",
+      "preferred_file": "027_0fe667ea27f9.jpg",
+      "rejected_file": "031_652aa3111696.jpg",
+      "confidence": 0.74,
+      "rationale": "027 的桥索向远处延伸，蓝紫天空与偏冷水面形成较简洁的色调；031 的斜桥也有引导线，但大面积暖黄灯光与背景建筑让画面更热闹。本次任务偏向前者。",
+      "limitation": "这是任务相关的冷色审美代理，不是曝光或白平衡正确性的客观评分。"
+    },
+    {
+      "id": "proxy-20261005-005",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "选一张有电影氛围的山水主图，优先明确主体与前后景。",
+      "left_file": "056_eb029c859755.jpg",
+      "right_file": "057_bcb5c3f99d47.jpg",
+      "choice": "preferred",
+      "preferred_file": "057_bcb5c3f99d47.jpg",
+      "rejected_file": "056_eb029c859755.jpg",
+      "confidence": 0.78,
+      "rationale": "057 的独立山峰、倒影和近处岸边形成明确前中后景，色彩范围较集中；056 的湖水和林木更明亮清新，但大片高饱和绿色分散了山体的主导性。",
+      "limitation": "不推断原始调色步骤；色彩评价仅依据可见图像。"
+    },
+    {
+      "id": "proxy-20261005-006",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "选一张有层次、引导线与独特构图的山水照片。",
+      "left_file": "058_8f397f811d13.jpg",
+      "right_file": "059_8ac9419f4801.jpg",
+      "choice": "preferred",
+      "preferred_file": "058_8f397f811d13.jpg",
+      "rejected_file": "059_8ac9419f4801.jpg",
+      "confidence": 0.77,
+      "rationale": "058 用桥洞形成天然框景，溪流和石块把目光引向远处雪山；059 有好看的明暗变化，但右侧枝条和大块天空使边缘信息较多。本次更偏好 058 的集中构图。",
+      "limitation": "两张都有可用价值，不把未选照片标成低质量。"
+    },
+    {
+      "id": "proxy-20261005-007",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "选一张安静、简洁的山间居住场景。",
+      "left_file": "060_6f6d80358091.jpg",
+      "right_file": "063_8707c5776037.jpg",
+      "choice": "preferred",
+      "preferred_file": "060_6f6d80358091.jpg",
+      "rejected_file": "063_8707c5776037.jpg",
+      "confidence": 0.76,
+      "rationale": "060 的小木屋落在亮草坡上，周围留出森林与天空，视觉节奏更安静；063 的村屋、桥、花草和山体信息更多，更适合讲村落细节。本次简洁要求下偏好 060。",
+      "limitation": "不将这一对推广为普遍的少建筑偏好；与第 2 对的任务不同。"
+    },
+    {
+      "id": "proxy-20261005-008",
+      "source": "assistant_proxy",
+      "authorized_by_user": true,
+      "human_observed": false,
+      "rubric_version": "cinematic-travel-v1",
+      "query_text": "选一张横向山水照片，允许壮阔或宁静的情绪。",
+      "left_file": "061_34bf86f3afc9.jpg",
+      "right_file": "062_9d19a272280c.jpg",
+      "choice": "tie",
+      "preferred_file": null,
+      "rejected_file": null,
+      "confidence": 0.6,
+      "rationale": "061 有悬崖、峡湾和远处水道的尺度感；062 有雾气、水面倒影和近处透明水底的细节。两张都满足横向山水任务，但情绪不同，没有足够依据作稳定取舍。",
+      "limitation": "tie 保留，集合多样性要在完整候选集合层面另行检验，不能由这对标签证明。"
+    }
+  ]
+}

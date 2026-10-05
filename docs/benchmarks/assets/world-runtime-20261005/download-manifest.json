@@ -1,0 +1,112 @@
+{
+  "started_at": "2026-10-05T07:32:40.781601+00:00",
+  "scope": "Download and integrity check only; no inference or latency claim",
+  "license": "CC BY-NC-SA 4.0; upstream non-commercial restrictions apply",
+  "models": [
+    {
+      "model": "robbyant/lingbot-world-v2-1.3b-causal-fast",
+      "revision": "7e36a5f919f86cb4255cc9bfc30adb44963fbde1",
+      "subdir": "transformers",
+      "files": [
+        {
+          "file": "README.md",
+          "bytes": 7890,
+          "sha256": "a6f94880047e35fe1b2df43934396937365ef116ee8fe3e754737130411ebddb",
+          "matches_upstream_lfs": false
+        },
+        {
+          "file": "model-00001-of-00006.safetensors",
+          "bytes": 1101302873,
+          "sha256": "4169eaf504fc63c235f4b66c95887951ecd71ba4ca9492e8528b6709d63ed9b2",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "model-00002-of-00006.safetensors",
+          "bytes": 1227848825,
+          "sha256": "e6745d1e600f697f2285ca435de09c49d2082303b7f9a2bb39003fc87b354d2f",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "model-00003-of-00006.safetensors",
+          "bytes": 1136593160,
+          "sha256": "20f9b226fcfcfb4dead5c1e3ff1b77da182787442ebabfdaf23d3c68aca44ceb",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "model-00004-of-00006.safetensors",
+          "bytes": 1136623879,
+          "sha256": "5b5c18cc18a4de976002f45777f59b4d27d30786c6db94e134d0af5a031f5272",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "model-00005-of-00006.safetensors",
+          "bytes": 1146024211,
+          "sha256": "089575f86c3c62e12566a79c5e0afd663415aa4376e193b45ee2bb2ac65a9cbe",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "model-00006-of-00006.safetensors",
+          "bytes": 1089732112,
+          "sha256": "c0d3d8643d07b6d6e26d614f80cf3538a562f575937a759c64a71d5575f2f915",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "model.safetensors.index.json",
+          "bytes": 76865,
+          "sha256": "b0409d663b57810af19443c9e8d8dde43320193c8dbb979d86f6618102922e42",
+          "matches_upstream_lfs": false
+        }
+      ]
+    },
+    {
+      "model": "robbyant/lingbot-world-v2-14b-causal-fast",
+      "revision": "5c33dd40b213598c418fd25bff30fdbd23fd38a7",
+      "subdir": "assets",
+      "files": [
+        {
+          "file": "README.md",
+          "bytes": 7890,
+          "sha256": "a6f94880047e35fe1b2df43934396937365ef116ee8fe3e754737130411ebddb",
+          "matches_upstream_lfs": false
+        },
+        {
+          "file": "Wan2.1_VAE.pth",
+          "bytes": 507609880,
+          "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "google/umt5-xxl/special_tokens_map.json",
+          "bytes": 6623,
+          "sha256": "7b8a9f5040adb67b5805abdfd42c1f8d0f3d0e711f10726580eb3789cd0ad61d",
+          "matches_upstream_lfs": false
+        },
+        {
+          "file": "google/umt5-xxl/spiece.model",
+          "bytes": 4548313,
+          "sha256": "e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "google/umt5-xxl/tokenizer.json",
+          "bytes": 16837417,
+          "sha256": "6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b",
+          "matches_upstream_lfs": true
+        },
+        {
+          "file": "google/umt5-xxl/tokenizer_config.json",
+          "bytes": 61728,
+          "sha256": "ed9a3a8b0faa71a70a32847e0435fe036e6e112d4df4edb7bb48a921e344dc05",
+          "matches_upstream_lfs": false
+        },
+        {
+          "file": "models_t5_umt5-xxl-enc-bf16.pth",
+          "bytes": 11361920418,
+          "sha256": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d",
+          "matches_upstream_lfs": true
+        }
+      ]
+    }
+  ],
+  "finished_at": "2026-10-05T07:46:34.483184+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-05T06:44:51.209Z",
+  "origin": "http://127.0.0.1:8767",
+  "album_id": "54a2e3cf1d605ab8a5682cbeab1b2885",
+  "context": "Real staging UI and real public-image model scores. before-open.png and after.png show the SAME implementation with its panel collapsed/expanded; not an old-version or accuracy improvement comparison.",
+  "viewport": {
+    "width": 1440,
+    "height": 1100
+  },
+  "checks": {
+    "real_album_restored": true,
+    "readiness_status": {
+      "provider": "openclip-xlm-roberta-base-vit-b-32-laion5b-raw-cpu-v3-m2db38e9efa07b63f-if3fb2abc8eb5bff4454c1095",
+      "dimension": 512,
+      "model_backed": true,
+      "loaded": true,
+      "device": "cpu",
+      "warmup_state": "idle",
+      "error": null,
+      "started_at": null,
+      "finished_at": null
+    }
+  },
+  "console_errors": [],
+  "page_errors": [],
+  "failed_responses": [],
+  "blocked_requests": [],
+  "observed_failure": "Indexed and model-loaded public album leaves AI Selection query disabled because warmup_state is idle."
+}
