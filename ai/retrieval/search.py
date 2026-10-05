@@ -10,6 +10,7 @@ from typing import Callable, Mapping
 
 import numpy as np
 
+from ai.config import PreferenceMode, validate_preference_mode
 from ai.index.embedding import (
     EmbeddingProvider,
     embedding_cache_is_current,
@@ -42,10 +43,13 @@ class RetrievalService:
         database: Database,
         data_dir: Path,
         provider: EmbeddingProvider,
+        *,
+        preference_mode: PreferenceMode = "record-only",
     ) -> None:
         self.database = database
         self.data_dir = data_dir
         self.provider = provider
+        self.preference_mode = validate_preference_mode(preference_mode)
 
     def embed_album(
         self,
@@ -254,6 +258,7 @@ class RetrievalService:
                     self.database,
                     self.provider,
                     user_id=request.user_id,
+                    preference_mode=self.preference_mode,
                 )
             except IncompatiblePreferenceModelError as error:
                 runtime = cosine_fallback_runtime(

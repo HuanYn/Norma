@@ -8,6 +8,7 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
+from ai.config import PreferenceMode, validate_preference_mode
 from ai.index.embedding import EmbeddingProvider, normalize_embedding
 from ai.preferences.contextual import (
     COSINE_FEATURE_INDEX,
@@ -37,6 +38,7 @@ CONTEXTUAL_MODEL_ALGORITHM = "bayesian-contextual-logistic-laplace-v1"
 CONTEXTUAL_UTILITY_ALGORITHM = "openclip-contextual-posterior-utility-v1"
 COSINE_FALLBACK_ALGORITHM = "openclip-cosine-zero-feedback-v1"
 LEGACY_COSINE_ALGORITHM = "legacy-cosine-v1"
+RECORD_ONLY_ALGORITHM = "pretrained-cosine-record-only-v1"
 
 
 class IncompatiblePreferenceModelError(ValueError):
@@ -121,16 +123,23 @@ def load_preference_runtime(
     provider: EmbeddingProvider,
     *,
     user_id: str = "local",
+    preference_mode: PreferenceMode = "record-only",
 ) -> PreferenceRuntime:
-    """Load one immutable posterior snapshot for a complete decision operation.
+    """Load one decision snapshot under the explicitly selected mode.
 
-    The lookup is deliberately keyed by the exact current provider fingerprint
+    Record-only mode bypasses all historical weights and event/model validation.
+    Adaptive lookup is keyed by the exact current provider fingerprint
     and feature schema.  Any active record with incompatible projection or
     posterior metadata is rejected instead of being partially consumed.
     """
 
     if not user_id.strip():
         raise ValueError("user_id must not be empty")
+    validate_preference_mode(preference_mode)
+    if preference_mode == "record-only":
+        return cosine_fallback_runtime(
+            provider, user_id=user_id, algorithm=RECORD_ONLY_ALGORITHM
+        )
     if not supports_contextual_runtime(provider):
         return PreferenceRuntime(
             user_id=user_id,
@@ -310,6 +319,7 @@ __all__ = [
     "CONTEXTUAL_UTILITY_ALGORITHM",
     "COSINE_FALLBACK_ALGORITHM",
     "LEGACY_COSINE_ALGORITHM",
+    "RECORD_ONLY_ALGORITHM",
     "IncompatiblePreferenceModelError",
     "PreferenceRuntime",
     "UtilityScore",

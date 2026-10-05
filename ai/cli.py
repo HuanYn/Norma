@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import json
 import sys
 import time
@@ -262,7 +263,9 @@ def _dispatch(
     database: Database,
     provider: Any,
 ) -> Any:
-    retrieval = RetrievalService(database, settings.data_dir, provider)
+    retrieval = RetrievalService(
+        database, settings.data_dir, provider, preference_mode=settings.preference_mode
+    )
     evaluation = EvaluationService(database, retrieval)
     if args.command == "init":
         return {
@@ -386,9 +389,7 @@ def _dispatch(
         indexed = AlbumIndexer(database, settings.data_dir).index(
             args.folder, args.name
         )
-        embedded = RetrievalService(database, settings.data_dir, provider).embed_album(
-            indexed.album_id
-        )
+        embedded = retrieval.embed_album(indexed.album_id)
         people = None
         if not args.skip_people:
             people = PeopleIndexer(
@@ -406,31 +407,23 @@ def _dispatch(
     if args.command == "embed":
         return retrieval.embed_album(args.album_id).model_dump()
     if args.command == "search":
-        return (
-            RetrievalService(database, settings.data_dir, provider)
-            .search(
-                AlbumSearchRequest(
-                    album_id=args.album_id,
-                    query=args.query,
-                    limit=args.limit,
-                    user_id=args.user_id,
-                )
+        return retrieval.search(
+            AlbumSearchRequest(
+                album_id=args.album_id,
+                query=args.query,
+                limit=args.limit,
+                user_id=args.user_id,
             )
-            .model_dump()
-        )
+        ).model_dump()
     if args.command == "image-search":
-        return (
-            RetrievalService(database, settings.data_dir, provider)
-            .search(
-                AlbumSearchRequest(
-                    album_id=args.album_id,
-                    reference_photo_id=args.photo_id,
-                    limit=args.limit,
-                    user_id=args.user_id,
-                )
+        return retrieval.search(
+            AlbumSearchRequest(
+                album_id=args.album_id,
+                reference_photo_id=args.photo_id,
+                limit=args.limit,
+                user_id=args.user_id,
             )
-            .model_dump()
-        )
+        ).model_dump()
     if args.command == "people":
         return (
             PeopleIndexer(
@@ -445,7 +438,9 @@ def _dispatch(
         )
     if args.command == "select":
         return (
-            SelectionService(database, provider)
+            SelectionService(
+                database, provider, preference_mode=settings.preference_mode
+            )
             .select(
                 SelectionRequest(
                     album_id=args.album_id,
@@ -457,7 +452,9 @@ def _dispatch(
         )
     if args.command == "feedback":
         return (
-            PreferenceService(database, provider)
+            PreferenceService(
+                database, provider, preference_mode=settings.preference_mode
+            )
             .record_pairwise(
                 PairwiseFeedbackRequest(
                     album_id=args.album_id,
@@ -471,7 +468,9 @@ def _dispatch(
         )
     if args.command == "replace":
         return (
-            ReplacementService(database, provider)
+            ReplacementService(
+                database, provider, preference_mode=settings.preference_mode
+            )
             .replace(
                 args.selection_id,
                 SelectionReplacementRequest(remove_photo_id=args.remove_photo_id),
@@ -479,10 +478,20 @@ def _dispatch(
             .model_dump()
         )
     if args.command == "show-selection":
-        return SelectionService(database, provider).get(args.selection_id).model_dump()
+        return (
+            SelectionService(
+                database, provider, preference_mode=settings.preference_mode
+            )
+            .get(args.selection_id)
+            .model_dump()
+        )
     if args.command == "show-preferences":
         return (
-            PreferenceService(database, provider).get_state(args.user_id).model_dump()
+            PreferenceService(
+                database, provider, preference_mode=settings.preference_mode
+            )
+            .get_state(args.user_id)
+            .model_dump()
         )
     if args.command == "selection-history":
         if args.limit < 1 or args.limit > 200 or args.offset < 0:
@@ -545,19 +554,7 @@ def _settings(data_dir: Path | None) -> Settings:
     current = load_settings()
     if data_dir is None:
         return current
-    return Settings(
-        host=current.host,
-        port=current.port,
-        data_dir=data_dir.resolve(),
-        log_level=current.log_level,
-        embedding_provider=current.embedding_provider,
-        face_provider=current.face_provider,
-        embedding_device=current.embedding_device,
-        embedding_batch_size=current.embedding_batch_size,
-        model_cache_root=current.model_cache_root,
-        prewarm_embedding=current.prewarm_embedding,
-        cache_budget_bytes=current.cache_budget_bytes,
-    )
+    return replace(current, data_dir=data_dir.resolve())
 
 
 def _serve(args: argparse.Namespace, settings: Settings) -> None:

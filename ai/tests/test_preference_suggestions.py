@@ -4,6 +4,8 @@ import hashlib
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
+from functools import partial
 from pathlib import Path
 from threading import Barrier
 
@@ -36,6 +38,21 @@ from ai.schemas import (
 )
 from ai.selection import SelectionService
 from ai.storage import Database
+
+
+# PDRR is an optional adaptive-mode experiment, never the default workflow.
+PreferenceService = partial(PreferenceService, preference_mode="adaptive")
+PreferenceSuggestionService = partial(
+    PreferenceSuggestionService, preference_mode="adaptive"
+)
+SelectionService = partial(SelectionService, preference_mode="adaptive")
+
+
+@pytest.fixture(autouse=True)
+def _adaptive_http_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        app_module, "settings", replace(app_module.settings, preference_mode="adaptive")
+    )
 
 
 class SuggestionOpenClipProvider(EmbeddingProvider):

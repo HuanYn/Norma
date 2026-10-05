@@ -1,4 +1,4 @@
-"""Local pairwise preference learning."""
+"""Local preference recording with explicitly enabled optional adaptation."""
 
 from ai.preferences.service import (
     PreferenceService,

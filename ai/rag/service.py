@@ -471,6 +471,7 @@ class GroundedRAGService:
                 self.database,
                 self.embedding_provider,
                 user_id=user_id,
+                preference_mode=self.retrieval.preference_mode,
             )
         except IncompatiblePreferenceModelError:
             runtime = cosine_fallback_runtime(

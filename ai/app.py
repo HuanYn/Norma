@@ -43,6 +43,7 @@ from ai.rag import (
     VLMInputBudgetError,
 )
 from ai.rag.providers import GroundedGenerationProvider
+from ai.rag.cloud_runtime import CloudVLMUnavailableError
 from ai.rag.service import (
     GroundedRAGService,
     RAGBusyError,
@@ -203,28 +204,48 @@ def face_thumbnail(
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     return HealthResponse(
+        vlm_provider=settings.vlm_provider,
+        vlm_configured=settings.vlm_configured,
         status="ok",
         schema_version=database.current_version(),
         embedding_provider=embedding_provider().name,
         face_provider=canonical_face_provider_name(settings.face_provider),
+        preference_mode=settings.preference_mode,
+        preference_training_enabled=settings.preference_mode == "adaptive",
     )
 
 
 @app.get("/capabilities", response_model=CapabilitiesResponse)
 def capabilities() -> CapabilitiesResponse:
     return CapabilitiesResponse(
+        vlm_provider=settings.vlm_provider,
+        vlm_configured=settings.vlm_configured,
         embedding_provider=embedding_provider().name,
+        preference_mode=settings.preference_mode,
+        preference_training_enabled=settings.preference_mode == "adaptive",
         milestones={
             "library": "cpu-fallback-indexer",
             "multimodal_index": embedding_provider().name,
             "people": "opencv-yunet-sface-constrained-prototype-clustering-v2",
-            "selection": "contextual-utility+structured-cp-sat-or-greedy-v1",
-            "preference": "bayesian-contextual-laplace-runtime-v1+legacy-logistic-v1",
+            "selection": (
+                "contextual-utility+structured-cp-sat-or-greedy-v1"
+                if settings.preference_mode == "adaptive"
+                else "pretrained-cosine+structured-cp-sat-or-greedy-v1"
+            ),
+            "preference": (
+                "bayesian-contextual-laplace-runtime-v1+legacy-logistic-v1"
+                if settings.preference_mode == "adaptive"
+                else "immutable-feedback-recording-v1"
+            ),
             "library_lifecycle": "persistent-catalog-and-jobs-v1",
             "retrieval_evaluation": "human-relevance-metrics-v1",
             "cache_maintenance": "audited-quota-gc-v2",
             "provider_warmup": "background-idempotent-v1",
-            "rag": "learned-openclip-retrieval+local-qwen3vl+citation-enforcement-v1",
+            "rag": (
+                "local-openclip+cloud-vision+citation-enforcement-v1"
+                if settings.vlm_provider == "openai-compatible"
+                else "learned-openclip-retrieval+local-qwen3vl+citation-enforcement-v1"
+            ),
             "video": "deferred",
             "world": "deferred",
         },
@@ -441,10 +462,21 @@ def retrieval_service() -> RetrievalService:
         database,
         settings.data_dir,
         embedding_provider(),
+        preference_mode=settings.preference_mode,
     )
 
 
 def rag_generation_provider() -> GroundedGenerationProvider:
+    if settings.vlm_provider == "openai-compatible":
+        from ai.rag.cloud_runtime import create_cloud_vlm_provider
+
+        return create_cloud_vlm_provider(
+            settings.vlm_base_url,
+            settings.vlm_model,
+            settings.vlm_api_key,
+            max_new_tokens=settings.vlm_max_new_tokens,
+            timeout_seconds=settings.vlm_timeout_seconds,
+        )
     return create_local_qwen3vl_provider(
         settings.local_vlm_model_dir,
         max_new_tokens=settings.vlm_max_new_tokens,
@@ -477,6 +509,7 @@ def selection_service() -> SelectionService:
     return SelectionService(
         database,
         embedding_provider(),
+        preference_mode=settings.preference_mode,
     )
 
 
@@ -484,6 +517,7 @@ def preference_service() -> PreferenceService:
     return PreferenceService(
         database,
         embedding_provider(),
+        preference_mode=settings.preference_mode,
     )
 
 
@@ -491,6 +525,7 @@ def preference_suggestion_service() -> PreferenceSuggestionService:
     return PreferenceSuggestionService(
         database,
         embedding_provider(),
+        preference_mode=settings.preference_mode,
     )
 
 
@@ -498,6 +533,7 @@ def replacement_service() -> ReplacementService:
     return ReplacementService(
         database,
         embedding_provider(),
+        preference_mode=settings.preference_mode,
     )
 
 
@@ -535,7 +571,7 @@ def run_grounded_rag(
     album_id: str,
     request: AlbumRAGRequest,
 ) -> AlbumRAGResponse:
-    """Learned retrieval + local VLM with referential citation validation only."""
+    """Local retrieval + configured VLM with referential citation validation only."""
 
     try:
         return rag_service().run(album_id, request)
@@ -550,6 +586,7 @@ def run_grounded_rag(
     except (CitationValidationError, NoEvidenceError, ValueError) as error:
         raise HTTPException(status_code=422, detail=_safe_rag_error(error)) from error
     except (
+        CloudVLMUnavailableError,
         LocalVLMUnavailableError,
         ProviderFailureError,
         EmbeddingProviderUnavailableError,

@@ -35,9 +35,14 @@ interface on an untrusted network.
    `选 12 张夜景，质量至少 45` also require **质量与相似**.
 6. For a selection, inspect per-photo reasons, replace one item, or use
    **A/B preference** to mark one photo preferred to another. Under the
-   default OpenCLIP provider, this records an immutable 67D contextual event and
-   trains a new versioned Bayesian posterior. Create a new search/selection or
-   replacement request to observe the current posterior's score.
+   default OpenCLIP provider, this records contextual feedback. The default
+   `NORMA_PREFERENCE_MODE=record-only` does not fit a posterior or apply old
+   preference weights; saving feedback alone does not personalize ranking.
+   Only explicit `adaptive` mode enables the earlier learning experiment.
+7. For a question about the photos, use **云端看图分析** after configuring the
+   vision provider. It sends the locally retrieved top three resized images and
+   the question only when clicked; ordinary search remains local. See
+   [cloud-analysis.md](cloud-analysis.md) for setup, privacy, and provider limits.
 
 The folder import and each analysis button create a SQLite-backed background
 job. The active button shows a real 0–100% progress bar and processed-photo
@@ -55,6 +60,12 @@ python -m ai --data-dir D:\NormaData web --port 8879
 ```
 
 ## Learned preference and active pair questions
+
+This section describes the opt-in historical experiment. Set
+`$env:NORMA_PREFERENCE_MODE = "adaptive"` before starting the server to use it.
+In default `record-only` mode the active-pair endpoint is disabled, while
+ordinary manual A/B feedback remains available. See
+[model-first.md](model-first.md) for the default inference and annotation route.
 
 The current browser comparison flow collects valid contextual pairwise
 feedback from selected photos. The CAPU-PDRR-MC question selector is additionally

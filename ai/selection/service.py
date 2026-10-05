@@ -9,12 +9,13 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
+from ai.config import PreferenceMode, validate_preference_mode
 from ai.index.embedding import (
     EmbeddingProvider,
     embedding_cache_is_current,
     normalize_embedding,
 )
-from ai.preferences.model import load_preference_model
+from ai.preferences.model import default_preference_model, load_preference_model
 from ai.preferences.contextual import (
     FEATURE_DIMENSION,
     FEATURE_SCHEMA,
@@ -50,9 +51,16 @@ DECISION_FEATURE_SNAPSHOT_VERSION = "capu-candidate-67d-group-v1"
 
 
 class SelectionService:
-    def __init__(self, database: Database, provider: EmbeddingProvider) -> None:
+    def __init__(
+        self,
+        database: Database,
+        provider: EmbeddingProvider,
+        *,
+        preference_mode: PreferenceMode = "record-only",
+    ) -> None:
         self.database = database
         self.provider = provider
+        self.preference_mode = validate_preference_mode(preference_mode)
 
     def select(self, request: SelectionRequest) -> SelectionResponse:
         started = time.perf_counter()
@@ -115,6 +123,7 @@ class SelectionService:
                     self.database,
                     self.provider,
                     user_id=request.user_id,
+                    preference_mode=self.preference_mode,
                 )
             except IncompatiblePreferenceModelError as error:
                 runtime = cosine_fallback_runtime(
@@ -130,7 +139,11 @@ class SelectionService:
         decision_features_by_id: dict[str, np.ndarray] | None = (
             {} if runtime is not None and query_vector is not None else None
         )
-        preference_model = load_preference_model(self.database, request.user_id)
+        preference_model = (
+            load_preference_model(self.database, request.user_id)
+            if self.preference_mode == "adaptive"
+            else default_preference_model(request.user_id)
+        )
         excluded_reject_count = 0
         excluded_quality_count = 0
         for row in rows:

@@ -2,8 +2,9 @@
 
 Norma is a local-first photo intelligence website. A Python service reads a
 local JPG/JPEG folder, creates disposable thumbnails and indexes, and serves a
-Vue web interface in the browser. Original photos are never moved, deleted, or
-uploaded.
+Vue web interface in the browser. Original files are never moved or deleted.
+Retrieval stays local; explicit cloud analysis sends only selected, resized
+image copies and the query to the configured vision service.
 
 The current MVP supports:
 
@@ -11,12 +12,12 @@ The current MVP supports:
 - on-demand quality/similarity analysis, semantic retrieval indexes, and conservative people grouping;
 - bilingual natural-language selection with explicit hard constraints;
 - OR-Tools CP-SAT optimization, auditable reasons, and locked replacement;
-- a 67-dimensional Bayesian contextual pairwise-preference adapter over frozen
-  OpenCLIP features, with immutable feedback/model history;
-- CAPU-PDRR-MC active pair acquisition for asking decision-relevant preference
-  questions under the current collection constraints;
-- grounded multimodal RAG: learned OpenCLIP retrieval, pinned local Qwen3-VL
-  claims/citations, and server-owned answer/provenance;
+- record-only preference feedback by default, without fitting or applying
+  personal preference models;
+- an opt-in `adaptive` experiment with a 67-dimensional Bayesian preference
+  adapter and CAPU-PDRR-MC active pair acquisition;
+- grounded multimodal RAG: local OpenCLIP retrieval, configurable cloud vision
+  analysis (or optional pinned local Qwen3-VL), and validated citations;
 - one local website and one SQLite database, with no desktop runtime required;
 - persistent album/history APIs and queued background analysis for large folders;
 - default multilingual OpenCLIP retrieval with provider-versioned cache safety;
@@ -28,6 +29,14 @@ The current MVP supports:
 - persisted maintenance audits and conservative disk-budget enforcement.
 
 ## Run the website
+
+The default workflow directly runs pretrained models. Set
+`NORMA_PREFERENCE_MODE=record-only` (the default) to save feedback without
+training either preference model or applying historical learned weights.
+`adaptive` explicitly enables the earlier preference-learning experiment.
+See [the model-first plan and annotation protocol](docs/model-first.md) for the
+current direction, automatic-label limitations, and optional post-training.
+Configure cloud vision using [docs/cloud-analysis.md](docs/cloud-analysis.md).
 
 Requirements: Python 3.11+ and Node.js/pnpm for the one-time frontend build.
 
@@ -135,30 +144,36 @@ offline, provider-switching, and the reproducible raw-v2 CPU smoke test. Its
 runtime figure is generated from checked-in JSON observations; it is an
 engineering measurement, not a retrieval-accuracy claim.
 
-### Learned preference and grounded RAG
+### Recorded preference and grounded RAG
 
 Create a semantic selection, then use **A/B preference** in the website to
-record which photo you prefer. With the default 512D OpenCLIP provider, each
-comparison trains a versioned 67D Bayesian contextual posterior. Subsequent
-search, selection, and replacement requests use
+record which photo you prefer. By default this only stores feedback: it does
+not train or apply a personal preference model. In explicitly enabled
+`NORMA_PREFERENCE_MODE=adaptive` experiments with the 512D OpenCLIP provider,
+preferred comparisons train a versioned 67D Bayesian contextual posterior.
+Then search, selection, and replacement requests use
 `OpenCLIP cosine + learned residual`; when no compatible feedback exists, the
 score is exactly OpenCLIP cosine. Exact-count, minimum-quality, reject, and
 similarity-group limits remain hard constraints and are never learned away.
 
-The backend also exposes CAPU-PDRR-MC active pair suggestions. It chooses a
+In `adaptive` mode the backend also exposes CAPU-PDRR-MC active pair suggestions.
+The default `record-only` mode disables these suggestions (HTTP 409). It chooses a
 comparison that is expected to reduce posterior decision regret for the current
 constrained collection, rather than simply showing an arbitrary pair. The
 end-to-end PowerShell workflow and one-shot feedback contract are documented in
 [docs/web.md](docs/web.md#learned-preference-and-active-pair-questions).
 
-Grounded RAG is currently a backend endpoint. It retrieves at most six originals
-with OpenCLIP, sends only those in-memory byte snapshots to a pinned local
-`Qwen/Qwen3-VL-2B-Instruct` runtime, accepts only structured claims/citations,
-and lets the server construct the answer and provenance. Install and call it via
-[docs/grounded-multimodal-rag.md](docs/grounded-multimodal-rag.md). The endpoint
+Grounded RAG is available through the website's **云端看图分析** button and the
+backend endpoint. Local OpenCLIP retrieves candidates; explicit cloud analysis
+sends three resized, EXIF-stripped images by default (API maximum six) to a
+configured vision API. The server accepts structured claims/citations and
+constructs the answer and provenance. Configure it via
+[docs/cloud-analysis.md](docs/cloud-analysis.md). The endpoint
 checks citation and provenance integrity, but does **not** verify that every
 claim is semantically entailed by its cited pixels.
 
+For optional offline generation, set `NORMA_VLM_PROVIDER=local` and follow
+[docs/grounded-multimodal-rag.md](docs/grounded-multimodal-rag.md).
 The explicit provisioning command downloads the fixed Qwen revision, verifies
 all 11 assets against the checked-in SHA-256 manifest, and publishes the local
 directory only after the complete snapshot passes:

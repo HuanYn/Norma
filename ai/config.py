@@ -1,8 +1,19 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
+
+
+PreferenceMode = Literal["record-only", "adaptive"]
+VLMProviderMode = Literal["openai-compatible", "local"]
+
+
+def validate_preference_mode(value: str) -> PreferenceMode:
+    if value not in {"record-only", "adaptive"}:
+        raise ValueError("NORMA_PREFERENCE_MODE must be 'record-only' or 'adaptive'")
+    return value  # type: ignore[return-value]
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,6 +31,29 @@ class Settings:
     cache_budget_bytes: int | None = None
     vlm_model_path: Path | None = None
     vlm_max_new_tokens: int = 256
+    preference_mode: PreferenceMode = "record-only"
+    vlm_provider: VLMProviderMode = "openai-compatible"
+    vlm_base_url: str = ""
+    vlm_model: str = ""
+    vlm_api_key: str = field(default="", repr=False)
+    vlm_timeout_seconds: int = 60
+
+    def __post_init__(self) -> None:
+        validate_preference_mode(self.preference_mode)
+        if self.vlm_provider not in {"openai-compatible", "local"}:
+            raise ValueError(
+                "NORMA_VLM_PROVIDER must be 'openai-compatible' or 'local'"
+            )
+        if not 1 <= self.vlm_timeout_seconds <= 180:
+            raise ValueError("NORMA_VLM_TIMEOUT_SECONDS must be between 1 and 180")
+
+    @property
+    def vlm_configured(self) -> bool:
+        """Configuration presence only, never a remote authentication probe."""
+        return self.vlm_provider == "local" or all(
+            value.strip()
+            for value in (self.vlm_base_url, self.vlm_model, self.vlm_api_key)
+        )
 
     @property
     def database_path(self) -> Path:
@@ -69,4 +103,12 @@ def load_settings() -> Settings:
         cache_budget_bytes=cache_budget_bytes,
         vlm_model_path=(Path(vlm_model_path).resolve() if vlm_model_path else None),
         vlm_max_new_tokens=vlm_max_new_tokens,
+        preference_mode=validate_preference_mode(
+            os.getenv("NORMA_PREFERENCE_MODE", "record-only")
+        ),
+        vlm_provider=os.getenv("NORMA_VLM_PROVIDER", "openai-compatible"),
+        vlm_base_url=os.getenv("NORMA_VLM_BASE_URL", ""),
+        vlm_model=os.getenv("NORMA_VLM_MODEL", ""),
+        vlm_api_key=os.getenv("NORMA_VLM_API_KEY", ""),
+        vlm_timeout_seconds=int(os.getenv("NORMA_VLM_TIMEOUT_SECONDS", "60")),
     )

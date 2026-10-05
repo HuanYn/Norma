@@ -4,16 +4,26 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from ai.config import PreferenceMode, VLMProviderMode
+
 
 class HealthResponse(BaseModel):
+    vlm_provider: VLMProviderMode = "openai-compatible"
+    vlm_configured: bool = False
     service: str = "norma-ai"
     status: str
     schema_version: int
     embedding_provider: str
     face_provider: str
+    preference_mode: PreferenceMode = "record-only"
+    preference_training_enabled: bool = False
 
 
 class CapabilitiesResponse(BaseModel):
+    vlm_provider: VLMProviderMode = "openai-compatible"
+    vlm_configured: bool = False
+    preference_mode: PreferenceMode = "record-only"
+    preference_training_enabled: bool = False
     image_types: list[str] = Field(default_factory=lambda: [".jpg", ".jpeg"])
     original_policy: str = "read-only"
     embedding_provider: str
@@ -530,6 +540,9 @@ class PairwiseFeedbackRequest(BaseModel):
 
 
 class PreferenceModelResponse(BaseModel):
+    preference_mode: PreferenceMode = "record-only"
+    trained: bool = False
+    recorded_feedback_count: int = 0
     feedback_id: str
     user_id: str
     comparisons: int
@@ -550,6 +563,9 @@ class PreferenceModelResponse(BaseModel):
 
 
 class PreferenceStateResponse(BaseModel):
+    preference_mode: PreferenceMode = "record-only"
+    trained: bool = False
+    recorded_feedback_count: int = 0
     user_id: str
     comparisons: int
     weights: dict[str, float]

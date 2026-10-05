@@ -7,12 +7,13 @@ from pathlib import Path
 
 import numpy as np
 
+from ai.config import PreferenceMode, validate_preference_mode
 from ai.index.embedding import (
     EmbeddingProvider,
     embedding_cache_is_current,
     normalize_embedding,
 )
-from ai.preferences.model import load_preference_model
+from ai.preferences.model import default_preference_model, load_preference_model
 from ai.preferences.contextual import contextual_features
 from ai.preferences.runtime import (
     IncompatiblePreferenceModelError,
@@ -39,9 +40,16 @@ from ai.storage import Database
 
 
 class ReplacementService:
-    def __init__(self, database: Database, provider: EmbeddingProvider) -> None:
+    def __init__(
+        self,
+        database: Database,
+        provider: EmbeddingProvider,
+        *,
+        preference_mode: PreferenceMode = "record-only",
+    ) -> None:
         self.database = database
         self.provider = provider
+        self.preference_mode = validate_preference_mode(preference_mode)
 
     def replace(
         self, selection_id: str, request: SelectionReplacementRequest
@@ -124,6 +132,7 @@ class ReplacementService:
                         self.database,
                         self.provider,
                         user_id=user_id,
+                        preference_mode=self.preference_mode,
                     )
                 except IncompatiblePreferenceModelError as error:
                     runtime = cosine_fallback_runtime(
@@ -144,7 +153,11 @@ class ReplacementService:
                 "photo and replacement candidate was recomputed with one current model "
                 f"snapshot ({runtime.model_id or 'zero-feedback cosine'})."
             )
-        preference_model = load_preference_model(self.database, user_id)
+        preference_model = (
+            load_preference_model(self.database, user_id)
+            if self.preference_mode == "adaptive"
+            else default_preference_model(user_id)
+        )
         with self.database.connect() as connection:
             rows = connection.execute(
                 """

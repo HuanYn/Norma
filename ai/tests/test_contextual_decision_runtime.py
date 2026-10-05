@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import replace
+from functools import partial
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +32,24 @@ from ai.schemas import (
 )
 from ai.selection import ReplacementService, SelectionService
 from ai.storage import Database
+
+
+# Preserve the historical adaptive-runtime contract with explicit opt-in.
+PreferenceService = partial(PreferenceService, preference_mode="adaptive")
+PreferenceSuggestionService = partial(
+    PreferenceSuggestionService, preference_mode="adaptive"
+)
+RetrievalService = partial(RetrievalService, preference_mode="adaptive")
+SelectionService = partial(SelectionService, preference_mode="adaptive")
+ReplacementService = partial(ReplacementService, preference_mode="adaptive")
+load_preference_runtime = partial(load_preference_runtime, preference_mode="adaptive")
+
+
+@pytest.fixture(autouse=True)
+def _adaptive_http_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        app_module, "settings", replace(app_module.settings, preference_mode="adaptive")
+    )
 
 
 class DecisionOpenClipProvider(EmbeddingProvider):

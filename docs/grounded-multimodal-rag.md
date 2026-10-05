@@ -1,11 +1,17 @@
 # Grounded multimodal RAG
 
+> 2026-10-05: the default generation route is configurable cloud analysis after
+> local retrieval. See [cloud-analysis.md](cloud-analysis.md). The pinned local
+> Qwen installation, privacy and timing statements below describe explicit
+> `NORMA_VLM_PROVIDER=local`. Cloud analysis sends selected resized image copies
+> and query/evidence metadata to the configured service.
+
 Norma's RAG endpoint combines learned multilingual retrieval with a local
 vision-language model:
 
 1. multilingual OpenCLIP embeds the user query and retrieves a bounded Top-K;
-2. the compatible 67D preference posterior, when present, contributes its
-   learned residual to that ranking; otherwise ranking remains exact cosine;
+2. default `record-only` ranking remains exact cosine; only explicit `adaptive`
+   mode permits a compatible 67D preference posterior to add a learned residual;
 3. each selected original is frozen as an immutable byte snapshot;
 4. local Qwen3-VL generates structured claims and citations from those pixels;
 5. the server constructs the canonical answer and provenance itself;
@@ -30,6 +36,7 @@ Run Norma on its default loopback interface. The website/API has no
 authentication, so this endpoint must not be exposed to an untrusted network:
 
 ```powershell
+$env:NORMA_VLM_PROVIDER = "local"
 python -m ai web
 ```
 
@@ -64,6 +71,7 @@ extra-file target fails closed and is never overwritten automatically.
 or configure an absolute directory before startup:
 
 ```powershell
+$env:NORMA_VLM_PROVIDER = "local"
 $env:NORMA_VLM_MODEL_PATH = "D:\NormaModels\Qwen3-VL-2B-Instruct-modelscope"
 $env:NORMA_VLM_MAX_NEW_TOKENS = "256"
 python -m ai web
@@ -200,8 +208,9 @@ benchmark or evidence for semantic-entailment accuracy.
 ## What this does and does not learn
 
 OpenCLIP and Qwen3-VL are pretrained learned models but remain frozen in Norma.
-The trainable component is the small 67D Bayesian contextual preference
-posterior built from local pairwise feedback. RAG consumes that posterior only
+The optional trainable component in explicit `adaptive` mode is the small 67D
+Bayesian contextual preference posterior built from local pairwise feedback.
+Default `record-only` mode neither trains nor consumes it. Adaptive RAG consumes it only
 through the retrieval score; it does not update Qwen3-VL. Therefore this feature
 must not be described as DPO, SFT, LoRA, reinforcement learning, or end-to-end
 multimodal fine-tuning. Citation allow-list checks establish referential

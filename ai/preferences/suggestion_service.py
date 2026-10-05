@@ -6,6 +6,7 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
+from ai.config import PreferenceMode, validate_preference_mode
 from ai.index.embedding import (
     EmbeddingProvider,
     embedding_cache_is_current,
@@ -53,9 +54,16 @@ class PreferenceSuggestionNumericalError(RuntimeError):
 
 
 class PreferenceSuggestionService:
-    def __init__(self, database: Database, provider: EmbeddingProvider) -> None:
+    def __init__(
+        self,
+        database: Database,
+        provider: EmbeddingProvider,
+        *,
+        preference_mode: PreferenceMode = "record-only",
+    ) -> None:
         self.database = database
         self.provider = provider
+        self.preference_mode = validate_preference_mode(preference_mode)
         self.repository = PreferenceSuggestionRepository(database)
 
     def suggest(
@@ -63,6 +71,13 @@ class PreferenceSuggestionService:
         selection_id: str,
         request: PreferencePairSuggestionRequest,
     ) -> PreferencePairSuggestionResponse:
+        if self.preference_mode == "record-only":
+            raise PreferenceSuggestionConflictError(
+                "PDRR active learning is disabled in record-only mode. "
+                "Manual A/B feedback can still be recorded without training. "
+                "NORMA_PREFERENCE_MODE=adaptive explicitly enables the optional "
+                "Bayesian preference experiment."
+            )
         selection = self._load_selection(selection_id)
         if not selection.feasible:
             raise PreferenceSuggestionConflictError(
@@ -92,6 +107,7 @@ class PreferenceSuggestionService:
                 self.database,
                 self.provider,
                 user_id=selection.user_id,
+                preference_mode=self.preference_mode,
             )
         except IncompatiblePreferenceModelError as error:
             raise PreferenceSuggestionConflictError(str(error)) from error

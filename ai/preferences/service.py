@@ -11,6 +11,7 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
+from ai.config import PreferenceMode, validate_preference_mode
 from ai.index.embedding import (
     EmbeddingProvider,
     embedding_cache_is_current,
@@ -32,6 +33,7 @@ from ai.preferences.contextual import (
 from ai.preferences.model import (
     FEATURE_NAMES,
     PreferenceModel,
+    default_preference_model,
     load_preference_model,
     photo_features,
     save_preference_model,
@@ -86,21 +88,38 @@ class _ContextualResult:
 
 
 class PreferenceService:
-    def __init__(self, database: Database, provider: EmbeddingProvider) -> None:
+    def __init__(
+        self,
+        database: Database,
+        provider: EmbeddingProvider,
+        *,
+        preference_mode: PreferenceMode = "record-only",
+    ) -> None:
         self.database = database
         self.provider = provider
+        self.preference_mode = validate_preference_mode(preference_mode)
         self.repository = PreferenceRepository(database)
         self.suggestion_repository = PreferenceSuggestionRepository(database)
 
     def get_state(self, user_id: str) -> PreferenceStateResponse:
-        legacy = load_preference_model(self.database, user_id)
+        legacy = (
+            load_preference_model(self.database, user_id)
+            if self.preference_mode == "adaptive"
+            else default_preference_model(user_id)
+        )
         contextual = None
-        if self._supports_contextual_preferences():
+        if (
+            self.preference_mode == "adaptive"
+            and self._supports_contextual_preferences()
+        ):
             contextual = self._load_compatible_active_model(user_id)
         return PreferenceStateResponse(
             user_id=legacy.user_id,
             comparisons=legacy.comparisons,
             weights=legacy.weights,
+            preference_mode=self.preference_mode,
+            trained=bool(legacy.comparisons or contextual),
+            recorded_feedback_count=self._recorded_feedback_count(user_id),
             algorithm=contextual.algorithm if contextual else None,
             contextual_model_id=contextual.id if contextual else None,
             provider_fingerprint=(
@@ -186,11 +205,17 @@ class PreferenceService:
                 if contextual_pair is not None
                 else None
             )
-            legacy, probability_before = self._update_legacy_model(
-                request.user_id,
-                difference,
-                train_choice=request.choice == "preferred",
-            )
+            if self.preference_mode == "adaptive":
+                legacy, probability_before = self._update_legacy_model(
+                    request.user_id,
+                    difference,
+                    train_choice=request.choice == "preferred",
+                )
+            else:
+                legacy, probability_before = (
+                    default_preference_model(request.user_id),
+                    0.5,
+                )
             legacy_audit_persisted = self._insert_legacy_audit(
                 feedback_id,
                 request,
@@ -209,6 +234,10 @@ class PreferenceService:
                 name: round(value, 6) for name, value in difference.items()
             },
             weights=legacy.weights,
+            preference_mode=self.preference_mode,
+            trained=self.preference_mode == "adaptive"
+            and request.choice == "preferred",
+            recorded_feedback_count=self._recorded_feedback_count(request.user_id),
             choice=request.choice,
             algorithm=contextual_model.algorithm if contextual_model else None,
             contextual_event_id=(
@@ -496,7 +525,11 @@ class PreferenceService:
         request: PairwiseFeedbackRequest,
         pair: _ContextualPair,
     ) -> _ContextualResult:
-        active_before = self._load_compatible_active_model(request.user_id)
+        active_before = (
+            self._load_compatible_active_model(request.user_id)
+            if self.preference_mode == "adaptive"
+            else None
+        )
         delta = pair.preferred_features - pair.rejected_features
         margin_before = pair.base_margin
         if active_before is not None and active_before.training_pair_count > 0:
@@ -531,7 +564,7 @@ class PreferenceService:
                 ) from error
             raise
 
-        if request.choice != "preferred":
+        if request.choice != "preferred" or self.preference_mode == "record-only":
             return _ContextualResult(
                 event_id=event_id,
                 model=active_before,
@@ -668,6 +701,24 @@ class PreferenceService:
             self.provider.dimension == OPENCLIP_DIMENSION
             and self.provider.name.casefold().startswith("openclip")
         )
+
+    def _recorded_feedback_count(self, user_id: str) -> int:
+        # Contextual events survive an optional compatibility-audit failure.
+        # UNION avoids counting the same feedback twice across the two logs.
+        with self.database.connect() as connection:
+            row = connection.execute(
+                """
+                SELECT COUNT(*) FROM (
+                    SELECT id FROM preference_events WHERE user_id = ?
+                    UNION
+                    SELECT id FROM feedback
+                    WHERE event_type = 'pairwise_preference'
+                        AND json_extract(payload_json, '$.user_id') = ?
+                )
+                """,
+                (user_id, user_id),
+            ).fetchone()
+        return int(row[0])
 
     def _load_compatible_active_model(
         self, user_id: str

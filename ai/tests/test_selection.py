@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
+from functools import partial
 from pathlib import Path
 
 import numpy as np
+import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
 
@@ -21,6 +24,19 @@ from ai.selection.parser import parse_selection_prompt
 from ai.selection.replacement import ReplacementService
 from ai.selection.service import SelectionService
 from ai.storage import Database
+
+
+# Keep learned legacy-ranking tests as an explicit adaptive-mode regression.
+PreferenceService = partial(PreferenceService, preference_mode="adaptive")
+SelectionService = partial(SelectionService, preference_mode="adaptive")
+ReplacementService = partial(ReplacementService, preference_mode="adaptive")
+
+
+@pytest.fixture(autouse=True)
+def _adaptive_http_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        app_module, "settings", replace(app_module.settings, preference_mode="adaptive")
+    )
 
 
 class FakeSelectionProvider(EmbeddingProvider):

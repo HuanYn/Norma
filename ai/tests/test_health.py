@@ -22,6 +22,11 @@ def test_health_initializes_sqlite(tmp_path: Path, monkeypatch) -> None:
     assert response.json() == {
         "service": "norma-ai",
         "status": "ok",
+        "vlm_provider": app_module.settings.vlm_provider,
+        "vlm_configured": app_module.settings.vlm_configured,
+        "preference_mode": app_module.settings.preference_mode,
+        "preference_training_enabled": app_module.settings.preference_mode
+        == "adaptive",
         "schema_version": 14,
         "embedding_provider": app_module.embedding_provider().name,
         "face_provider": canonical_face_provider_name(

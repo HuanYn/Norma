@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import PhotoAnalysis from "./components/PhotoAnalysis.vue";
 
 type Workspace = "Library" | "AI Selection" | "About";
 
@@ -10,6 +11,8 @@ interface WorkerStatus {
   message: string;
   embedding_provider: string;
   face_provider: string;
+  vlm_provider: "openai-compatible" | "local";
+  vlm_configured: boolean;
   schema_version?: number;
 }
 
@@ -221,6 +224,9 @@ interface SelectionReplacementResponse {
 
 interface PreferenceModelResponse {
   comparisons: number;
+  preference_mode: "record-only" | "adaptive";
+  trained: boolean;
+  recorded_feedback_count: number;
   probability_before: number;
   weights: Record<string, number>;
 }
@@ -236,6 +242,8 @@ const worker = ref<WorkerStatus>({
   message: "Checking local AI worker…",
   embedding_provider: "",
   face_provider: "",
+  vlm_provider: "openai-compatible",
+  vlm_configured: false,
 });
 const command = ref("");
 const album = ref<AlbumWorkspace | null>(null);
@@ -446,6 +454,8 @@ async function refreshWorker() {
       schema_version: number;
       embedding_provider: string;
       face_provider: string;
+      vlm_provider: "openai-compatible" | "local";
+      vlm_configured: boolean;
     }>("/health");
     worker.value = {
       running: true,
@@ -454,6 +464,8 @@ async function refreshWorker() {
       message: "Local Python service and SQLite are ready",
       embedding_provider: health.embedding_provider,
       face_provider: health.face_provider,
+      vlm_provider: health.vlm_provider,
+      vlm_configured: health.vlm_configured,
       schema_version: health.schema_version,
     };
   } catch (error) {
@@ -1046,12 +1058,14 @@ async function choosePreference(preferred: SelectedPhoto, rejected: SelectedPhot
         selection_id: selectionResult.value.selection_id,
       }),
     });
-    learnedComparisonCount.value = result.comparisons;
+    learnedComparisonCount.value = result.recorded_feedback_count;
     compareChampionId.value = preferred.photo_id;
     if (compareCandidateIndex.value >= selectionResult.value.selected.length - 1) {
       compareMode.value = false;
       compareCompleted.value = true;
-      interactionMessage.value = `${preferred.filename} wins this preference round · ${result.comparisons} comparisons learned.`;
+      interactionMessage.value = result.trained
+        ? `${preferred.filename} wins this preference round · ${result.comparisons} comparisons learned (adaptive mode).`
+        : `${preferred.filename} wins this preference round · ${result.recorded_feedback_count} preferences saved; no model training.`;
     } else {
       compareCandidateIndex.value += 1;
     }
@@ -1162,7 +1176,7 @@ onBeforeUnmount(() => {
           <div class="toolbar-title">
             <p class="section-kicker">{{ album ? album.name : "Local library" }}</p>
             <h3>{{ album ? `${album.total} photos` : "Open a photo folder" }}</h3>
-            <p v-if="!album">Originals stay untouched. Analysis and previews remain on this computer.</p>
+            <p v-if="!album">Originals stay untouched. Indexes stay local; cloud analysis uploads selected copies only when requested.</p>
           </div>
           <div class="folder-input">
             <input
@@ -1345,6 +1359,14 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <p v-if="searchError" class="error-message">{{ searchError }}</p>
+        <PhotoAnalysis
+          :album-id="album?.album_id"
+          :query="command"
+          :ready="embeddingReady && worker.healthy"
+          :busy="searching || indexing || warmingEmbedding || feedbackBusy"
+          :cloud="worker.vlm_provider === 'openai-compatible'"
+          :configured="worker.vlm_configured"
+        />
         <div v-if="selectionResult" class="search-results">
           <div class="search-summary">
             <p>
@@ -1365,7 +1387,7 @@ onBeforeUnmount(() => {
             <span>quality ≥ {{ selectionResult.constraints.min_quality }}</span>
             <span>similar group ≤ {{ selectionResult.constraints.max_per_similarity_group }}</span>
             <span>{{ selectionResult.constraints.exclude_rejects ? "rejects excluded" : "rejects allowed" }}</span>
-            <span v-if="learnedComparisonCount !== null">{{ learnedComparisonCount }} preferences learned</span>
+            <span v-if="learnedComparisonCount !== null">{{ learnedComparisonCount }} preferences recorded</span>
           </div>
           <p v-for="warning in selectionResult.warnings" :key="warning" class="selection-warning">{{ warning }}</p>
           <p v-if="interactionMessage" class="interaction-message" role="status" aria-live="polite">{{ interactionMessage }}</p>
@@ -1483,9 +1505,9 @@ onBeforeUnmount(() => {
           <h3>A private photo workspace in your browser.</h3>
         </div>
         <div class="create-options">
-          <article><span>01</span><h4>Local originals</h4><p>Norma reads your folder without moving, deleting, or uploading original photos.</p></article>
+          <article><span>01</span><h4>Local originals</h4><p>Original files stay on your computer. Cloud analysis sends only selected resized copies and your question when you request it.</p></article>
           <article><span>02</span><h4>Grounded AI</h4><p>Search and selection run against the indexed album, with visible constraints and scores.</p></article>
-          <article><span>03</span><h4>Learn your taste</h4><p>Pairwise choices are stored locally and refine later selections.</p></article>
+          <article><span>03</span><h4>Save your taste</h4><p>Pairwise choices are stored locally. Model training is optional and disabled by default.</p></article>
         </div>
       </section>
 

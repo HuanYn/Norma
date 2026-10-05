@@ -8,6 +8,7 @@ import threading
 import tomllib
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
+from functools import partial
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -52,6 +53,12 @@ from ai.schemas import (
 )
 from ai.selection import SelectionService
 from ai.storage import Database
+
+
+# Existing learned-retrieval provenance tests explicitly exercise adaptive mode.
+PreferenceService = partial(PreferenceService, preference_mode="adaptive")
+SelectionService = partial(SelectionService, preference_mode="adaptive")
+RetrievalService = partial(RetrievalService, preference_mode="adaptive")
 
 
 GENERATION_PROVIDER = "fake-qwen3-vl-local-v1"
@@ -166,6 +173,8 @@ def _settings(data_dir: Path, *, vlm_model_path: Path | None = None) -> Settings
         log_level="INFO",
         embedding_provider="openclip-multilingual",
         vlm_model_path=vlm_model_path,
+        vlm_provider="local",
+        preference_mode="adaptive",
     )
 
 

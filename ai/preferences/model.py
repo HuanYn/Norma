@@ -29,6 +29,15 @@ class PreferenceModel:
     weights: dict[str, float]
 
 
+def default_preference_model(user_id: str = "local") -> PreferenceModel:
+    """A fresh neutral model, without reading or changing historical weights."""
+    return PreferenceModel(
+        user_id=user_id,
+        comparisons=0,
+        weights={name: 0.0 for name in FEATURE_NAMES},
+    )
+
+
 def load_preference_model(
     database: Database, user_id: str = "local"
 ) -> PreferenceModel:
@@ -38,11 +47,7 @@ def load_preference_model(
             (user_id,),
         ).fetchone()
     if row is None:
-        return PreferenceModel(
-            user_id=user_id,
-            comparisons=0,
-            weights={name: 0.0 for name in FEATURE_NAMES},
-        )
+        return default_preference_model(user_id)
     payload = json.loads(row["parameters_json"])
     stored_weights = payload.get("weights", {})
     return PreferenceModel(

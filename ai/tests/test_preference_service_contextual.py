@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
+from functools import partial
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +22,17 @@ from ai.preferences.repository import PreferenceRepository
 from ai.preferences.service import CONTEXTUAL_ALGORITHM, PreferenceService
 from ai.schemas import PairwiseFeedbackRequest
 from ai.storage import Database
+
+
+# These are regression tests for the explicitly enabled historical adapter.
+PreferenceService = partial(PreferenceService, preference_mode="adaptive")
+
+
+@pytest.fixture(autouse=True)
+def _adaptive_http_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        app_module, "settings", replace(app_module.settings, preference_mode="adaptive")
+    )
 
 
 class FakeOpenClipProvider(EmbeddingProvider):

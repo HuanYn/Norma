@@ -1,0 +1,27 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Microsoft YaHei, Arial","fontSize":"16px","primaryColor":"#edf3f8","primaryTextColor":"#172c40","lineColor":"#4b6475"},"flowchart":{"curve":"linear","nodeSpacing":28,"rankSpacing":40}}}%%
+flowchart TB
+    subgraph current["默认主线：本地检索 + 云端分析"]
+      direction LR
+      query["照片库 + 问题"] --> local["本地 OpenCLIP<br/>冻结推理与候选检索"]
+      local --> copies["Top-K 压缩副本<br/>去 EXIF / 最长 1280px"]
+      copies --> cloud["云端视觉模型<br/>按需 API 调用"]
+      cloud --> verify["本地引用校验<br/>回答 + 对应图片"]
+    end
+    subgraph feedback["反馈与数据：先记录，不自动训练"]
+      direction LR
+      choices["A/B / 平局 / 跳过"] --> log["本地反馈留档<br/>record-only"]
+      label["助手标注计划<br/>内容 / 相关性 / 理由"] --> review["来源与 rubric 留存<br/>分歧复核 / 独立评测"]
+    end
+    subgraph optional["可选实验，不是默认产品依赖"]
+      direction LR
+      legacy["显式 adaptive<br/>旧 Bayesian + PDRR 实验"]
+      future["有稳定错误证据后<br/>再考虑少量 LoRA / SFT"]
+    end
+    current ~~~ feedback
+    feedback ~~~ optional
+    classDef remote fill:#fff0df,stroke:#be7333,color:#643b1e;
+    classDef stored fill:#e7f2e9,stroke:#497659,color:#24432e;
+    classDef experiment fill:#f3f3f3,stroke:#909090,color:#565656,stroke-dasharray:5 4;
+    class cloud remote;
+    class local,log,verify stored;
+    class legacy,future experiment;

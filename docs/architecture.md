@@ -5,6 +5,18 @@ application and the domain API, so browser requests, derived media, and SQLite
 state remain on one machine and one origin. The Python CLI calls the same domain
 services directly for automation.
 
+The current hybrid deployment uses local retrieval and an explicitly invoked
+OpenAI-compatible cloud vision service. Only selected resized image copies and
+their query/evidence metadata leave the machine. A `local` generation mode
+retains pinned Qwen3-VL; the local-runtime descriptions below apply to that mode.
+
+As of 2026-10-05 the default policy is `NORMA_PREFERENCE_MODE=record-only`:
+pretrained-model inference and feedback logging, without fitting or applying
+the historical preference adapters. Explicit `adaptive` mode retains the
+Bayesian/PDRR experiment below. Existing experiment artifacts describe that
+earlier mode; they are not measurements of a newly trained foundation model.
+See [model-first.md](model-first.md) for the current policy and annotation plan.
+
 ## Runtime boundary
 
 ```text
@@ -28,9 +40,10 @@ development server and proxies API/media routes to `python -m ai serve`.
 ## Data ownership
 
 - Source JPG/JPEG files are read-only inputs.
-- Source photos and derived thumbnails, face crops, and descriptors are never
-  uploaded. A first face run may download only the public model files described
-  below.
+- Indexing, face analysis, and retrieval do not upload photos. Explicit cloud
+  RAG sends selected resized JPEGs and question/evidence metadata; embeddings,
+  face descriptors and the full library remain local. A first face run may
+  download the public model files described below.
 - The initial folder open records file inventory/basic metadata and creates
   thumbnails; quality, embeddings, and faces are opt-in follow-up work.
 - Thumbnails, embeddings, face crops, and SQLite live under `.norma/` by default.
