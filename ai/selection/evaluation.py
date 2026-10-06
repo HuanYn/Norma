@@ -109,8 +109,12 @@ def evaluate(document: dict, predictions: dict, *, seed=42, resamples=2000) -> d
             else None,
             "paired_group_bootstrap_delta_ci95": ci,
         }
-    human = (
+    independent = (
         document.get("label_provenance") == "independent-human"
+        and document.get("human_observed") is True
+    )
+    human = independent or (
+        document.get("label_provenance") == "human-pilot"
         and document.get("human_observed") is True
     )
     return {
@@ -121,6 +125,8 @@ def evaluate(document: dict, predictions: dict, *, seed=42, resamples=2000) -> d
         "labels": document.get("label_provenance", "unknown"),
         "human_observed": human,
         "claim_boundary": "independent human agreement on this fixed dataset only"
+        if independent
+        else "human pilot agreement only; NOT independent generalization or personalization improvement"
         if human
         else "proxy/controlled test only; NOT human preference improvement",
         "pilot": len(groups) < 30,

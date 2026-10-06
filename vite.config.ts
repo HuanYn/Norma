@@ -19,6 +19,7 @@ export default defineConfig({
       "/selections": "http://127.0.0.1:8765",
       "/selection": "http://127.0.0.1:8765",
       "/demo": "http://127.0.0.1:8765",
+      "/workflow": "http://127.0.0.1:8765",
       "/aesthetics": "http://127.0.0.1:8765",
       "/feedback": "http://127.0.0.1:8765",
       "/jobs": "http://127.0.0.1:8765",

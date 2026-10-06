@@ -1,358 +1,189 @@
 # Norma
 
-Photo-first demo: open `http://127.0.0.1:8767/` after `python scripts/start_demo.py`.
-Import → explicit aesthetic assessment / near-duplicate best-of-group → text-guided
-selection → two independent WASD/arrow-controlled worlds. See
-[usage, actual algorithms and validation limits](docs/photo-workflow-20261005.md).
-Default text selection uses pretrained multilingual OpenCLIP + MUSIQ, not a
-generative LLM. Each world currently supports seven actions / 10.3125 seconds.
+**从一组照片，到可探索的瞬间。**
 
-Norma is a local-first photo intelligence website. A Python service reads a
-local JPG/JPEG folder, creates disposable thumbnails and indexes, and serves a
-Vue web interface in the browser. Original files are never moved or deleted.
-Retrieval stays local; explicit cloud analysis sends only selected, resized
-image copies and the query to the configured vision service.
+Norma 是一个本地优先的多模态照片工作台。导入旅行相册后，完成美学评估、相近构图筛选、自然语言选片，再将喜欢的照片转成可通过 WASD 和方向键逐步探索的视频。使用浏览器操作，Python 提供后端服务。
 
-The original goal remains a personalized multimodal photo agent, followed by
-15-second video, finite photo exploration, and a simple share page. The core
-selection/personalization acceptance is not yet complete. See
-[the product roadmap and acceptance checklist](docs/roadmap.md); model-first
-deployment changes the implementation route, not these product goals.
+## 功能
 
-The current implementation supports:
+- **导入与相册管理**：读取本地 JPG/JPEG 目录，生成缩略图，保存相册与处理记录。
+- **美学筛选**：MUSIQ-AVA 评估美学，MUSIQ-KonIQ10k 评估技术质量；调整门槛后复用已有评分重新筛选。
+- **相似只留最佳**：结合感知哈希、OpenCLIP 和空间匹配，折叠相近构图并展示保留原因，原图始终保存在原目录。
+- **自然语言选片**：支持指定数量、人物/自然风景配额和必留照片，例如“挑4张雪山照片”“选6张照片，1张人物5张风景”。
+- **个性化重排**：使用已有偏好案例调整排序，可选择助手代理记录、本人反馈或关闭偏好。
+- **图片问答**：检索相关照片，调用配置的视觉语言模型回答问题并关联照片引用。
+- **双图交互探索**：两张照片各自建立 LingBot 会话，支持 WASD 平移、方向键转向、继续生成、历史回放和视频下载。
+- **任务与进度**：按需启动分析，显示阶段和处理数量，支持取消与已完成缓存复用。
 
-- fast recursive album cataloging with metadata and local thumbnails;
-- on-demand quality/similarity analysis, semantic retrieval indexes, and conservative people grouping;
-- evidence-bound person naming (Me/custom/Unknown), conservative reindex retention,
-  review states and revision-protected edits;
-- bounded bilingual selection with count, quality, reject, similarity-group and
-  confirmed-person minimum-photo constraints; free-form parsing and category/selfie
-  evidence remain roadmap work;
-- OR-Tools CP-SAT optimization, auditable reasons, and locked replacement;
-- record-only preference feedback by default, without fitting or applying
-  personal preference models;
-- an opt-in `adaptive` experiment with a 67-dimensional Bayesian preference
-  adapter and CAPU-PDRR-MC active pair acquisition;
-- grounded multimodal RAG: local OpenCLIP retrieval, configurable cloud vision
-  analysis (or optional pinned local Qwen3-VL), and validated citations;
-- one local website and one SQLite database, with no desktop runtime required;
-- persistent album/history APIs and queued background analysis for large folders;
-- default multilingual OpenCLIP retrieval with provider-versioned cache safety;
-- an explicit zero-download handcrafted baseline for diagnostics and ablation;
-- incremental indexing and resumable embedding that reuse unchanged photos;
-- persistent human relevance labels and auditable Precision/Recall/nDCG/MRR reports;
-- local YuNet/SFace people analysis that reuses unchanged face/no-face results;
-- dry-run-first derived-cache cleanup and background embedding-model warmup;
-- persisted maintenance audits and conservative disk-budget enforcement.
+## 快速开始
 
-See [person naming and selection usage](docs/person-selection.md) and the
-[controlled before/after regression](docs/benchmarks/person-milestone-20261005.md).
-The [eight authorized proxy preference pairs](docs/proxy-preferences.md) are
-development data, excluded from preference memory by default. Frozen-embedding
-case memory is opt-in; proxy use requires an additional explicit API opt-in and
-is not evidence of independently measured personal-preference improvement.
+本地照片流程使用 CPU；视频生成使用单独部署的 NVIDIA GPU 服务。推荐 Python 3.11～3.13；修改前端时使用 Node.js 22 和 pnpm 11。
 
-## Three-day demo sprint (2026-10-05)
+以下命令在 Windows PowerShell 中执行：
 
-An isolated preview reuses the existing backend without changing the primary
-library: [sprint scope](docs/demo-sprint-3days.md),
-[actual results and limitations](docs/benchmarks/demo-sprint-20261005.md).
-It adds real pretrained MUSIQ technical/aesthetic scores, an opt-in frozen
-OpenCLIP preference-case reranker, and a private Wan video worker. Learned
-scores are currently displayed separately from the existing selection threshold.
-Local 2B structured parsing remains experimental: its first two real checks
-failed strict validation, with no silent fallback or paid cloud retry.
+~~~powershell
+git clone https://github.com/HuanYn/Norma.git
+cd Norma
 
-With the documented models/dependencies prepared, build and start the preview:
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements-demo.txt
+python -m pip install pyiqa==0.1.16 --no-deps
 
-```powershell
-pnpm exec vite build --outDir .norma/demo-web-dist
+python scripts/install_demo_models.py
 python scripts/start_demo.py
-```
+~~~
 
-Open [http://127.0.0.1:8767](http://127.0.0.1:8767), using a small public or
-authorized album. Analysis starts only after clicking its button. Video requires
-the separately configured [private worker and SSH tunnel](docs/video-worker.md),
-then explicit confirmation for the selected photo. Worker health alone does not
-prove that video inference has passed. The primary service on 8765 is unaffected.
+打开 **[http://127.0.0.1:8767](http://127.0.0.1:8767)**。
 
-## Run the website
+仓库包含构建好的网页。模型准备命令下载固定版本的 OpenCLIP 与两套 MUSIQ 权重，并核验完整性；准备完成后可复用本地缓存。详细步骤见 [最小复现](docs/reproduce.md)。
 
-The default workflow directly runs pretrained models. Set
-`NORMA_PREFERENCE_MODE=record-only` (the default) to save feedback without
-training either preference model or applying historical learned weights.
-`adaptive` explicitly enables the earlier preference-learning experiment.
-See [the model-first plan and annotation protocol](docs/model-first.md) for the
-current direction, automatic-label limitations, and optional post-training.
-Configure cloud vision using [docs/cloud-analysis.md](docs/cloud-analysis.md).
-For DeepSeek, run `python scripts/start_deepseek.py` after setup and enter an
-API key in the hidden local prompt; do not paste keys into chat or source files.
+Linux/macOS 创建环境后，将激活命令换成：
 
-Requirements: Python 3.11+ and Node.js/pnpm for the one-time frontend build.
+~~~bash
+source .venv/bin/activate
+~~~
 
-```powershell
-python -m pip install -e ".[dev,selection,multimodal]"
-pnpm install
-pnpm build
-python -m ai web
-```
+### 网页使用顺序
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765). Enter an absolute local
-folder path such as `D:\Photos\Trip`, then select **Open local folder**. Opening
-an album only catalogs its JPG/JPEG files, reads basic metadata, and creates
-local thumbnails; it does not automatically run quality, embedding, or face
-analysis. The browser and API share the same local origin, and the photo folder
-stays on the same machine.
+1. 输入照片目录的绝对路径，例如 D:\Photos\Trip，点击 **导入照片**。
+2. 点击 **美学评估 · 相似只留最佳**，等待质量评估和语义索引完成。
+3. 查看保留照片；点击 **查看折叠** 可查看相似图与处理原因。修改门槛后点击 **重新筛选**。
+4. 输入要求，点击 **模型选片**。未写数量时默认最多选9张。
+5. 需要指定照片时点击 **设为必留**；需要覆盖两个人物时，分别指定 **人物A代表照** 和 **人物B代表照**。
+6. 选择偏好模式；新相册可先使用 **不使用偏好**，积累反馈后再启用记忆。
+7. 勾选两张照片，确认发送到自己的视频服务器，点击 **生成两张交互视频**。
 
-The service binds to loopback (`127.0.0.1`) by default and has no authentication.
-Keep that default for normal use; do not expose Norma to an untrusted network.
+示例提示词：
 
-After the album opens, start only the modules you need from the three buttons:
+~~~text
+挑4张雪山照片
+挑一组适合发旅游朋友圈的照片
+挑出最有代表性的6张照片，1张人物5张风景
+挑出最有代表性的9张照片，两个不同的人最少分别有一张
+~~~
 
-- **质量与相似** computes quality signals, suggested exclusions, and perceptual-hash groups in one combined image pass;
-- **语义索引** creates the image embeddings required for semantic text/image retrieval;
-- **人脸分组** uses OpenCV YuNet and SFace to detect, align, describe,
-  and conservatively group faces on this computer.
+最后一种要求需先指定两张人物代表照。数量、类别配额或必留条件冲突时，页面会提示调整要求。
 
-Each module runs as a persistent background job with a real percentage and
-processed-photo count. It can be cancelled cooperatively, and the active job is
-restored after a browser refresh. Previews are paged 300 at a time.
+### 可选：文字大模型解析
 
-### Local face models
+准备本地 Qwen3-VL-2B-Instruct：
 
-The default face provider is OpenCV YuNet 2023mar plus SFace. On the first
-**人脸分组** run, Norma downloads the two pinned ONNX files (about 37 MB
-combined), verifies their fixed SHA-256 digests, and atomically places them in
-`.norma/data/models/opencv/` by default. Later runs use only that local cache.
-The download contains model weights only: source photos, face crops, and
-descriptors are never uploaded.
-
-YuNet detects on a preview whose longest side is at most 1600 pixels with a
-score threshold of 0.8. SFace then uses YuNet's five landmarks with
-`alignCrop`, produces a 128-dimensional descriptor, and Norma L2-normalizes it
-before clustering. Grouping first forms strict high-confidence seeds, then
-rejoins pose-fragmented seeds only when they are mutual best prototype matches
-and pass centroid, mean, and strongest-pair gates. Faces from one photo remain
-a hard cannot-link throughout both passes. This is the versioned experimental
-default for a personal organizer, not a production biometric guarantee. The
-provider fingerprint includes
-both model SHA prefixes, the alignment revision, and the clustering-policy
-revision. Consequently, an
-album produced by the old Haar/DCT provider or another model revision is shown
-as needing a new people run instead of being treated as complete.
-
-The OpenCV Zoo [YuNet model and files are MIT-licensed](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE),
-while the [SFace model and files are Apache-2.0-licensed](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/LICENSE).
-If false merges are more costly than split groups, keep YuNet/SFace but disable
-the experimental prototype pass with:
-
-```powershell
-$env:NORMA_FACE_PROVIDER = "opencv-yunet-sface-strict"
-python -m ai web
-```
-
-If the model download is unavailable, the legacy Haar/DCT implementation can
-be selected explicitly as a lower-quality fallback requiring no extra download:
-
-```powershell
-$env:NORMA_FACE_PROVIDER = "opencv-haar"
-python -m ai web
-```
-
-After the frontend and model dependencies have been installed once, normal use
-only needs:
-
-```powershell
-python -m ai web
-```
-
-Multilingual OpenCLIP is the default semantic provider. Confirm that its model
-stack is available before clicking **语义索引**:
-
-```powershell
-python -m pip install -e ".[dev,selection,multimodal]"
-python -m ai --pretty providers
-python -m ai web
-```
-
-The model is not bundled with Norma, and inference never resolves a mutable
-Hub tag. Run the pinned setup command in
-[docs/multimodal-provider.md](docs/multimodal-provider.md#install-and-enable)
-once to download the exact model and tokenizer revisions; warmup then verifies
-their complete SHA-256 manifest and runs offline. A missing or modified snapshot
-is reported explicitly, and Norma never silently substitutes handcrafted
-vectors. For a zero-download diagnostic or ablation, opt in deliberately:
-
-```powershell
-$env:NORMA_EMBEDDING_PROVIDER = "lightweight"
-python -m ai web
-```
-
-See
-[docs/multimodal-provider.md](docs/multimodal-provider.md) for cache, device,
-offline, provider-switching, and the reproducible raw-v2 CPU smoke test. Its
-runtime figure is generated from checked-in JSON observations; it is an
-engineering measurement, not a retrieval-accuracy claim.
-
-### Recorded preference and grounded RAG
-
-Create a semantic selection, then use **A/B preference** in the website to
-record which photo you prefer. By default this only stores feedback: it does
-not train or apply a personal preference model. In explicitly enabled
-`NORMA_PREFERENCE_MODE=adaptive` experiments with the 512D OpenCLIP provider,
-preferred comparisons train a versioned 67D Bayesian contextual posterior.
-Then search, selection, and replacement requests use
-`OpenCLIP cosine + learned residual`; when no compatible feedback exists, the
-score is exactly OpenCLIP cosine. Exact-count, minimum-quality, reject, and
-similarity-group limits remain hard constraints and are never learned away.
-
-In `adaptive` mode the backend also exposes CAPU-PDRR-MC active pair suggestions.
-The default `record-only` mode disables these suggestions (HTTP 409). It chooses a
-comparison that is expected to reduce posterior decision regret for the current
-constrained collection, rather than simply showing an arbitrary pair. The
-end-to-end PowerShell workflow and one-shot feedback contract are documented in
-[docs/web.md](docs/web.md#learned-preference-and-active-pair-questions).
-
-Grounded RAG is available through the website's **云端看图分析** button and the
-backend endpoint. Local OpenCLIP retrieves candidates; explicit cloud analysis
-sends three resized, EXIF-stripped images by default (API maximum six) to a
-configured vision API. The server accepts structured claims/citations and
-constructs the answer and provenance. Configure it via
-[docs/cloud-analysis.md](docs/cloud-analysis.md). The endpoint
-checks citation and provenance integrity, but does **not** verify that every
-claim is semantically entailed by its cited pixels.
-
-For optional offline generation, set `NORMA_VLM_PROVIDER=local` and follow
-[docs/grounded-multimodal-rag.md](docs/grounded-multimodal-rag.md).
-The explicit provisioning command downloads the fixed Qwen revision, verifies
-all 11 assets against the checked-in SHA-256 manifest, and publishes the local
-directory only after the complete snapshot passes:
-
-```powershell
+~~~powershell
 python scripts/install_qwen3vl_model.py
-```
+~~~
 
-No API or website request downloads generation weights.
+在网页展开 **文字大模型解析** 并启用。此选片步骤使用模型解析文字要求，图片相关性由本地 OpenCLIP 计算。云端解析与图片问答配置见 [云端模型配置](docs/cloud-analysis.md)。
 
-Use a different state directory or port when needed:
+### 视频探索
 
-```powershell
-python -m ai --data-dir D:\NormaData web --port 8879
-```
+视频工作进程部署在 Linux GPU 服务器上；每个活跃场景使用一个独立工作进程和GPU。双图同时探索使用两个工作进程。本地网页通过 SSH 转发连接。
 
-## Develop the web interface
+- **W / S**：前进、后退。
+- **A / D**：向左、向右平移。
+- **↑ / ↓ / ← / →**：转动视角。
+- 点击一张视频卡片后，键盘操作作用于该卡片。
+- 每次提交一个方向，等待该段生成完成后再继续。
+- 7步累计约10.31秒，14步约20.81秒；卡片显示当前会话支持的步数。
+- 全屏播放保留方向控件，视频可下载保存。
 
-Run the Python API and Vite development server in separate terminals:
+完整环境、权重、令牌、双工作进程与SSH命令见 [视频复现与部署](docs/reproduce.md#4-可选部署交互视频)。
 
-```powershell
-python -m ai serve
-pnpm dev
-```
+## 最小复现
 
-Open [http://127.0.0.1:1420](http://127.0.0.1:1420). Vite proxies the local API
-and media routes to port 8765. Production assets are generated under
-`ai/web_dist/` and are served by FastAPI.
+准备环境与模型后，用一张带来源和校验信息的公开照片跑通后端：
 
-## Direct Python commands
-
-The CLI is useful for automation and diagnostics, but the supported end-user
-interface is the website.
-
-```powershell
-python -m ai --pretty prepare "D:\Photos\Trip"
-python -m ai --pretty albums
-python -m ai --pretty search ALBUM_ID "夜景 blue city"
-python -m ai --pretty select ALBUM_ID "选 12 张夜景，质量至少 45，相似组最多 1 张"
-```
-
-The installed `norma ...` command is equivalent to `python -m ai ...`. See
-[docs/python-cli.md](docs/python-cli.md) for every command and
-[docs/web.md](docs/web.md) for the browser workflow.
-
-## Public demo photos
-
-If no local album is available, the live-search downloader can assemble a
-licensed Wikimedia Commons demo album. Its results depend on the current
-Commons search response, so it is a convenient demo input—not a frozen
-experiment fixture. Image files stay untracked and `ATTRIBUTION.json` records
-their source, creator, and license.
-
-```powershell
-python scripts/download_demo_album.py --count 72 --output .norma/demo-album
-python scripts/build_demo_eval_album.py
-```
-
-The controlled preference experiments use a separate fixed 72-image manifest
-and verifier; see `fixtures/contextual_preference_wikimedia_20260814.json` and
-`scripts/download_contextual_preference_fixture.py`. The manifest is the
-historical scientific input contract, while `download_demo_album.py` remains
-exploratory. Wikimedia thumbnail responses are mutable: the verifier refuses
-upstream byte drift instead of silently changing a completed experiment, so an
-exact rerun still requires the pinned local files or a future licensed,
-content-addressed archive.
-
-For people-pipeline validation:
-
-```powershell
-python scripts/download_demo_album.py --count 30 `
-  --output .norma/demo-portraits `
-  --search "portrait face photograph" `
-  --search "headshot portrait photography"
-python scripts/build_demo_people_eval_album.py
-```
-
-For the small OpenCLIP/Qwen smoke commands documented below, download the
-content-pinned CC BY-SA fixture separately:
-
-```powershell
+~~~powershell
 python scripts/download_public_smoke_image.py
-```
+python scripts/reproduce_demo.py
+~~~
 
-## Validation and design notes
+脚本使用独立数据库执行：
 
-```powershell
-python -m pytest ai/tests -q
-pnpm test:ui
+~~~text
+公开照片 → 质量与OpenCLIP索引 → 双MUSIQ评估 → 相似筛选 → 文字选片
+~~~
+
+完成后输出 passed 和 .norma/reproduce-*/result.json，其中保存处理结果、模型信息、选片数量和原图完整性检查。
+
+使用自己的相册：
+
+~~~powershell
+python scripts/reproduce_demo.py --album "D:\Photos\Trip" --prompt "挑4张雪山照片" --min-aesthetic 5 --min-technical 40
+~~~
+
+更多验收步骤和故障处理见 [最小复现文档](docs/reproduce.md)。
+
+## 技术实现
+
+| 环节 | 实现 |
+| --- | --- |
+| 页面与API | Vue 3、TypeScript、FastAPI |
+| 数据与任务 | SQLite、本地文件缓存、后台任务与进度 |
+| 图文检索 | 多语言 OpenCLIP，512维归一化向量 |
+| 技术/美学质量 | MUSIQ-KonIQ10k、MUSIQ-AVA |
+| 相近构图 | pHash/dHash、OpenCLIP、SIFT/RANSAC |
+| 文字解析 | 有界条件解析、可选 Qwen3-VL |
+| 整组选片 | 相关性/质量/偏好融合、CP-SAT数量与配额约束 |
+| 偏好记忆 | 查询相关案例检索、胜败向量对比、受限分数调整 |
+| 图片问答 | 图像检索、视觉语言模型、引用与证据记录 |
+| 视频探索 | LingBot-World-v2 1.3B、有状态动作续生、因果VAE增量解码 |
+
+## 项目结构
+
+~~~text
+ai/
+  aesthetics/       美学与技术质量
+  index/            索引、图文编码、基础质量
+  selection/        解析、去重、约束求解
+  preferences/      偏好记录、案例记忆
+  rag/              图片检索与问答
+  exploration/      动作控制、视频会话、增量解码
+  tests/            后端测试
+  web_dist/         构建后的网页
+src/components/     照片工作流、视频与方向控件
+scripts/            模型准备、启动、复现、评测工具
+docs/               使用方法、实现说明、开发记录
+requirements-demo.txt          本地照片环境
+requirements-world.txt         Linux GPU视频环境
+requirements-world-service.txt 视频服务依赖
+~~~
+
+## 开发与测试
+
+~~~powershell
+corepack enable
+pnpm install --frozen-lockfile
 pnpm build
-```
+python -m pytest ai/tests -q
+~~~
 
-Architecture and evidence:
+pnpm build 将网页构建到 ai/web_dist/。开发时可分别运行 python -m ai web 与 pnpm dev，默认后端端口8765、前端端口1420。
 
-- [Architecture](docs/architecture.md)
-- [Retrieval benchmark](docs/benchmarks/retrieval-e2e.md)
-- [Legacy Haar/DCT people lifecycle smoke](docs/benchmarks/people-e2e.md)
-- [Selection benchmark](docs/benchmarks/selection-e2e.md)
-- [Preference/replacement benchmark](docs/benchmarks/preference-replacement-e2e.md)
-- [Direct Python benchmark](docs/benchmarks/python-cli-e2e.md)
-- [Backend library lifecycle](docs/backend-library-lifecycle.md)
-- [Library lifecycle benchmark](docs/benchmarks/library-lifecycle-e2e.md)
-- [Multilingual OpenCLIP provider](docs/multimodal-provider.md)
-- [OpenCLIP public-data benchmark](docs/benchmarks/openclip-e2e.md)
-- [Raw multilingual OpenCLIP proxy evaluation](docs/benchmarks/openclip-raw-v2-proxy-20260828.md)
-- [67D contextual preference controlled report](figures/CONTEXTUAL_PREFERENCE_CONTROLLED_REPORT.md)
-- [CAPU-PDRR-MC controlled acquisition report](figures/PDRR_ACQUISITION_CONTROLLED_REPORT.md)
-- [Grounded multimodal RAG and local Qwen3-VL usage](docs/grounded-multimodal-rag.md)
-- [Incremental prepare benchmark](docs/benchmarks/incremental-prepare-e2e.md)
-- [Retrieval evaluation workflow](docs/retrieval-evaluation.md)
-- [Retrieval evaluation benchmark](docs/benchmarks/retrieval-evaluation-e2e.md)
-- [Incremental people benchmark](docs/benchmarks/incremental-people-e2e.md)
-- [Cache maintenance and warmup](docs/cache-maintenance.md)
-- [Maintenance benchmark](docs/benchmarks/cache-maintenance-e2e.md)
-- [Maintenance audit benchmark](docs/benchmarks/maintenance-audit-e2e.md)
-- [Third-party attribution](THIRD_PARTY_NOTICES.md)
+## 配置与数据
 
-The default semantic provider is frozen multilingual OpenCLIP. Raw Chinese and
-English query text goes directly to its multilingual text tower. The
-deterministic 16-dimensional provider remains an explicit CPU baseline, not a
-silent fallback. A legacy Chinese-keyword-to-English bridge is retained only
-as an explicit ablation provider.
-The default face pipeline now uses the local YuNet/SFace models and two-stage,
-constrained deterministic grouping. Its groups are organizational suggestions,
-not claims of biometric identity.
+默认运行数据保存在 .norma/，模型缓存为 .norma/data/models/，Demo数据库为 .norma/demo-data/。照片、模型、数据库、密钥和运行报告由本机保存。
 
-The frozen OpenCLIP/Qwen3-VL inference stack plus the small Bayesian preference
-adapter is not DPO, SFT, LoRA, or end-to-end multimodal fine-tuning. The checked-in
-preference experiments support contextual learning over zero-feedback cosine and
-an exploratory low-feedback-budget advantage for CAPU-PDRR-MC in their stated
-semi-synthetic public-image protocol; they do not establish universal or
-real-user superiority.
+常用配置：
+
+| 变量 | 用途 |
+| --- | --- |
+| NORMA_MODEL_CACHE_DIR | 模型缓存根目录 |
+| NORMA_EMBEDDING_DEVICE | OpenCLIP设备：cpu / cuda / auto |
+| NORMA_AESTHETICS_DEVICE | MUSIQ设备：cpu / cuda / cuda:0 |
+| NORMA_VLM_PROVIDER | local / openai-compatible |
+| NORMA_VIDEO_TOKEN_FILE | 私有视频服务令牌文件 |
+
+Web默认监听127.0.0.1，供本机浏览器访问；远端视频服务使用令牌及SSH转发。模型和样例照片各自遵循上游许可，LingBot适配与部署条款见 [NOTICE](ai/exploration/NOTICE.md)。
+
+## 文档
+
+- [最小复现与视频部署](docs/reproduce.md)
+- [当前Demo使用说明](docs/demo-quickstart.md)
+- [项目技术与面试讲解](docs/interview-project-guide-20261006.md)
+- [相近构图筛选实现](docs/fix-visual-curation-20261006.md)
+- [数量、类别配额与整组选片](docs/fix-collection-selection-20261006.md)
+- [偏好案例记忆](docs/preference-memory-demo.md)
+- [云端模型配置](docs/cloud-analysis.md)
+- [开发与优化记录](docs/gap-closure-20261005.md)

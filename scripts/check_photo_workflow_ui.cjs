@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { chromium } = require('C:/Users/25438/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 const origin='http://127.0.0.1:8767', key='norma.photo-workflow.v1';
 const output=path.resolve(process.argv[2]||'.norma/photo-workflow-browser-20261005');
 const report={scope:'104 development photos; real pipeline integration, NOT independent model-quality evaluation',errors:[],worlds:[],stages:[]};

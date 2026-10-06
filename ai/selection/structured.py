@@ -14,7 +14,7 @@ import time
 from dataclasses import dataclass
 from typing import Annotated, Literal, Mapping, Protocol
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from ai.config import Settings
 from ai.rag import cloud_runtime
@@ -26,6 +26,8 @@ from ai.selection.parser import (
     QUALITY_PATTERNS,
     SelectionIntent,
     person_key,
+    CATEGORY_PATTERN,
+    category_value,
 )
 
 
@@ -37,7 +39,7 @@ Count = Annotated[int, Field(strict=True, ge=1, le=50)]
 ShortText = Annotated[str, Field(strict=True, min_length=1, max_length=512)]
 ConstraintField = Literal[
     "target_count", "min_quality", "exclude_rejects",
-    "max_per_similarity_group", "person_minimums",
+    "max_per_similarity_group", "person_minimums", "category_counts",
 ]
 
 
@@ -51,6 +53,14 @@ class HardSelectionConstraints(_StrictModel):
     exclude_rejects: bool
     max_per_similarity_group: Annotated[int, Field(ge=1, le=10)]
     person_minimums: Annotated[dict[str, Count], Field(max_length=10)]
+    category_counts: dict[Literal["portrait", "landscape"], Annotated[int, Field(strict=True, ge=0, le=50)]] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def valid_category_totals(self):
+        counts = self.category_counts
+        if sum(counts.values()) > self.target_count or (len(counts) == 2 and sum(counts.values()) != self.target_count):
+            raise ValueError("Category counts conflict with selection total")
+        return self
 
     @field_validator("person_minimums")
     @classmethod
@@ -153,6 +163,7 @@ _INSTRUCTIONS = """你是相册选片的结构化解析器，不是图片评审�
 只支持以下硬条件：target_count选片总张数1到50；min_quality现有质量分下限0到100；
 exclude_rejects是否排除自动废片；max_per_similarity_group相似组最多1到10张；
 person_minimums用户明确说的人物标签下限1到50张。‘我’或‘me’的标签是me，不推断人脸身份。
+category_counts支持明确的人像主体(portrait)和自然风景主体(landscape)精确配额，未提出则{}，必须引用原文类别数量证据。不支持其他类别配额或类别上下限。
 未提及的条件必须用默认值：target_count=12，min_quality=0，exclude_rejects=true，
 max_per_similarity_group=1，person_minimums={}。默认条件不需要编造原文证据。
 
@@ -320,6 +331,8 @@ def _grammar_text(text: str) -> str:
 
 
 def _source_value(field: str, source: str) -> object:
+    if field == "category_counts":
+        return category_value(source)
     text = _grammar_text(source)
     patterns = {"target_count": (*COUNT_PATTERNS, _COMMAND_COUNT), "min_quality": QUALITY_PATTERNS,
                 "max_per_similarity_group": GROUP_PATTERNS,
@@ -366,7 +379,7 @@ def _validate_source_coverage(
                 reason="Hard-constraint wording is outside the verified demo grammar; please clarify.",
             ))
             continue
-        if evidence.field == "person_minimums":
+        if evidence.field in {"person_minimums", "category_counts"}:
             previous = dict(covered.get(evidence.field, {}))
             for key, minimum in value.items():
                 if key in previous and previous[key] != minimum:
@@ -387,7 +400,7 @@ def _validate_source_coverage(
     residual_grammar = _grammar_text(residual)
     omitted = _HARD_MARKER.search(residual_grammar) or any(
         pattern.search(residual_grammar)
-        for pattern in (*COUNT_PATTERNS, *QUALITY_PATTERNS, *GROUP_PATTERNS, *PERSON_PATTERNS, _INCLUDE_REJECTS)
+        for pattern in (*COUNT_PATTERNS, *QUALITY_PATTERNS, *GROUP_PATTERNS, *PERSON_PATTERNS, CATEGORY_PATTERN, _INCLUDE_REJECTS)
     )
     if omitted:
         issues.append(RequirementIssue(
@@ -471,7 +484,8 @@ def create_structured_parser(
         provider = create_local_qwen3vl_provider(
             settings.local_vlm_model_dir, max_new_tokens=MAX_NEW_TOKENS,
         )
-        return StructuredSelectionParser(provider.runtime)
+        from ai.selection.compact import CompactSelectionParser
+        return CompactSelectionParser(provider.runtime)
     if not settings.vlm_configured:
         raise StructuredProviderError("Selection text model is not configured")
     return StructuredSelectionParser(CloudTextIntentRuntime(

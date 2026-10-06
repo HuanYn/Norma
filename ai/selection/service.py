@@ -53,6 +53,7 @@ from ai.selection.scoring import (
 )
 from ai.storage import Database
 from ai.selection import learned_quality
+from ai.selection import collection
 
 
 DECISION_FEATURE_SNAPSHOT_VERSION = "capu-candidate-67d-group-v1"
@@ -71,6 +72,7 @@ class SelectionService:
         self.provider = provider
         self.preference_mode = validate_preference_mode(preference_mode)
         self.aesthetics_service = aesthetics_service
+        self._category_prototypes = None
 
     def select(
         self,
@@ -79,6 +81,7 @@ class SelectionService:
         intent: SelectionIntent | None = None,
         semantic_query: str | None = None,
         intent_provenance: dict[str, object] | None = None,
+        collection_diversity: bool = False,
     ) -> SelectionResponse:
         started = time.perf_counter()
         if request.allow_proxy_memory and not request.use_preference_memory:
@@ -281,6 +284,35 @@ class SelectionService:
                         str(item["row"]["id"]), 0.0
                     )
 
+        category_evidence = {}
+        pair_conflicts, pair_penalties = [], []
+        if intent.category_counts or collection_diversity:
+            if not self.provider.model_backed:
+                raise ValueError("整组选片需要预训练图文模型。")
+            if any(not embedding_cache_is_current(item["row"], self.provider.name, strict_source_hash=True) for item in scored):
+                raise ValueError("图片内容缓存已变化，请重新准备语义模型。")
+            vectors = [_load_vector(str(item["row"]["embedding_path"]), self.provider.dimension) for item in scored]
+            if intent.category_counts:
+                if self._category_prototypes is None:
+                    self._category_prototypes = collection.prototypes(self.provider)
+                category_evidence = {
+                    item["row"]["id"]: collection.classify(v, self._category_prototypes)
+                    | {"source_sha256": item["row"]["embedding_source_sha256"], "provider": self.provider.name}
+                    for item, v in zip(scored, vectors)
+                }
+            if collection_diversity:
+                pair_conflicts, pair_penalties = collection.pair_constraints(vectors)
+            intent_provenance = dict(intent_provenance or {})
+            intent_provenance["collection_plan"] = {
+                "version": collection.VERSION, "category_counts": intent.category_counts,
+                "category_definition": "portrait=人物主体; landscape=自然景观主体; other/uncertain不充当上述类别",
+                "evidence": category_evidence,
+                "pair_conflicts": [[scored[a]["row"]["id"], scored[b]["row"]["id"]] for a, b in pair_conflicts],
+                "pair_threshold": collection.PAIR_THRESHOLD,
+                "penalty_start": collection.PENALTY_START,
+                "penalty_weight": collection.PENALTY_WEIGHT,
+                "calibration": "demo heuristics; no independent accuracy claim",
+            }
         optimization_candidates = []
         for index, item in enumerate(scored):
             row = item["row"]
@@ -290,6 +322,7 @@ class SelectionService:
                     index=index,
                     score=float(item["total"]),
                     group_key=group,
+                    category=category_evidence.get(row["id"], {}).get("label", "unknown"),
                     person_labels=(
                         people_evidence.labels_by_photo[row["id"]]
                         if people_evidence
@@ -297,13 +330,35 @@ class SelectionService:
                     ),
                 )
             )
+        required_ids = set(request.required_photo_ids)
+        indices_by_id = {item["row"]["id"]: index for index, item in enumerate(scored)}
+        if not required_ids <= indices_by_id.keys():
+            raise ValueError("指定保留照片不在当前可用候选中，请调整门槛或重新选择；不会默默丢弃指定照片。")
+        if len(required_ids) > intent.target_count:
+            raise ValueError("指定保留照片多于选片总数，请调整数量。")
+        required_indices = {indices_by_id[photo_id] for photo_id in required_ids}
         optimized = optimize_collection(
             optimization_candidates,
             intent.target_count,
             intent.max_per_similarity_group,
             person_minimums,
+            intent.category_counts,
+            pair_conflicts,
+            pair_penalties,
+            required_indices,
         )
         feasible = len(optimized.indices) == intent.target_count
+        if feasible:
+            # Check the delivered set independently of the objective/solver status.
+            chosen = set(optimized.indices)
+            if not required_indices <= chosen:
+                raise ValueError("结果缺少指定保留照片，未返回选片。")
+            if any(sum(optimization_candidates[i].category == label for i in chosen) != count for label, count in intent.category_counts.items()) or any(a in chosen and b in chosen for a, b in pair_conflicts):
+                raise ValueError("结果未通过数量、类别或相似照片校验；本次没有返回选片。")
+        if intent.category_counts:
+            warnings.append("人像/风景为OpenCLIP零样本主体判断，不是人工真值；不确定图片不用于凑类别配额。")
+            if not feasible:
+                warnings.append("符合类别判断且满足去重条件的照片不足，未放宽配额或用其他类别凑数。")
         selected: list[SelectedPhoto] = []
         if feasible:
             for index in sorted(
@@ -329,6 +384,7 @@ class SelectionService:
                         quality_score=round(item["score"].quality, 3),
                         similarity_group=row["similarity_group"],
                         learned_quality=assessment["items"][row["id"]] if assessment else None,
+                        category_evidence=category_evidence.get(row["id"]),
                         memory_delta=memory.deltas.get(str(row["id"]), 0.0)
                         if memory
                         else 0.0,
@@ -359,6 +415,8 @@ class SelectionService:
             exclude_rejects=intent.exclude_rejects,
             max_per_similarity_group=intent.max_per_similarity_group,
             person_minimums=person_minimums,
+            category_counts=intent.category_counts,
+            required_photo_ids=sorted(required_ids),
         )
         selection_id = uuid.uuid4().hex
         universe = _candidate_universe_summary(
@@ -403,7 +461,8 @@ class SelectionService:
                 else preference_model.comparisons
             ),
             algorithm=(learned_quality.ALGORITHM if assessment else algorithm)
-            + ("+case-memory-v1" if memory and memory.applied else ""),
+            + ("+case-memory-v1" if memory and memory.applied else "")
+            + ("+collection-v1" if collection_diversity or intent.category_counts else ""),
             feature_schema=runtime.feature_schema if runtime else None,
             projection_id=runtime.projection_id if runtime else None,
             candidate_universe=universe,
@@ -414,6 +473,11 @@ class SelectionService:
         )
         with self.database.connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
+            if (intent.category_counts or collection_diversity) and any(
+                not embedding_cache_is_current(item["row"], self.provider.name, strict_source_hash=True)
+                for item in scored
+            ):
+                raise ValueError("选片期间图片内容发生变化，请重新准备模型并选片。")
             learned_quality.verify(self.aesthetics_service, request.album_id, assessment)
             if (
                 people_evidence

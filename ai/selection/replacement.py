@@ -69,6 +69,8 @@ class ReplacementService:
         if stored is None or not stored["result_json"]:
             raise KeyError(f"selection not found: {selection_id}")
         original = SelectionResponse.model_validate_json(stored["result_json"])
+        if original.constraints.category_counts or original.constraints.required_photo_ids or (original.intent_provenance or {}).get("collection_plan"):
+            raise ValueError("整组选片包含类别或画面多样性约束，请重新选整组；旧版单张替换暂不支持这些约束。")
         assessment = None
         if original.learned_quality:
             if self.preference_mode != "record-only":

@@ -19,6 +19,8 @@ def main():
     parser.add_argument("--data-dir", type=Path, required=True)
     parser.add_argument("--token-file", type=Path, required=True)
     parser.add_argument("--port", type=int, default=8769)
+    parser.add_argument("--max-steps", type=int, choices=range(1, 15), default=7)
+    parser.add_argument("--decode-mode", choices=["prefix", "stream"], default="prefix")
     args = parser.parse_args()
     gpu = os.environ.get("CUDA_VISIBLE_DEVICES", "")
     if not gpu.startswith("GPU-") or "," in gpu:
@@ -44,7 +46,12 @@ def main():
 
     app = create_app(
         args.data_dir,
-        WorldRuntime(args.source, args.models),
+        WorldRuntime(
+            args.source,
+            args.models,
+            max_steps=args.max_steps,
+            decode_mode=args.decode_mode,
+        ),
         read_private_token(args.token_file),
     )
     uvicorn.run(app, host="127.0.0.1", port=args.port, workers=1)

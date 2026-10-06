@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('C:/Users/25438/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 const origin = 'http://127.0.0.1:8767';
 const output = path.resolve(process.argv[2] || '.norma/selection-fusion-browser-20261005');
 const report = { scope: 'Same development album/query, actual baseline vs learned score fusion; no independent quality labels', errors: [], runs: {} };

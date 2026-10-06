@@ -19,7 +19,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from ai.exploration.controls import ActionName
-from ai.exploration.runtime import MAX_STEPS
+from ai.exploration.runtime import MAX_STEPS, HARD_MAX_STEPS
 from ai.video.models import decode_image, MAX_BASE64_LENGTH
 
 
@@ -32,13 +32,14 @@ class NewSession(BaseModel):
 
 class Step(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
-    sequence: int = Field(ge=0, lt=MAX_STEPS)
+    sequence: int = Field(ge=0, lt=HARD_MAX_STEPS)
     action: ActionName
 
 
 class Sessions:
     def __init__(self, root: Path, runtime):
         self.root, self.runtime = root, runtime
+        self.max_steps = getattr(runtime, "max_steps", MAX_STEPS)
         root.mkdir(parents=True, exist_ok=True)
         self.records = {}
         self.active = None
@@ -105,7 +106,7 @@ class Sessions:
                     (folder / "source.png").read_bytes()
                 ).hexdigest(),
                 prompt=request.prompt,
-                max_steps=MAX_STEPS,
+                max_steps=self.max_steps,
             )
             self.records[sid] = record
             self.active = sid
@@ -140,6 +141,8 @@ class Sessions:
             self.fail(sid)
 
     def step(self, sid, request: Step):
+        if request.sequence >= self.max_steps:
+            raise HTTPException(422, "Session step limit reached")
         with self.lock:
             record = self.records.get(sid)
             if record is None:
@@ -280,7 +283,11 @@ def create_app(root: Path, runtime, token: str):
     @app.get("/status", dependencies=[Depends(authorize)])
     def status():
         manager.expire()
-        return {"active": bool(manager.active), "max_steps": MAX_STEPS}
+        return {
+            "active": bool(manager.active),
+            "max_steps": manager.max_steps,
+            "decode_mode": getattr(runtime, "decode_mode", "prefix"),
+        }
 
     @app.post("/sessions", status_code=202, dependencies=[Depends(authorize)])
     async def create(request: Request):

@@ -22,6 +22,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--port", type=int, default=8769)
+    parser.add_argument("--steps", type=int, choices=range(2, 15), default=2)
     parser.add_argument(
         "--token-file", type=Path, default=Path(".norma/video-worker.token")
     )
@@ -29,7 +31,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     report = {"status": "started", "events": [], "steps": []}
     client = httpx.Client(
-        base_url="http://127.0.0.1:8769",
+        base_url=f"http://127.0.0.1:{args.port}",
         timeout=30,
         trust_env=False,
         headers={"Authorization": "Bearer " + read_private_token(args.token_file)},
@@ -80,7 +82,8 @@ def main():
         report["session_id"] = sid
         save()
         ready(sid)
-        for sequence, action in enumerate(("forward", "right")):
+        for sequence in range(args.steps):
+            action = ("forward", "right", "look_left", "backward")[sequence % 4]
             post(f"/sessions/{sid}/steps", {"sequence": sequence, "action": action})
             record = ready(sid)
             result = record["history"][-1]
@@ -91,11 +94,12 @@ def main():
             (args.output / result["artifact"]).write_bytes(response.content)
             report["steps"].append(result)
             save()
-        first, second = report["steps"]
+        first, second = report["steps"][:2]
         assert first["kv_cache_identity"] == second["kv_cache_identity"]
         assert first["frames"] == 21 and second["frames"] == 45
         assert second["prefix_max_abs_error"] <= 2 / 255
         assert second["kv_global_end"] > first["kv_global_end"]
+        assert report["steps"][-1]["frames"] == args.steps * 24 - 3
         report["status"] = "passed"
     except Exception as error:
         report.update(

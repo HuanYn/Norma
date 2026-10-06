@@ -28,6 +28,10 @@ def configure_numeric_runtime() -> None:
 
     if sys.platform != "win32":
         return
+    # sklearn/threadpoolctl setdefault this to True during lazy model imports.
+    # Explicitly prohibit that unsafe override before imports. Preserve an
+    # explicit user value so the guard still rejects unsafe user configuration.
+    os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "FALSE")
     current = os.environ.get("MKL_THREADING_LAYER")
     if current is None:
         os.environ["MKL_THREADING_LAYER"] = "SEQUENTIAL"

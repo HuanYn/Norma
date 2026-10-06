@@ -41,6 +41,16 @@ def test_windows_guard_rejects_nonsequential_and_unsafe_override(
     ):
         numeric_runtime.ensure_torch_numpy_runtime_compatible()
 
+
+def test_configuration_prevents_lazy_library_duplicate_override(monkeypatch):
+    monkeypatch.setattr(numeric_runtime.sys, "platform", "win32")
+    monkeypatch.delenv("KMP_DUPLICATE_LIB_OK", raising=False)
+    numeric_runtime.configure_numeric_runtime()
+    assert os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "True") == "FALSE"
+    monkeypatch.setenv("KMP_DUPLICATE_LIB_OK", "TRUE")
+    numeric_runtime.configure_numeric_runtime()
+    assert os.environ["KMP_DUPLICATE_LIB_OK"] == "TRUE"
+
     monkeypatch.setenv("MKL_THREADING_LAYER", "SEQUENTIAL")
     monkeypatch.setenv("KMP_DUPLICATE_LIB_OK", "TRUE")
     with pytest.raises(

@@ -6,9 +6,9 @@ Upstream attribution/license: https://github.com/Robbyant/lingbot-world-v2
 No upstream files or weights are redistributed here. Non-commercial use only.
 
 DiT KV/cross-attention, RNG, camera and generated latents persist BETWEEN actions.
-For correctness-first non-real-time preview we re-decode the accumulated latent
-prefix: the VAE sees full causal history, not independent decoded chunks. This
-is not incremental VAE optimization, a last-frame restart, or a realtime claim.
+The default prefix decoder is the reference; optional stream mode preserves the
+causal VAE feature cache between steps. Neither restarts from the last frame.
+The bounded longer trajectory remains non-real-time and needs visual evaluation.
 """
 
 from __future__ import annotations
@@ -28,13 +28,21 @@ from ai.exploration.controls import CameraAction, _local_transform
 
 SOURCE_REVISION = "1895d300d8ac936401689b26389f51cbd36530eb"
 MAX_STEPS = 7
+HARD_MAX_STEPS = 14
 LATENTS_PER_STEP = 6
 MAX_LATENTS = MAX_STEPS * LATENTS_PER_STEP
 MAX_FRAMES = (MAX_LATENTS - 1) * 4 + 1
 
 
 class WorldRuntime:
-    def __init__(self, source: Path, models: Path):
+    def __init__(
+        self, source: Path, models: Path, *, max_steps=MAX_STEPS, decode_mode="prefix"
+    ):
+        if type(max_steps) is not int or not 1 <= max_steps <= HARD_MAX_STEPS:
+            raise ValueError("World steps must be in 1..14")
+        if decode_mode not in {"prefix", "stream"}:
+            raise ValueError("Unknown VAE decoding mode")
+        self.max_steps, self.decode_mode = max_steps, decode_mode
         self.source, self.models = source.resolve(), models.resolve()
         self.pipe = None
         self.state = None
@@ -91,11 +99,13 @@ class WorldRuntime:
                 / 127.5
                 - 1
             )
-            padded = torch.zeros(3, MAX_FRAMES, height, width, device=pipe.device)
+            max_latents = self.max_steps * LATENTS_PER_STEP
+            max_frames = (max_latents - 1) * 4 + 1
+            padded = torch.zeros(3, max_frames, height, width, device=pipe.device)
             padded[:, 0] = pixels
             encoded = pipe.vae.encode([padded])[0]
             mask = torch.zeros(
-                4, MAX_LATENTS, height // 8, width // 8, device=pipe.device
+                4, max_latents, height // 8, width // 8, device=pipe.device
             )
             mask[:, 0] = 1
             condition = torch.cat((mask, encoded))
@@ -137,15 +147,20 @@ class WorldRuntime:
             last_video=None,
             output=output,
         )
+        if self.decode_mode == "stream":
+            from ai.exploration.stream_decode import StreamingVAEDecoder
+
+            self.state["decoder"] = StreamingVAEDecoder(pipe.vae)
         torch.cuda.synchronize()
         return {
             "width": width,
             "height": height,
-            "max_steps": MAX_STEPS,
-            "max_duration": MAX_FRAMES / 16,
+            "max_steps": self.max_steps,
+            "max_duration": max_frames / 16,
             "initialization_seconds": time.perf_counter() - started,
             "source_revision": SOURCE_REVISION,
-            "runtime": "persistent-dit-kv-prefix-vae-v1",
+            "runtime": "persistent-dit-kv-" + self.decode_mode + "-vae-v2",
+            "decode_mode": self.decode_mode,
         }
 
     def step(self, action: str, cancelled, progress) -> dict:
@@ -155,7 +170,7 @@ class WorldRuntime:
         from wan.utils.utils import save_video
 
         pipe, state = self.pipe, self.state
-        if state is None or state["steps"] >= MAX_STEPS:
+        if state is None or state["steps"] >= self.max_steps:
             raise RuntimeError("No active session or session frame limit reached")
         started = time.perf_counter()
         width, height = state["width"], state["height"]
@@ -252,7 +267,24 @@ class WorldRuntime:
                 )
                 state["latents"].append(clean.detach())
             progress("decoding")
-            video = pipe.vae.decode([torch.cat(state["latents"], dim=1)])[0].cpu()
+            torch.cuda.synchronize()
+            denoise_seconds = time.perf_counter() - started
+            decode_started = time.perf_counter()
+            if self.decode_mode == "stream":
+                new_frames = (
+                    state["decoder"]
+                    .append(torch.cat(state["latents"][-2:], dim=1))
+                    .cpu()
+                )
+                video = (
+                    new_frames
+                    if state["last_video"] is None
+                    else torch.cat((state["last_video"], new_frames), dim=1)
+                )
+            else:
+                video = pipe.vae.decode([torch.cat(state["latents"], dim=1)])[0].cpu()
+            torch.cuda.synchronize()
+            decode_seconds = time.perf_counter() - decode_started
         expected_frames = (offset + 6 - 1) * 4 + 1
         if tuple(video.shape) != (3, expected_frames, height, width) or not bool(
             torch.isfinite(video).all()
@@ -289,6 +321,12 @@ class WorldRuntime:
             "frames": expected_frames,
             "duration": expected_frames / 16,
             "seconds": time.perf_counter() - started,
+            "denoise_seconds": denoise_seconds,
+            "decode_seconds": decode_seconds,
+            "decode_mode": self.decode_mode,
+            "prefix_check_scope": "copied unchanged; equivalence measured separately"
+            if self.decode_mode == "stream"
+            else "redecoded prefix compared to prior preview",
             "prefix_max_abs_error": prefix_error,
             "latent_offset": offset + 6,
             "camera_pose": poses[-1].tolist(),

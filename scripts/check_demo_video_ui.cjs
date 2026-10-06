@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('C:/Users/25438/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 
 const origin = 'http://127.0.0.1:8767';
 const albumId = '54a2e3cf1d605ab8a5682cbeab1b2885';

@@ -1,0 +1,19 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Norma · 盲评</title>
+<style>body{background:#111710;color:#e4e8df;font:16px system-ui;margin:24px auto;max-width:1100px;padding:0 16px}h1{font-size:22px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}img{width:100%;height:60vh;object-fit:contain;background:#080b07}button,a{background:#31412b;color:inherit;border:1px solid #78876c;padding:12px;border-radius:6px;cursor:pointer}nav{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}button:disabled{opacity:.4;cursor:default}#error{color:#ffb1a1}small{color:#a9b5a1}progress{width:100%}</style>
+<h1>照片盲评 · 只看照片，不看模型分数</h1><p>按当前要求，选更喜欢的一张。左右已随机；不确定可暂时跳过，跳过不会算平局。标签不会自动训练模型。</p>
+<small id="scope"></small><progress id="progress" max="1"></progress><p id="query"></p>
+<div class="pair"><div><img id="a" alt="候选A"><p>A</p></div><div><img id="b" alt="候选B"><p>B</p></div></div>
+<nav><button id="left">更喜欢 A</button><button id="right">更喜欢 B</button><button id="tie">一样喜欢</button><button id="skip">暂时跳过</button><button id="prev">上一组</button></nav>
+<p id="saved"></p><p id="error" role="alert"></p><label><input id="human" type="checkbox">我确认这些选择来自我本人看图判断，不是模型或助手代填</label>
+<nav><button id="freeze">完成并冻结标签</button><a id="download" href="/labels.json" hidden>下载冻结标签</a></nav><small>冻结后不能覆盖修改；人工pilot不等于多用户独立评测。下一步才可生成与标签摘要绑定的模型预测。</small>
+<script>
+let state,index=0,busy=false,imagesReady=false,shownId=null,imageToken=0;const el=id=>document.getElementById(id);
+async function api(path,data){const r=await fetch(path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-Norma-Review':'1'},body:JSON.stringify(data)});const d=await r.json();if(!r.ok)throw Error(d.detail);return d}
+function buttons(){for(const id of ['left','right','tie'])el(id).disabled=busy||state.frozen||!imagesReady;el('freeze').disabled=busy||state.frozen||state.answered!==state.total;el('download').hidden=!state.frozen;}
+function loadPair(c){shownId=c.id;imagesReady=false;const token=++imageToken;for(const id of ['a','b'])el(id).style.visibility='hidden';Promise.all(['a','b'].map(async id=>{const img=el(id),expected=new URL(c[id],location.href).href;img.src=expected;await img.decode();if(!img.complete||!img.naturalWidth||img.currentSrc!==expected)throw Error('照片未完整加载');})).then(()=>{if(token!==imageToken)return;imagesReady=true;for(const id of ['a','b'])el(id).style.visibility='visible';buttons();}).catch(()=>{if(token!==imageToken)return;el('error').textContent='照片加载失败，请刷新重试；本组不能标注。';buttons();});}
+function render(){const c=state.cases[index];el('scope').textContent=`${state.provenance} · 已答 ${state.answered}/${state.total} · ${state.frozen?'已冻结':'未冻结'}`;el('progress').value=state.answered/state.total;el('query').textContent=`${index+1}/${state.total} · ${c.query}`;if(shownId!==c.id)loadPair(c);el('saved').textContent=c.answer?`已保存：${c.answer.toUpperCase()}`:'尚未选择';buttons();}
+async function answer(winner){if(busy||!imagesReady||state.frozen)return;busy=true;render();el('error').textContent='';try{const c=state.cases[index];state=await api('/labels/'+c.id,{winner,revision:c.revision});index=(index+1)%state.total}catch(e){el('error').textContent=e.message}finally{busy=false;render()}}
+el('left').onclick=()=>answer('a');el('right').onclick=()=>answer('b');el('tie').onclick=()=>answer('tie');el('skip').onclick=()=>{if(!busy){index=(index+1)%state.total;render()}};el('prev').onclick=()=>{if(!busy){index=(index-1+state.total)%state.total;render()}};
+el('freeze').onclick=async()=>{try{state=await api('/freeze',{human_confirmed:el('human').checked});render()}catch(e){el('error').textContent=e.message}};
+api('/state').then(s=>{state=s;render()}).catch(e=>el('error').textContent=e.message);
+</script></html>

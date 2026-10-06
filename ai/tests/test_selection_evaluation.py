@@ -84,6 +84,14 @@ def test_missing_inventory_or_same_photo_in_different_groups_fails():
     document.pop("development_and_memory_groups")
     with pytest.raises(ValueError, match="inventory"):
         evaluate(document, predictions, resamples=100)
+
+
+def test_human_pilot_is_not_promoted_to_independent():
+    document, predictions = fixture()
+    document.update(label_provenance="human-pilot", human_observed=True)
+    report = evaluate(document, predictions, resamples=100)
+    assert report["human_observed"]
+    assert "NOT independent" in report["claim_boundary"]
     document, predictions = fixture()
     document["cases"][1]["left_sha256"] = document["cases"][0]["left_sha256"]
     with pytest.raises(ValueError, match="independent source groups"):

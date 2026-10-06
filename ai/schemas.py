@@ -481,6 +481,7 @@ class SelectionRequest(BaseModel):
     use_preference_memory: bool = Field(default=False, strict=True)
     use_learned_quality: bool = Field(default=False, strict=True)
     allow_proxy_memory: bool = Field(default=False, strict=True)
+    required_photo_ids: list[str] = Field(default_factory=list, max_length=50)
     person_minimums: dict[str, Annotated[int, Field(strict=True)]] = Field(
         default_factory=dict, max_length=10
     )
@@ -501,6 +502,8 @@ class SelectionConstraints(BaseModel):
     exclude_rejects: bool
     max_per_similarity_group: int
     person_minimums: dict[str, int] = Field(default_factory=dict)
+    category_counts: dict[str, int] = Field(default_factory=dict)
+    required_photo_ids: list[str] = Field(default_factory=list)
 
 
 class SelectedPhoto(BaseModel):
@@ -515,6 +518,7 @@ class SelectedPhoto(BaseModel):
     reasons: list[str]
     memory_delta: float = 0.0
     learned_quality: dict[str, object] | None = None
+    category_evidence: dict[str, object] | None = None
 
 
 class CandidateUniverseSummary(BaseModel):
