@@ -19,7 +19,7 @@ def main() -> int:
     parser.add_argument("job_id")
     parser.add_argument("--wait-seconds", type=int, default=0)
     parser.add_argument("--output-dir", type=Path,
-                        default=ROOT / "docs/benchmarks/assets/demo-sprint-20261005/video")
+                        default=ROOT / ".norma/video-demo-collection")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{32}", args.job_id):
         parser.error("Invalid job identifier")

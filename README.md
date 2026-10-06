@@ -74,7 +74,7 @@ source .venv/bin/activate
 python scripts/install_qwen3vl_model.py
 ~~~
 
-在网页展开 **文字大模型解析** 并启用。此选片步骤使用模型解析文字要求，图片相关性由本地 OpenCLIP 计算。云端解析与图片问答配置见 [云端模型配置](docs/cloud-analysis.md)。
+在网页展开 **文字大模型解析** 并启用。此选片步骤使用模型解析文字要求，图片相关性由本地 OpenCLIP 计算。云端接口设置和图片问答操作见 [复现文档](docs/reproduce.md#3-可选文字解析与图片问答)。
 
 ### 视频探索
 
@@ -144,7 +144,7 @@ ai/
   web_dist/         构建后的网页
 src/components/     照片工作流、视频与方向控件
 scripts/            模型准备、启动、复现、评测工具
-docs/               使用方法、实现说明、开发记录
+docs/reproduce.md   最小复现、可选模型配置与视频部署
 requirements-demo.txt          本地照片环境
 requirements-world.txt         Linux GPU视频环境
 requirements-world-service.txt 视频服务依赖
@@ -176,14 +176,3 @@ pnpm build 将网页构建到 ai/web_dist/。开发时可分别运行 python -m 
 | NORMA_VIDEO_TOKEN_FILE | 私有视频服务令牌文件 |
 
 Web默认监听127.0.0.1，供本机浏览器访问；远端视频服务使用令牌及SSH转发。模型和样例照片各自遵循上游许可，LingBot适配与部署条款见 [NOTICE](ai/exploration/NOTICE.md)。
-
-## 文档
-
-- [最小复现与视频部署](docs/reproduce.md)
-- [当前Demo使用说明](docs/demo-quickstart.md)
-- [项目技术与面试讲解](docs/interview-project-guide-20261006.md)
-- [相近构图筛选实现](docs/fix-visual-curation-20261006.md)
-- [数量、类别配额与整组选片](docs/fix-collection-selection-20261006.md)
-- [偏好案例记忆](docs/preference-memory-demo.md)
-- [云端模型配置](docs/cloud-analysis.md)
-- [开发与优化记录](docs/gap-closure-20261005.md)

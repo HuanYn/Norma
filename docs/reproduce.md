@@ -122,9 +122,32 @@ python scripts/install_qwen3vl_model.py
 
 在Demo页面勾选“文字大模型解析”。模型为Qwen3-VL-2B-Instruct，Demo启动器默认采用本地解析配置。文字解析负责整理查询语义，后端执行数量、配额和必留条件。
 
-图片问答使用独立的检索与视觉语言模型接口。云端地址、模型名称、私有密钥和授权方式见 [cloud-analysis.md](cloud-analysis.md)。
+偏好可以选择“仅本人反馈”“助手审美”或“不使用偏好”。全新数据库先通过网页积累反馈，再启用对应模式；已有案例会参与选片重排。
 
-偏好可以选择“仅本人反馈”“助手审美”或“不使用偏好”。全新数据库先通过网页积累反馈；历史代理案例的来源与导入说明见 [proxy-preferences.md](proxy-preferences.md)。
+### 云端接口配置
+
+图片问答先本地检索，再向支持图像输入的OpenAI-compatible模型提交候选图与问题。准备供应商提供的Base URL、模型ID和API Key，在同一PowerShell终端设置：
+
+~~~powershell
+$env:NORMA_VLM_PROVIDER = "openai-compatible"
+$env:NORMA_VLM_BASE_URL = "https://YOUR_PROVIDER/v1"
+$env:NORMA_VLM_MODEL = "YOUR_VISION_MODEL"
+$env:NORMA_VLM_TIMEOUT_SECONDS = "60"
+$normaCloudKey = Read-Host "API Key" -AsSecureString
+$env:NORMA_VLM_API_KEY = [System.Net.NetworkCredential]::new("", $normaCloudKey).Password
+try {
+    python scripts/start_demo.py
+} finally {
+    Remove-Item Env:NORMA_VLM_API_KEY -ErrorAction SilentlyContinue
+    $normaCloudKey.Dispose()
+}
+~~~
+
+替换地址和模型ID后，按提示在本机隐藏输入密钥。配置在启动时读取，修改后重启后端。请将密钥保留在本机私有环境中。
+
+进入Library打开相册并完成语义索引，在AI Selection输入问题，点击“云端看图分析”。云端接收问题和本次检索的前3张候选图，回答显示关联图片引用。发送的是压缩JPEG，长边最多1280px并去除EXIF；调用费用按供应商计费。普通本地检索使用OpenCLIP。
+
+切回本地模型时，设置 NORMA_VLM_PROVIDER=local 后重新启动。
 
 ## 4. 可选部署交互视频
 
@@ -232,7 +255,7 @@ pnpm exec playwright install chromium
 node scripts/check_release_ui.cjs http://127.0.0.1:8767 .norma/release-ui-first
 ~~~
 
-使用已安装的Edge时，可设置 NORMA_BROWSER_CHANNEL=msedge 后运行该脚本。输出目录保存网页截图与result.json。其他带trip/world日期样例的历史检查脚本使用各自开发数据，通用复现使用本页的reproduce_demo.py和check_release_ui.cjs。
+使用已安装的Edge时，可设置 NORMA_BROWSER_CHANNEL=msedge 后运行该脚本。输出目录保存网页截图与result.json。
 
 只读检查工具：
 
@@ -256,7 +279,3 @@ python scripts/demo_doctor.py
 | worker提示GPU忙 | 使用空闲GPU UUID，等待已有任务结束 |
 | 关闭浏览器后GPU仍占用 | 关闭对应会话，演示结束后停止Norma worker |
 | 同一路径换图后缓存过期 | 重新运行准备与评估，生成匹配新图片的缓存 |
-
-## 7. 发布验证记录
-
-本次发布验证记录见 [release-20261006.md](release-20261006.md)。后端测试、前端构建和CPU真实模型复现分别保存结果，便于检查环境与执行范围。

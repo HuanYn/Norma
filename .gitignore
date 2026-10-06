@@ -58,3 +58,10 @@ profile_output/
 # Local research-orchestration traces; curated evidence lives in docs/figures
 refine-logs/
 MANIFEST.md
+
+# Public documentation is limited to the reproduction and deployment guide.
+# Keep development notes, experiment reports and generated media local.
+/docs/*
+!/docs/reproduce.md
+/figures/*
+!/figures/*.py
